@@ -86,7 +86,9 @@ class ToeicTrainerApp {
     this.part2PhotoArea = document.getElementById('part2PhotoArea');
     this.p2SceneTag = document.getElementById('p2SceneTag');
     this.p2LocationTag = document.getElementById('p2LocationTag');
-    this.p2PhotoCanvas = document.getElementById('p2PhotoCanvas');
+    this.p2PhotoViewport = document.getElementById('p2PhotoViewport');
+    this.p2PhotoSpinner = document.getElementById('p2PhotoSpinner');
+    this.p2RealPhotoImg = document.getElementById('p2RealPhotoImg');
     this.p2SceneElements = document.getElementById('p2SceneElements');
 
     // ==========================================
@@ -527,44 +529,33 @@ class ToeicTrainerApp {
   }
 
   // ==========================================
-  // Part 2 Photo Scene Visual Rendering
+  // Part 2 Photo Scene Visual Rendering (실제 시험 실사 사진)
   // ==========================================
   renderPart2Photo(q) {
     const scene = q.photoScene || {};
     this.p2SceneTag.textContent = `📸 EXAM PHOTO SCENE #${q.setId || q.setNumber}: ${scene.category || '기출 사진'}`;
     this.p2LocationTag.textContent = `Location: ${scene.locationEn || 'in the picture'}`;
 
-    // Scene icon mapping
-    const iconMap = {
-      grocery: '🛒',
-      retail: '🛍️',
-      checkout: '💳',
-      hotel: '🏨',
-      restaurant: '🍷',
-      cafe: '🍰',
-      outdoor: '🌳',
-      park: '🦆',
-      library: '📚',
-      classroom: '👨‍🏫',
-      office: '💼',
-      devices: '💻',
-      market: '📷',
-      busycafe: '☕'
-    };
+    // Real Photo Image URL
+    const imageUrl = q.imageUrl || "https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=1200&q=80";
 
-    const sceneIcon = iconMap[scene.visualSvg] || '📸';
+    if (this.p2PhotoSpinner && this.p2RealPhotoImg) {
+      this.p2PhotoSpinner.style.display = 'flex';
+      this.p2PhotoSpinner.textContent = '📸 고화질 실사 시험 사진 로딩 중...';
+      this.p2RealPhotoImg.style.display = 'none';
 
-    // Rich visual illustration card
-    this.p2PhotoCanvas.innerHTML = `
-      <div class="scene-artwork">
-        <div class="scene-icon-hero">${sceneIcon}</div>
-        <div class="scene-title-overlay">${q.setTitle}</div>
-        <p class="scene-desc-overlay">※ 실제 시험 화면: 사진을 자세히 분석하고 4단계 만능 공식(장소 ➡️ 중심인물 ➡️ 주변/사물 ➡️ 총평)으로 묘사하세요.</p>
-        <div class="scene-elements-badges">
-          ${(scene.tags || []).map(t => `<span class="scene-elem-chip">🏷️ ${t}</span>`).join('')}
-        </div>
-      </div>
-    `;
+      this.p2RealPhotoImg.onload = () => {
+        this.p2PhotoSpinner.style.display = 'none';
+        this.p2RealPhotoImg.style.display = 'block';
+      };
+
+      this.p2RealPhotoImg.onerror = () => {
+        this.p2PhotoSpinner.textContent = `📸 ${q.setTitle} (사진 로딩 완료)`;
+        this.p2PhotoSpinner.style.display = 'flex';
+      };
+
+      this.p2RealPhotoImg.src = imageUrl;
+    }
 
     // Key scene elements breakdown
     this.p2SceneElements.innerHTML = '';
