@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>토익스피킹 파트 3 & 4 마스터 북 | Apple Glass Edition</title>
+  <meta name="description" content="토익스피킹 파트 3 & 파트 4 120~140점(IM3~IH) 완벽 대비 웹북. 책갈피 탭 분할, 실제 시험 환경 질문 해석 숨김, 표 기반 파트 4 및 45초 읽기 타이머, Daniel 전담 음성, 만능문장 족보 탑재.">
+  <!-- Google Fonts: Pretendard & Inter (Medium / SemiBold 600) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="apple-glass-theme book-feel-theme">
+  <!-- Ambient floating blur orbs -->
+  <div class="ambient-glow orb-blue"></div>
+  <div class="ambient-glow orb-purple"></div>
+  <div class="ambient-glow orb-cyan"></div>
+
+  <div class="app-container">
+    
+    <!-- ==========================================
+         TOP BOOKMARK TABS (책갈피 북마크 리본 바)
+         ========================================== -->
+    <nav class="book-bookmarks-bar" aria-label="파트 선택 책갈피">
+      <button id="tabPart3" class="bookmark-tab active" data-part="part3" title="Part 3: 일상 질문 답하기로 이동">
+        <div class="bookmark-ribbon-tip"></div>
+        <span class="bookmark-icon">🔖</span>
+        <div class="bookmark-text-wrap">
+          <span class="bookmark-title">PART 3 책갈피</span>
+          <span class="bookmark-desc">일상 질문 답하기 (Q5 ~ Q7)</span>
+        </div>
+        <span class="bookmark-badge">48문항 (16세트)</span>
+      </button>
+
+      <button id="tabPart4" class="bookmark-tab" data-part="part4" title="Part 4: 제공된 정보(표) 보고 답하기로 이동">
+        <div class="bookmark-ribbon-tip"></div>
+        <span class="bookmark-icon">📑</span>
+        <div class="bookmark-text-wrap">
+          <span class="bookmark-title">PART 4 책갈피</span>
+          <span class="bookmark-desc">표/일정표 보고 답하기 (Q8 ~ Q10)</span>
+        </div>
+        <span class="bookmark-badge">24문항 (8세트)</span>
+      </button>
+    </nav>
+
+    <!-- Apple Glass Book Header -->
+    <header class="glass-header book-header">
+      <div class="header-top-row">
+        <div class="header-branding">
+          <div class="badge-capsule target-badge">
+            <span class="badge-dot"></span>
+            <span id="headerTargetText">Target: 120 ~ 140점 (IM3 - IH) · 실전 수험서 에디션</span>
+          </div>
+          <h1 class="app-title">
+            <span class="gradient-text" id="appTitlePrefix">TOEIC Speaking</span> 
+            <span id="appTitlePart">Part 3 실전 트레이너</span>
+          </h1>
+          <p class="app-tagline" id="appTagline">
+            책갈피 탭 전환 · 실전 환경 문제해석 숨김(답안 토글 시 표시) · Daniel 영국 남성 음성 · 만능문장 족보
+          </p>
+        </div>
+
+        <div class="header-controls">
+          <!-- Voice Info Pill: Daniel Fixed -->
+          <div class="daniel-voice-capsule">
+            <span class="voice-avatar">👨‍💼</span>
+            <div class="voice-meta">
+              <span class="voice-title">전담 음성: <strong>Daniel</strong></span>
+              <span class="voice-desc">또렷하고 정확한 영국식 남성 발음</span>
+            </div>
+            <button id="voiceTestBtn" class="btn-voice-preview" title="Daniel 목소리 샘플 듣기">
+              ▶️ 샘플
+            </button>
+          </div>
+
+          <!-- Cheat Sheet & Timer Toggles -->
+          <div class="action-buttons-wrap">
+            <button id="cheatSheetBtn" class="glass-btn btn-cheat" title="시계토끼 만능문장 족보 모음">
+              <span class="btn-emoji">🐰</span>
+              <span id="cheatBtnText">만능문장 족보집</span>
+            </button>
+            <button id="examModeToggleBtn" class="glass-btn btn-timer-toggle active" title="실전 시험 준비/답변 타이머 On/Off">
+              ⏱️ 실전 타이머: <strong id="timerStatusText">ON</strong>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation & Filter Toolbar -->
+    <nav class="glass-toolbar">
+      <div class="toolbar-left">
+        <label for="setFilter" class="filter-label" id="filterLabel">주제 세트 선택:</label>
+        <select id="setFilter" class="glass-select set-select">
+          <!-- Dynamically populated based on active part -->
+        </select>
+      </div>
+
+      <div class="toolbar-center">
+        <div class="card-counter">
+          <span id="currentCardIndex" class="count-current">1</span>
+          <span class="count-divider">/</span>
+          <span id="totalCardCount" class="count-total">48</span>
+        </div>
+        <div class="progress-track">
+          <div id="progressBar" class="progress-fill" style="width: 2%;"></div>
+        </div>
+      </div>
+
+      <div class="toolbar-right">
+        <button id="prevBtn" class="glass-nav-btn" aria-label="이전 문제 (단축키: ←)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          <span class="btn-text">이전 (←)</span>
+        </button>
+        <button id="nextBtn" class="glass-nav-btn primary" aria-label="다음 문제 (단축키: →)">
+          <span class="btn-text">다음 (→)</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main Liquid Glass Card (Book-like Page with Spine Detail) -->
+    <main class="card-viewport">
+      <div id="practiceCard" class="liquid-glass-card book-page-card">
+        <!-- Subtle Book Spine Binding Stitch Decoration -->
+        <div class="book-spine-accent"></div>
+
+        <!-- Top Pill Meta Row -->
+        <div class="card-header-pills">
+          <div class="pills-left">
+            <span id="cardPartBadge" class="pill pill-part">PART 3</span>
+            <span id="cardSetBadge" class="pill pill-set">Set 1</span>
+            <span id="cardQNumBadge" class="pill pill-qnum">Question 5</span>
+            <span id="cardTimeBadge" class="pill pill-time">답변 15초</span>
+          </div>
+          <div class="pills-right">
+            <span id="cardPatternBadge" class="pill pill-pattern">의문사 공식</span>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             PART 4 DOCUMENT / SCHEDULE TABLE CONTAINER
+             (Visible ONLY in Part 4 Mode)
+             ========================================== -->
+        <section id="part4DocumentArea" class="part4-doc-container" style="display: none;">
+          <!-- 45s Table Reading Time Exam Simulation Bar -->
+          <div class="part4-directions-banner">
+            <div class="directions-left">
+              <span class="directions-badge">DIRECTIONS</span>
+              <span class="directions-text">
+                Questions 8-10 are based on the information below. You will have <strong>45 seconds</strong> to read the schedule.
+              </span>
+            </div>
+            <div class="directions-right">
+              <button id="p4ReadTimerBtn" class="btn-p4-read-timer" title="실제 시험처럼 45초 동안 표를 분석하는 카운트다운 타이머">
+                <span class="btn-read-icon">⏱️</span>
+                <span id="p4ReadTimerLabel">45초 표 읽기 실전 타이머</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 45s Reading Progress Bar (Hidden when idle) -->
+          <div id="p4ReadProgressBarWrap" class="p4-read-progress-wrap" style="display: none;">
+            <div class="p4-read-bar-label">
+              <span>표 읽기 시간 남음: <strong id="p4ReadCountdown">45</strong>초</span>
+              <button id="p4ReadTimerCancelBtn" class="btn-mini-cancel">타이머 중지</button>
+            </div>
+            <div class="p4-read-bar-track">
+              <div id="p4ReadBarFill" class="p4-read-bar-fill"></div>
+            </div>
+          </div>
+
+          <!-- Frosted Schedule Table Card -->
+          <div class="schedule-table-card">
+            <div class="table-card-top">
+              <span class="table-doc-tag">REFERENCE SCHEDULE / DOCUMENT</span>
+              <h2 id="p4TableHeaderTitle" class="table-main-title">Grand City Sightseeing Tour - Daily Itinerary</h2>
+              <div id="p4TableMetaWrap" class="table-meta-badges">
+                <!-- Meta pills like Date, Location, Fee injected dynamically -->
+              </div>
+            </div>
+
+            <!-- Table Responsive Wrap -->
+            <div class="table-responsive-wrapper">
+              <table id="p4DataTable" class="glass-data-table">
+                <thead id="p4TableHead">
+                  <!-- Injected dynamically -->
+                </thead>
+                <tbody id="p4TableBody">
+                  <!-- Injected dynamically -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Caller Context Banner -->
+            <div id="p4ContextBanner" class="caller-context-banner">
+              <span class="caller-icon">📞</span>
+              <div class="caller-body">
+                <span class="caller-title">전화 문의자 / 발화 상황:</span>
+                <p id="p4ContextText" class="caller-text"></p>
+                <p id="p4ContextKr" class="caller-text-kr"></p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Upper Section: Question (실제 시험처럼 영어 지문만 표시) -->
+        <section class="card-question-box" aria-label="질문 지문">
+          <div class="box-title-row">
+            <div class="q-title-left">
+              <span class="box-tag">QUESTION</span>
+              <span class="box-exam-note">※ 실제 시험 환경: 한글 해석은 숨겨져 있으며, 모범답안을 누르면 나타납니다.</span>
+            </div>
+            <div class="audio-button-cluster" id="qSpeechControls">
+              <button class="audio-btn normal" id="qSpeakNormalBtn" title="Daniel 보통 속도로 듣기 (1.0x)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                </svg>
+                <span>Daniel 1.0x</span>
+              </button>
+              <button class="audio-btn slow" id="qSpeakSlowBtn" title="Daniel 느린 속도로 듣기 (0.75x)">
+                <span class="speed-turtle">🐢</span>
+                <span>느리게 0.75x</span>
+              </button>
+              <button class="audio-btn stop" id="qSpeakStopBtn" title="오디오 정지" style="display: none;">
+                ⏹️ 정지
+              </button>
+            </div>
+          </div>
+
+          <div class="question-display-area" id="questionTextBox">
+            <!-- English Question Only (No Korean text here, hidden for real exam training) -->
+            <div id="questionText" class="en-question-text">Loading question...</div>
+          </div>
+        </section>
+
+        <!-- Exam Countdown Timer Strip (3s Prep -> Beep -> 15s/30s Answer) -->
+        <section class="card-timer-strip" id="timerSection">
+          <div class="timer-meta-bar">
+            <span id="timerPhaseBadge" class="timer-phase-badge prep">준비 시간</span>
+            <div class="timer-digits">
+              <span id="timerCountdown" class="countdown-val">3</span>
+              <span class="countdown-unit">초</span>
+            </div>
+          </div>
+          <div class="timer-liquid-bar">
+            <div id="timerProgressFill" class="timer-liquid-fill"></div>
+          </div>
+          <div class="timer-btn-row">
+            <button id="startTimerBtn" class="btn-timer-glow play">
+              ▶️ 실전 카운트다운 시작 (3초 ➡️ 답변)
+            </button>
+            <button id="resetTimerBtn" class="btn-timer-glow reset" style="display: none;">
+              🔄 타이머 리셋
+            </button>
+          </div>
+        </section>
+
+        <!-- Center Toggle Answer Button -->
+        <div class="toggle-switch-container">
+          <button id="toggleAnswerBtn" class="liquid-toggle-btn" aria-expanded="false">
+            <span class="toggle-icon-wrap" id="toggleIcon">👁️</span>
+            <span id="toggleText" class="toggle-label">모범답안 & 문제해석 보기</span>
+            <span class="toggle-shortcut-badge">Space</span>
+          </button>
+        </div>
+
+        <!-- Lower Section: Model Answer (토글 시 질문 한국어 해석과 함께 나타남) -->
+        <section class="card-answer-box" id="answerSection" style="display: none;" aria-label="모범답안">
+          
+          <!-- Hidden Question Korean Translation (Revealed ONLY when answer is opened) -->
+          <div class="q-translation-box" id="qTranslationBox">
+            <div class="q-translation-header">
+              <span class="q-trans-badge">💡 질문 한국어 해석</span>
+              <span class="q-trans-sub">모범답안과 함께 매칭하여 검토하세요</span>
+            </div>
+            <p id="answerQuestionKo" class="q-translation-text"></p>
+          </div>
+
+          <div class="box-title-row">
+            <div class="answer-tag-wrap">
+              <span class="box-tag answer-tag">MODEL ANSWER</span>
+              <span class="answer-sub-badge" id="answerLevelBadge">120~140점 (IM3~IH) 구조화 답안</span>
+            </div>
+            <div class="audio-button-cluster" id="aSpeechControls">
+              <button class="audio-btn normal" id="aSpeakNormalBtn" title="답안 전체 보통 속도로 듣기 (1.0x)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                </svg>
+                <span>전체 1.0x</span>
+              </button>
+              <button class="audio-btn slow" id="aSpeakSlowBtn" title="답안 전체 느린 속도로 쉐도잉 (0.75x)">
+                <span class="speed-turtle">🐢</span>
+                <span>느리게 0.75x</span>
+              </button>
+              <button class="audio-btn stop" id="aSpeakStopBtn" title="오디오 정지" style="display: none;">
+                ⏹️ 정지
+              </button>
+            </div>
+          </div>
+
+          <div class="answer-content-cluster">
+            <!-- Structured Sentences Container with Line Breaks & Single-Sentence Speech -->
+            <div class="structured-sentences-box" id="structuredSentencesContainer">
+              <!-- Dynamically rendered sentence rows -->
+            </div>
+
+            <!-- Vocabulary & Pronunciation (IPA) Panel (Question & Answer Combined) -->
+            <div class="vocab-liquid-card" id="vocabSection">
+              <div class="vocab-header">
+                <span class="vocab-title-icon">📖</span>
+                <span class="vocab-title-text">핵심 및 주요 어휘 (문제 & 모범답안 연계 | IPA 발음기호 & 개별 음성)</span>
+              </div>
+              <div id="vocabChipsGrid" class="vocab-chips-grid"></div>
+            </div>
+
+            <!-- Grammar & Sentence Structure Analysis Box (새로 추가된 문법 분석 섹션) -->
+            <div class="grammar-liquid-card" id="grammarSection">
+              <div class="grammar-header">
+                <span class="grammar-icon">💡</span>
+                <span class="grammar-title-text">핵심 문법 및 구문 분석 (Grammar & Sentence Structure)</span>
+              </div>
+              <div id="grammarPointsList" class="grammar-points-list"></div>
+            </div>
+
+            <!-- Jenny's Magic Sentence Highlight Box -->
+            <div class="magic-point-card">
+              <div class="magic-card-title">
+                <span id="magicCardTitleText">🐰 시계토끼 핵심 만능문장 포인트</span>
+              </div>
+              <ul id="magicSentencesList" class="magic-point-list"></ul>
+            </div>
+
+            <!-- 120-140 Score Tip Box -->
+            <div class="tip-liquid-card">
+              <div class="tip-header">🎯 120~140점(IM3~IH) 확보 핵심 전략</div>
+              <p id="scoreTipText" class="tip-body"></p>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- Apple Style Footer -->
+    <footer class="glass-footer">
+      <div class="shortcut-tags">
+        <span class="tag"><kbd>←</kbd> 이전</span>
+        <span class="tag"><kbd>→</kbd> 다음</span>
+        <span class="tag"><kbd>Space</kbd> 답안 열기/닫기</span>
+        <span class="tag"><kbd>1</kbd> 지문 1.0x</span>
+        <span class="tag"><kbd>2</kbd> 지문 0.75x</span>
+        <span class="tag"><kbd>3</kbd> 답안 1.0x</span>
+        <span class="tag"><kbd>4</kbd> 답안 0.75x</span>
+        <span class="tag"><kbd>Esc</kbd> 정지/닫기</span>
+      </div>
+      <p class="footer-cheer">이번 주 일요일 토익스피킹 시험, 침묵 없이 만능문장으로 140점(IH) 달성하세요! 🏆</p>
+    </footer>
+  </div>
+
+  <!-- Modal: Comprehensive Jenny's Magic Sentence Formulas (Part 3 & Part 4 Tabs) -->
+  <div id="cheatSheetModal" class="glass-modal-overlay" style="display: none;">
+    <div class="glass-modal-sheet">
+      <div class="modal-nav">
+        <div class="modal-title-wrap">
+          <span class="modal-emoji">🐰</span>
+          <h2>시계토끼 만능문장 종합 족보집</h2>
+        </div>
+        <button id="closeModalBtn" class="modal-close-icon" aria-label="닫기">✕</button>
+      </div>
+
+      <!-- Modal Internal Part Switcher Tabs -->
+      <div class="modal-tab-row">
+        <button id="modalTabP3" class="modal-nav-tab active">
+          🔖 PART 3 만능문장 15대 공식
+        </button>
+        <button id="modalTabP4" class="modal-nav-tab">
+          📑 PART 4 핵심 응답 공식 8선
+        </button>
+      </div>
+
+      <div class="modal-scroll-content">
+        
+        <!-- ==========================================
+             PART 3 MODAL CONTENT
+             ========================================== -->
+        <div id="modalP3Content" class="modal-part-view">
+          <div class="modal-callout">
+            <strong>💡 시험장 파트 3 긴급 대처 꿀팁:</strong>
+            어떤 돌발 질문이 나와도 3초 동안 당황하지 말고 질문을 주어로 받아친 후, 아래 15가지 만능 공식 중 1~2개를 붙이면 120~140점(IM3~IH)이 즉시 완성됩니다!
+          </div>
+
+          <div class="cheat-category-header">
+            <span class="badge-fire">🔥 필수 뼈대 공식</span>
+            <h3>기출 90% 방어 7대 핵심 공식 (Core 7)</h3>
+          </div>
+
+          <div class="cheat-cards-grid">
+            <div class="formula-card">
+              <span class="formula-num">공식 1</span>
+              <div class="formula-topic">스트레스 해소 & 기분 전환</div>
+              <div class="formula-en">"It relieves my stress. I am stressed out these days, so I need this."</div>
+              <div class="formula-ko">스트레스를 풀어줍니다. 요즘 스트레스가 많아서 이게 필요해요.</div>
+              <div class="formula-ext">추가 변형: "It puts me in a good mood / makes me feel refreshed."</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">공식 2</span>
+              <div class="formula-topic">시간 절약 & 바쁜 일상</div>
+              <div class="formula-en">"It's faster, so I can save time. I have a busy daily routine."</div>
+              <div class="formula-ko">더 빨라서 시간을 아낄 수 있습니다. 저는 일상이 바빠요.</div>
+              <div class="formula-ext">적용 주제: 온라인 쇼핑, 지하철, 배달, 집 근처 시설</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">공식 3</span>
+              <div class="formula-topic">비용 절약 & 빠듯한 예산</div>
+              <div class="formula-en">"The price is reasonable, so I can save money. I have a tight budget."</div>
+              <div class="formula-ko">가격이 합리적이라 돈을 아낄 수 있습니다. 요즘 예산이 빠듯해요.</div>
+              <div class="formula-ext">적용 주제: 할인, 스트리밍, 대중교통, 홈카페, 도서관</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">공식 4</span>
+              <div class="formula-topic">유용한 정보 획득 & 솔직 후기</div>
+              <div class="formula-en">"I can get a lot of useful information on the Internet / social media."</div>
+              <div class="formula-ko">인터넷/SNS에서 많은 유용한 정보를 얻을 수 있습니다.</div>
+              <div class="formula-ext">추가 변형: "There are many photos and honest customer reviews."</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">공식 5</span>
+              <div class="formula-topic">편리함 & 언제 어디서나</div>
+              <div class="formula-en">"It is very convenient because I can do it anytime and anywhere."</div>
+              <div class="formula-ko">언제 어디서나 할 수 있어서 매우 편리합니다.</div>
+              <div class="formula-ext">적용 주제: 스마트폰 앱, 전자책, OTT, 모바일 뱅킹</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">공식 6</span>
+              <div class="formula-topic">친구/가족과의 친목 & 추억 만들기</div>
+              <div class="formula-en">"I can spend quality time with my friends and make good memories."</div>
+              <div class="formula-ko">친구들과 소중한 시간을 보내고 좋은 추억을 만들 수 있습니다.</div>
+              <div class="formula-ext">적용 주제: 카페, 여행, 콘서트, 맛집 외식, 영화관</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">공식 7</span>
+              <div class="formula-topic">건강 증진 & 체력 유지</div>
+              <div class="formula-en">"It is good for my health, and it helps me stay healthy."</div>
+              <div class="formula-ko">건강에 좋고, 건강을 유지하는 데 도움이 됩니다.</div>
+              <div class="formula-ext">적용 주제: 운동, 산책, 신선한 식료품, 집밥 요리</div>
+            </div>
+          </div>
+
+          <div class="cheat-category-header mt-large">
+            <span class="badge-rocket">🚀 130~140점 굳히기</span>
+            <h3>돌발 질문 완벽 방어 8대 확장 공식 (Advanced 8)</h3>
+          </div>
+
+          <div class="cheat-cards-grid">
+            <div class="formula-card">
+              <span class="formula-num">공식 8</span>
+              <div class="formula-topic">다양한 선택지 (쇼핑/장소/메뉴)</div>
+              <div class="formula-en">"There are many options to choose from, so I can find what I want."</div>
+              <div class="formula-ko">선택할 수 있는 옵션이 많아서 내가 원하는 것을 찾을 수 있습니다.</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">공식 9</span>
+              <div class="formula-topic">친절한 직원 & 아늑한 분위기</div>
+              <div class="formula-en">"The staff are very friendly, and the atmosphere is cozy and warm."</div>
+              <div class="formula-ko">직원들이 매우 친절하고, 분위기가 아늑하고 따뜻합니다.</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">공식 10</span>
+              <div class="formula-topic">뛰어난 접근성 & 도보 거리</div>
+              <div class="formula-en">"It is located close to my house, within walking distance."</div>
+              <div class="formula-ko">집 근처 걸어갈 수 있는 거리에 위치해 있습니다.</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">공식 11</span>
+              <div class="formula-topic">좋은 에너지 & 기분 전환</div>
+              <div class="formula-en">"It gives me good energy and helps me stay refreshed."</div>
+              <div class="formula-ko">좋은 에너지를 주고 상쾌한 기분을 유지하도록 돕습니다.</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">공식 12</span>
+              <div class="formula-topic">집중력 향상 & 방해 요소 없음</div>
+              <div class="formula-en">"It has a quiet environment, so it helps me concentrate better."</div>
+              <div class="formula-ko">조용한 환경이어서 더 잘 집중할 수 있도록 도와줍니다.</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">공식 13</span>
+              <div class="formula-topic">사용하기 쉬움 & 간단함</div>
+              <div class="formula-en">"It is very simple and easy to use, even for beginners."</div>
+              <div class="formula-ko">초보자에게도 매우 간단하고 사용하기 쉽습니다.</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">공식 14</span>
+              <div class="formula-topic">신선한 재료 & 뛰어난 맛</div>
+              <div class="formula-en">"The ingredients are very fresh, and the food tastes delicious."</div>
+              <div class="formula-ko">재료가 매우 신선하고 음식 맛이 아주 훌륭합니다.</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">공식 15</span>
+              <div class="formula-topic">최신 트렌드 & 인기</div>
+              <div class="formula-en">"It is very trendy and popular among young people these days."</div>
+              <div class="formula-ko">요즘 젊은 사람들 사이에서 매우 트렌디하고 인기가 많습니다.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             PART 4 MODAL CONTENT
+             ========================================== -->
+        <div id="modalP4Content" class="modal-part-view" style="display: none;">
+          <div class="modal-callout">
+            <strong>💡 시험장 파트 4 핵심 득점 3원칙:</strong>
+            1) <strong>Q8 (15초):</strong> 일시, 장소, 비용 등 기본 팩트를 "It will be held on [날짜] at [장소]"로 간결하고 정확하게 전달.<br>
+            2) <strong>Q9 (15초 - 오류정정):</strong> 질문자가 잘못 알고 물어보므로 <strong>"No, I'm afraid that you have the wrong information. Actually, [올바른 정보]"</strong>로 정정.<br>
+            3) <strong>Q10 (30초 - 2개 나열):</strong> <strong>"Sure, there are two scheduled sessions."</strong> 서두 후 <strong>"First, ~ / Second, ~"</strong>로 2개 항목을 매끄럽게 연결.
+          </div>
+
+          <div class="cheat-category-header">
+            <span class="badge-fire">🔥 파트 4 핵심 만능 공식 8선</span>
+            <h3>어떤 표가 나와도 120~140점 보장하는 8대 템플릿</h3>
+          </div>
+
+          <div class="cheat-cards-grid">
+            <div class="formula-card">
+              <span class="formula-num">P4-1</span>
+              <div class="formula-topic">Q9 필수: 잘못된 정보 정정 (핵심)</div>
+              <div class="formula-en">"No, I'm afraid that you have the wrong information. Actually, [올바른 정보]."</div>
+              <div class="formula-ko">아니요, 잘못된 정보를 알고 계신 것 같습니다. 사실은 [올바른 정보]입니다.</div>
+              <div class="formula-ext">시계토끼 시그니처 템플릿. Q9의 90% 이상을 이 한 문장으로 완벽 방어!</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">P4-2</span>
+              <div class="formula-topic">Q10 필수: 2가지 공통 세션 나열 서두</div>
+              <div class="formula-en">"Sure, there are two scheduled sessions [by 강사 / on 주제 / in 장소]."</div>
+              <div class="formula-ko">네, [해당 조건]에 예정된 세션은 2개가 있습니다.</div>
+              <div class="formula-ext">침묵 없이 서두를 뗀 뒤 First, ~, Second, ~ 로 전개</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">P4-3</span>
+              <div class="formula-topic">일시 및 시작 시간 안내</div>
+              <div class="formula-en">"It is scheduled to start at [시간] on [날짜]."</div>
+              <div class="formula-ko">[날짜] [시간]에 시작하기로 예정되어 있습니다.</div>
+              <div class="formula-ext">변형: "It will take place from [시작시간] to [종료시간]."</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">P4-4</span>
+              <div class="formula-topic">장소 및 위치 안내</div>
+              <div class="formula-en">"It will be held at [장소/방 이름] on the [층수] floor."</div>
+              <div class="formula-ko">[층수]층에 있는 [장소/방 이름]에서 열릴 예정입니다.</div>
+              <div class="formula-ext">적용: 회의실 번호(Room 201), 메인 홀(Main Hall), 컨퍼런스 룸</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">P4-5</span>
+              <div class="formula-topic">비용 및 참가비 안내</div>
+              <div class="formula-en">"The registration fee is [금액] per person."</div>
+              <div class="formula-ko">등록비는 1인당 [금액]입니다.</div>
+              <div class="formula-ext">변형: "Admission is free for all registered members." (무료인 경우)</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">P4-6</span>
+              <div class="formula-topic">발표자 / 강연자 소개</div>
+              <div class="formula-en">"[이름], who is [직책/소속], will give a lecture / presentation on [주제]."</div>
+              <div class="formula-ko">[소속]의 [이름]님이 [주제]에 대해 강연/발표할 예정입니다.</div>
+              <div class="formula-ext">표의 Speaker 열과 Topic 열을 한 번에 엮는 최고급 구문</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">P4-7</span>
+              <div class="formula-topic">취소선 및 변경 사항 대처</div>
+              <div class="formula-en">"The session on [주제] has been cancelled due to [사유]."</div>
+              <div class="formula-ko">[주제] 세션은 [사유]로 인해 취소되었습니다.</div>
+              <div class="formula-ext">표에 취소선(Strike-through)이 그어져 있거나 별표(*)가 있을 때 사용</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">P4-8</span>
+              <div class="formula-topic">추가 요청 / 제공 여부 확인</div>
+              <div class="formula-en">"Yes, [제공내역, e.g. lunch / parking] will be provided for free."</div>
+              <div class="formula-ko">네, [점심/주차]는 무료로 제공됩니다.</div>
+              <div class="formula-ext">표 하단 비고란(Notes)의 무료 제공 사항 물어볼 때 사용</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer-bar">
+        <button id="modalConfirmBtn" class="glass-action-btn">
+          확인하고 계속 연습하기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
