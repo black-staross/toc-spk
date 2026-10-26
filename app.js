@@ -1,19 +1,20 @@
 /**
- * TOEIC Speaking Part 3 & Part 4 Master Trainer - Apple Glass Edition
+ * TOEIC Speaking Master Trainer (Part 2, Part 3, Part 4) - Apple Glass Edition
  * Exclusively powered by 'Daniel' Voice (British English Male)
  * Real Exam Environment:
- * - Hidden Korean Question Translations (Revealed ONLY with Model Answers)
- * - Book Bookmark Tabs (Part 3 & Part 4)
- * - 16 Part 3 Themes & 8 Part 4 Table Sets Fully Selectable
- * - Inline Speaker Button (🔊) right next to each sentence
- * - Question + Answer Combined Vocabulary with IPA & Pronunciation
- * - In-depth Grammar & Sentence Structure Analysis (e.g., 'was about two weeks ago' breakdown)
+ * - PART 2: Photo Description (Q3 & Q4) with 45s Prep / 30s Speaking & Scene Visuals
+ * - PART 3: Daily Life Questions (Q5~Q7) with 16 Themes & 15 Magic Formulas
+ * - PART 4: Provided Schedule/Document Tables (Q8~Q10) with 45s Reading Timer & Q9 Error Correction
+ * - Hidden Korean Question/Photo Translations (Revealed ONLY with Model Answers)
+ * - Sentence-level 🔊 audio button right next to each line
+ * - Combined Question + Answer Vocabulary & Deep Grammar Breakdown
  */
 
 class ToeicTrainerApp {
   constructor() {
-    this.currentPart = 'part3'; // 'part3' | 'part4'
+    this.currentPart = 'part3'; // 'part2' | 'part3' | 'part4'
     this.rawData = null;
+    this.part2Questions = [];
     this.part3Questions = [];
     this.part4Questions = [];
     this.currentQuestionsList = [];
@@ -28,7 +29,7 @@ class ToeicTrainerApp {
     this.activeAudioBtn = null;
     this.danielVoice = null;
 
-    // Standard Question Timer State (3s Prep -> 15s/30s Answer)
+    // Exam Timer State (Prep -> Response)
     this.timerInterval = null;
     this.timerPhase = 'idle'; // 'idle' | 'prep' | 'response'
     this.timeLeft = 0;
@@ -49,7 +50,8 @@ class ToeicTrainerApp {
   }
 
   initElements() {
-    // Bookmark Tabs
+    // Bookmark Tabs (Part 2, Part 3, Part 4)
+    this.tabPart2 = document.getElementById('tabPart2');
     this.tabPart3 = document.getElementById('tabPart3');
     this.tabPart4 = document.getElementById('tabPart4');
 
@@ -78,7 +80,18 @@ class ToeicTrainerApp {
     this.cardTimeBadge = document.getElementById('cardTimeBadge');
     this.cardPatternBadge = document.getElementById('cardPatternBadge');
 
+    // ==========================================
+    // Part 2 Photo Section Elements
+    // ==========================================
+    this.part2PhotoArea = document.getElementById('part2PhotoArea');
+    this.p2SceneTag = document.getElementById('p2SceneTag');
+    this.p2LocationTag = document.getElementById('p2LocationTag');
+    this.p2PhotoCanvas = document.getElementById('p2PhotoCanvas');
+    this.p2SceneElements = document.getElementById('p2SceneElements');
+
+    // ==========================================
     // Part 4 Document & Schedule Table
+    // ==========================================
     this.part4DocumentArea = document.getElementById('part4DocumentArea');
     this.p4ReadTimerBtn = document.getElementById('p4ReadTimerBtn');
     this.p4ReadTimerLabel = document.getElementById('p4ReadTimerLabel');
@@ -95,7 +108,10 @@ class ToeicTrainerApp {
     this.p4ContextText = document.getElementById('p4ContextText');
     this.p4ContextKr = document.getElementById('p4ContextKr');
 
-    // Question Section
+    // Question Section (Part 3 & Part 4 text questions)
+    this.questionBoxSection = document.getElementById('questionBoxSection');
+    this.qBoxTag = document.getElementById('qBoxTag');
+    this.qBoxExamNote = document.getElementById('qBoxExamNote');
     this.questionText = document.getElementById('questionText');
     this.qSpeakNormalBtn = document.getElementById('qSpeakNormalBtn');
     this.qSpeakSlowBtn = document.getElementById('qSpeakSlowBtn');
@@ -115,8 +131,9 @@ class ToeicTrainerApp {
     this.toggleText = document.getElementById('toggleText');
     this.answerSection = document.getElementById('answerSection');
 
-    // Revealed Question Translation Box (Inside Answer Section)
+    // Revealed Question/Photo Translation Box (Inside Answer Section)
     this.qTranslationBox = document.getElementById('qTranslationBox');
+    this.qTransBadge = document.getElementById('qTransBadge');
     this.answerQuestionKo = document.getElementById('answerQuestionKo');
 
     // Answer Section Elements
@@ -135,18 +152,21 @@ class ToeicTrainerApp {
     this.aSpeakSlowBtn = document.getElementById('aSpeakSlowBtn');
     this.aSpeakStopBtn = document.getElementById('aSpeakStopBtn');
 
-    // Modal & Modal Tabs
+    // Modal & Modal Tabs (Part 2, Part 3, Part 4)
     this.cheatSheetModal = document.getElementById('cheatSheetModal');
     this.closeModalBtn = document.getElementById('closeModalBtn');
     this.modalConfirmBtn = document.getElementById('modalConfirmBtn');
+    this.modalTabP2 = document.getElementById('modalTabP2');
     this.modalTabP3 = document.getElementById('modalTabP3');
     this.modalTabP4 = document.getElementById('modalTabP4');
+    this.modalP2Content = document.getElementById('modalP2Content');
     this.modalP3Content = document.getElementById('modalP3Content');
     this.modalP4Content = document.getElementById('modalP4Content');
   }
 
   bindEvents() {
     // Bookmark Tabs Switching
+    this.tabPart2.addEventListener('click', () => this.switchPart('part2'));
     this.tabPart3.addEventListener('click', () => this.switchPart('part3'));
     this.tabPart4.addEventListener('click', () => this.switchPart('part4'));
 
@@ -171,7 +191,7 @@ class ToeicTrainerApp {
     // Daniel Voice Preview
     this.voiceTestBtn.addEventListener('click', () => this.testDanielVoice());
 
-    // Exam Standard Timer (3s Prep -> Answer)
+    // Exam Standard Timer
     this.startTimerBtn.addEventListener('click', () => this.handleTimerStart());
     this.resetTimerBtn.addEventListener('click', () => this.resetTimer());
     this.examModeToggleBtn.addEventListener('click', () => this.toggleExamMode());
@@ -189,6 +209,7 @@ class ToeicTrainerApp {
     });
 
     // Modal Part Tabs
+    this.modalTabP2.addEventListener('click', () => this.switchModalTab('part2'));
     this.modalTabP3.addEventListener('click', () => this.switchModalTab('part3'));
     this.modalTabP4.addEventListener('click', () => this.switchModalTab('part4'));
 
@@ -209,23 +230,26 @@ class ToeicTrainerApp {
     const voices = window.speechSynthesis.getVoices();
     if (!voices || voices.length === 0) return;
 
-    // 1. Explicitly match Daniel (UK Male)
     const daniel = voices.find(v => v.name.toLowerCase().includes('daniel'));
     if (daniel) {
       this.danielVoice = daniel;
       return;
     }
 
-    // 2. Fallback to another clean English male voice
     const fallbackMale = voices.find(v => (v.name.includes('Eddy') || v.name.includes('Reed') || v.name.includes('Alex')) && v.lang.startsWith('en'));
     this.danielVoice = fallbackMale || voices.find(v => v.lang.startsWith('en')) || voices[0];
   }
 
   testDanielVoice() {
     this.stopSpeaking();
-    const testText = this.currentPart === 'part3'
-      ? "Hello! I am Daniel. Ready to practice TOEIC Speaking Part 3 with Jenny's magic sentences?"
-      : "Hello! I am Daniel. Let's analyze the schedule and answer Part 4 questions with confidence!";
+    let testText = "Hello! I am Daniel, your dedicated British voice coach.";
+    if (this.currentPart === 'part2') {
+      testText = "Hello! Let's describe this picture step by step using Jenny's 4-step formula!";
+    } else if (this.currentPart === 'part3') {
+      testText = "Hello! Ready to practice TOEIC Speaking Part 3 with Jenny's magic sentences?";
+    } else {
+      testText = "Hello! Let's analyze the schedule and answer Part 4 questions with confidence!";
+    }
     this.speakRawText(testText, 1.0, this.voiceTestBtn);
   }
 
@@ -251,7 +275,20 @@ class ToeicTrainerApp {
   }
 
   processData() {
-    // 1. Process Part 3 Questions with ID normalization
+    // 1. Process Part 2 Photo Questions
+    if (this.rawData.part2) {
+      this.part2Questions = this.rawData.part2.map(q => ({
+        ...q,
+        part: 'part2',
+        setId: q.setId || q.setNumber || 1,
+        setNumber: q.setId || q.setNumber || 1,
+        qNumber: q.qNumber || q.questionNumber || 'Question 3 / 4',
+        prepTime: q.prepTime || 45,
+        responseTime: q.responseTime || 30
+      }));
+    }
+
+    // 2. Process Part 3 Questions with ID normalization
     if (this.rawData.part3) {
       this.part3Questions = this.rawData.part3.map(q => {
         const sid = q.setId || q.setNumber || 1;
@@ -267,7 +304,7 @@ class ToeicTrainerApp {
       });
     }
 
-    // 2. Process Part 4 Sets into individual questions
+    // 3. Process Part 4 Sets into individual questions
     if (this.rawData.part4) {
       const flattenedP4 = [];
       this.rawData.part4.forEach(setObj => {
@@ -295,7 +332,7 @@ class ToeicTrainerApp {
   }
 
   // ==========================================
-  // Switch Bookmark: Part 3 ↔ Part 4
+  // Switch Bookmark: Part 2 ↔ Part 3 ↔ Part 4
   // ==========================================
   switchPart(partName) {
     this.currentPart = partName;
@@ -304,10 +341,26 @@ class ToeicTrainerApp {
     this.stopP4ReadTimer();
     this.hideAnswer();
 
-    if (partName === 'part3') {
-      this.tabPart3.classList.add('active');
-      this.tabPart4.classList.remove('active');
+    // Reset Bookmark Tabs active state
+    this.tabPart2.classList.toggle('active', partName === 'part2');
+    this.tabPart3.classList.toggle('active', partName === 'part3');
+    this.tabPart4.classList.toggle('active', partName === 'part4');
 
+    if (partName === 'part2') {
+      this.appTitlePart.textContent = 'Part 2 실전 트레이너';
+      this.appTagline.textContent = '사진 묘사하기 (Q3~Q4) · 45초 준비 / 30초 답변 · 시계토끼 4단계 만능공식';
+      this.headerTargetText.textContent = 'Target: 120 ~ 140점 (IM3 - IH) · 파트 2 실전 수험서';
+      this.cardPartBadge.textContent = 'PART 2';
+      this.cardPartBadge.style.background = 'rgba(52, 199, 89, 0.15)';
+      this.cardPartBadge.style.color = '#1b7a36';
+
+      this.part2PhotoArea.style.display = 'flex';
+      this.part4DocumentArea.style.display = 'none';
+      this.questionBoxSection.style.display = 'none'; // Part 2 uses photo frame as the main question view
+
+      this.currentQuestionsList = this.part2Questions;
+      this.populateFilterOptions('part2');
+    } else if (partName === 'part3') {
       this.appTitlePart.textContent = 'Part 3 실전 트레이너';
       this.appTagline.textContent = '일상 질문 답하기 (Q5~Q7) · 시계토끼 15대 만능문장 · 문법 분석 & 단어장 완비';
       this.headerTargetText.textContent = 'Target: 120 ~ 140점 (IM3 - IH) · 파트 3 실전 수험서';
@@ -315,13 +368,13 @@ class ToeicTrainerApp {
       this.cardPartBadge.style.background = 'rgba(0, 113, 227, 0.12)';
       this.cardPartBadge.style.color = 'var(--apple-blue)';
 
+      this.part2PhotoArea.style.display = 'none';
       this.part4DocumentArea.style.display = 'none';
+      this.questionBoxSection.style.display = 'flex';
+
       this.currentQuestionsList = this.part3Questions;
       this.populateFilterOptions('part3');
     } else {
-      this.tabPart4.classList.add('active');
-      this.tabPart3.classList.remove('active');
-
       this.appTitlePart.textContent = 'Part 4 실전 트레이너';
       this.appTagline.textContent = '제공된 정보(표/일정표) 보고 답하기 (Q8~Q10) · 45초 표 읽기 실전 훈련 · 오류정정 만능공식';
       this.headerTargetText.textContent = 'Target: 120 ~ 140점 (IM3 - IH) · 파트 4 실전 수험서';
@@ -329,7 +382,10 @@ class ToeicTrainerApp {
       this.cardPartBadge.style.background = 'rgba(175, 82, 222, 0.12)';
       this.cardPartBadge.style.color = 'var(--apple-purple)';
 
+      this.part2PhotoArea.style.display = 'none';
       this.part4DocumentArea.style.display = 'flex';
+      this.questionBoxSection.style.display = 'flex';
+
       this.currentQuestionsList = this.part4Questions;
       this.populateFilterOptions('part4');
     }
@@ -340,19 +396,31 @@ class ToeicTrainerApp {
   }
 
   // ==========================================
-  // Populate Filter: 16 Part 3 Themes & 8 Part 4 Sets
+  // Populate Filter: 14 Part 2 Scenes, 16 Part 3 Themes, 8 Part 4 Sets
   // ==========================================
   populateFilterOptions(part) {
     this.setFilter.innerHTML = '';
 
-    if (part === 'part3') {
+    if (part === 'part2') {
+      this.filterLabel.textContent = '사진 세트 (14개 대표 기출 씬 전체 선택):';
+      const allOpt = document.createElement('option');
+      allOpt.value = 'all';
+      allOpt.textContent = `🖼️ 전체 14세트 (Set 1 ~ 14)`;
+      this.setFilter.appendChild(allOpt);
+
+      this.part2Questions.forEach(q => {
+        const opt = document.createElement('option');
+        opt.value = String(q.setId || q.setNumber);
+        opt.textContent = q.setTitle;
+        this.setFilter.appendChild(opt);
+      });
+    } else if (part === 'part3') {
       this.filterLabel.textContent = '주제 세트 (16개 테마 전체 선택):';
       const allOpt = document.createElement('option');
       allOpt.value = 'all';
       allOpt.textContent = `📚 전체 48문항 (Set 1 ~ 16)`;
       this.setFilter.appendChild(allOpt);
 
-      // Collect all 16 unique sets
       const setsMap = new Map();
       this.part3Questions.forEach(q => {
         const sid = q.setId || q.setNumber;
@@ -361,7 +429,6 @@ class ToeicTrainerApp {
         }
       });
 
-      // Sort by numerical Set ID (1..16)
       const sortedKeys = Array.from(setsMap.keys()).sort((a, b) => Number(a) - Number(b));
       sortedKeys.forEach(sid => {
         const opt = document.createElement('option');
@@ -427,19 +494,25 @@ class ToeicTrainerApp {
     // Badges
     this.cardSetBadge.textContent = `Set ${q.setId || q.setNumber}`;
     this.cardQNumBadge.textContent = q.qNumber || q.questionNumber;
-    this.cardTimeBadge.textContent = `답변 ${q.responseTime}초`;
-    this.cardPatternBadge.textContent = q.keyPattern || (this.currentPart === 'part3' ? '의문사 공식' : '표 정보 전달');
+    this.cardTimeBadge.textContent = this.currentPart === 'part2' ? `준비 45초 / 답변 30초` : `답변 ${q.responseTime}초`;
+    this.cardPatternBadge.textContent = q.keyPattern || (this.currentPart === 'part2' ? '장소/인물/사물 4단계 공식' : (this.currentPart === 'part3' ? '의문사 공식' : '표 정보 전달'));
 
-    // Render Part 4 Table if in Part 4 Mode
-    if (this.currentPart === 'part4' && q.table) {
+    // Render Part 2 Photo Scene if in Part 2 Mode
+    if (this.currentPart === 'part2') {
+      this.renderPart2Photo(q);
+      this.qTransBadge.textContent = '💡 사진 한국어 상황 상세 묘사';
+      this.answerQuestionKo.textContent = q.photoDescriptionKr || q.questionTranslation || '';
+    } else if (this.currentPart === 'part4' && q.table) {
       this.renderPart4Table(q);
+      this.qTransBadge.textContent = '💡 질문 한국어 해석';
+      this.renderFormattedQuestion(q);
+      this.answerQuestionKo.textContent = q.questionTranslation || '';
+    } else {
+      // Part 3
+      this.qTransBadge.textContent = '💡 질문 한국어 해석';
+      this.renderFormattedQuestion(q);
+      this.answerQuestionKo.textContent = q.questionTranslation || '';
     }
-
-    // Render English Question Only (Real Exam Mode: No Korean here)
-    this.renderFormattedQuestion(q);
-
-    // Stash Hidden Korean Translation for Model Answer reveal
-    this.answerQuestionKo.textContent = q.questionTranslation || '';
 
     // Render Model Answer Components
     this.renderStructuredAnswer(q);
@@ -450,13 +523,64 @@ class ToeicTrainerApp {
 
     // Hide answer section by default on question change
     this.hideAnswer();
+    this.resetTimer();
+  }
+
+  // ==========================================
+  // Part 2 Photo Scene Visual Rendering
+  // ==========================================
+  renderPart2Photo(q) {
+    const scene = q.photoScene || {};
+    this.p2SceneTag.textContent = `📸 EXAM PHOTO SCENE #${q.setId || q.setNumber}: ${scene.category || '기출 사진'}`;
+    this.p2LocationTag.textContent = `Location: ${scene.locationEn || 'in the picture'}`;
+
+    // Scene icon mapping
+    const iconMap = {
+      grocery: '🛒',
+      retail: '🛍️',
+      checkout: '💳',
+      hotel: '🏨',
+      restaurant: '🍷',
+      cafe: '🍰',
+      outdoor: '🌳',
+      park: '🦆',
+      library: '📚',
+      classroom: '👨‍🏫',
+      office: '💼',
+      devices: '💻',
+      market: '📷',
+      busycafe: '☕'
+    };
+
+    const sceneIcon = iconMap[scene.visualSvg] || '📸';
+
+    // Rich visual illustration card
+    this.p2PhotoCanvas.innerHTML = `
+      <div class="scene-artwork">
+        <div class="scene-icon-hero">${sceneIcon}</div>
+        <div class="scene-title-overlay">${q.setTitle}</div>
+        <p class="scene-desc-overlay">※ 실제 시험 화면: 사진을 자세히 분석하고 4단계 만능 공식(장소 ➡️ 중심인물 ➡️ 주변/사물 ➡️ 총평)으로 묘사하세요.</p>
+        <div class="scene-elements-badges">
+          ${(scene.tags || []).map(t => `<span class="scene-elem-chip">🏷️ ${t}</span>`).join('')}
+        </div>
+      </div>
+    `;
+
+    // Key scene elements breakdown
+    this.p2SceneElements.innerHTML = '';
+    const tags = scene.tags || [];
+    tags.forEach(tag => {
+      const pill = document.createElement('div');
+      pill.className = 'p2-key-element-pill';
+      pill.innerHTML = `<strong>POINT:</strong> <span>${tag}</span>`;
+      this.p2SceneElements.appendChild(pill);
+    });
   }
 
   renderPart4Table(q) {
     const table = q.table;
     this.p4TableHeaderTitle.textContent = table.headerTitle || 'Schedule / Document';
 
-    // Meta Info Pills (Date, Location, Fee, etc.)
     this.p4TableMetaWrap.innerHTML = '';
     if (table.metaInfo && table.metaInfo.length > 0) {
       table.metaInfo.forEach(item => {
@@ -467,15 +591,12 @@ class ToeicTrainerApp {
       });
     }
 
-    // Dynamic Table Headers & Rows
     if (table.rows && table.rows.length > 0) {
       const firstRow = table.rows[0];
       const keys = Object.keys(firstRow);
 
-      // Render Head
       this.p4TableHead.innerHTML = `<tr>${keys.map(k => `<th>${this.formatTableColumnName(k)}</th>`).join('')}</tr>`;
 
-      // Render Body
       this.p4TableBody.innerHTML = table.rows.map(row => {
         const isCancelled = row.isCancelled || (row.activity && row.activity.includes('CANCELLED'));
         const rowStyle = isCancelled ? 'style="text-decoration: line-through; opacity: 0.6;"' : '';
@@ -486,7 +607,6 @@ class ToeicTrainerApp {
       this.p4TableBody.innerHTML = '';
     }
 
-    // Context Banner
     if (q.context) {
       this.p4ContextBanner.style.display = 'flex';
       this.p4ContextText.textContent = q.context;
@@ -563,7 +683,6 @@ class ToeicTrainerApp {
         </div>
       `;
 
-      // Inline Speaker Click Event
       const speakerBtn = row.querySelector('.btn-sentence-speaker');
       speakerBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -575,7 +694,7 @@ class ToeicTrainerApp {
   }
 
   // ==========================================
-  // Render Vocabulary (Question + Answer Combined)
+  // Render Vocabulary (Question/Photo + Answer Combined)
   // ==========================================
   renderVocabulary(q) {
     this.vocabChipsGrid.innerHTML = '';
@@ -592,9 +711,9 @@ class ToeicTrainerApp {
       const chip = document.createElement('div');
       chip.className = 'vocab-chip';
 
-      const isQuestionSource = item.source && item.source.includes('문제');
+      const isQuestionSource = item.source && (item.source.includes('문제') || item.source.includes('사진'));
       const sourceBadgeClass = isQuestionSource ? 'source-q' : 'source-a';
-      const sourceBadgeText = item.source || '어휘';
+      const sourceBadgeText = item.source || (this.currentPart === 'part2' ? '사진 필수' : '문제 필수');
 
       chip.innerHTML = `
         <div class="vocab-top">
@@ -690,7 +809,6 @@ class ToeicTrainerApp {
     this.p4ReadCountdown.textContent = '45';
     this.p4ReadBarFill.style.width = '100%';
 
-    // Voice Announcement
     this.speakRawText("You will have 45 seconds to read the schedule.", 1.0);
 
     this.p4ReadTimerInterval = setInterval(() => {
@@ -707,7 +825,6 @@ class ToeicTrainerApp {
         this.p4ReadTimerLabel.textContent = '45초 표 읽기 실전 타이머';
         this.p4ReadProgressBarWrap.style.display = 'none';
 
-        // Play Beep & Voice Prompt
         this.playBeep(880, 0.4);
         setTimeout(() => {
           this.speakRawText("45 seconds are up. Now answer Question 8.", 1.0);
@@ -728,7 +845,7 @@ class ToeicTrainerApp {
   }
 
   // ==========================================
-  // Standard Question Timer (3s Prep -> 15s/30s Response)
+  // Standard Question Timer (Part 2: 45s->30s / Part 3,4: 3s->15s/30s)
   // ==========================================
   handleTimerStart() {
     if (this.timerPhase !== 'idle') {
@@ -737,13 +854,17 @@ class ToeicTrainerApp {
     }
 
     const q = this.filteredQuestions[this.currentIndex];
-    const prepSeconds = q.prepTime || 3;
-    const responseSeconds = q.responseTime || 15;
+    const prepSeconds = q.prepTime || (this.currentPart === 'part2' ? 45 : 3);
+    const responseSeconds = q.responseTime || (this.currentPart === 'part2' ? 30 : 15);
 
     this.startTimerPhase('prep', prepSeconds, () => {
       this.playBeep(880, 0.35);
 
       setTimeout(() => {
+        if (this.currentPart === 'part2') {
+          this.speakRawText("Begin speaking now.", 1.0);
+        }
+
         this.startTimerPhase('response', responseSeconds, () => {
           this.playBeep(440, 0.2);
           setTimeout(() => this.playBeep(440, 0.3), 250);
@@ -762,7 +883,7 @@ class ToeicTrainerApp {
     this.totalPhaseDuration = duration;
 
     if (phase === 'prep') {
-      this.timerPhaseBadge.textContent = '준비 시간 (3초)';
+      this.timerPhaseBadge.textContent = `준비 시간 (${duration}초)`;
       this.timerPhaseBadge.className = 'timer-phase-badge prep';
       this.startTimerBtn.textContent = '⏸️ 준비 중...';
       this.startTimerBtn.classList.add('active-prep');
@@ -805,14 +926,19 @@ class ToeicTrainerApp {
       this.timerInterval = null;
     }
     this.timerPhase = 'idle';
-    this.timeLeft = 3;
-    this.totalPhaseDuration = 3;
+
+    const q = this.filteredQuestions[this.currentIndex];
+    const defaultPrep = q ? (q.prepTime || (this.currentPart === 'part2' ? 45 : 3)) : (this.currentPart === 'part2' ? 45 : 3);
+    const defaultResp = q ? (q.responseTime || 30) : 30;
+
+    this.timeLeft = defaultPrep;
+    this.totalPhaseDuration = defaultPrep;
 
     this.timerPhaseBadge.textContent = '준비 시간';
     this.timerPhaseBadge.className = 'timer-phase-badge prep';
-    this.timerCountdown.textContent = '3';
+    this.timerCountdown.textContent = String(defaultPrep);
     this.timerProgressFill.style.width = '100%';
-    this.startTimerBtn.textContent = '▶️ 실전 카운트다운 시작 (3초 ➡️ 답변)';
+    this.startTimerBtn.textContent = `▶️ 실전 카운트다운 시작 (${defaultPrep}초 ➡️ ${defaultResp}초 답변)`;
     this.startTimerBtn.className = 'btn-timer-glow play';
     this.resetTimerBtn.style.display = 'none';
   }
@@ -853,7 +979,7 @@ class ToeicTrainerApp {
   }
 
   // ==========================================
-  // Model Answer & Hidden Question Translation Toggle
+  // Model Answer & Hidden Question/Photo Translation Toggle
   // ==========================================
   toggleAnswer() {
     if (this.isAnswerVisible) {
@@ -888,7 +1014,10 @@ class ToeicTrainerApp {
   speakQuestion(rate = 1.0, btnElement = null) {
     const q = this.filteredQuestions[this.currentIndex];
     if (!q) return;
-    this.speakRawText(q.question, rate, btnElement);
+    const textToSpeak = this.currentPart === 'part2'
+      ? "In this part of the test, you will describe the picture on your screen in as much detail as you can. You will have 45 seconds to prepare your response. Then you will have 30 seconds to speak about the picture."
+      : q.question;
+    this.speakRawText(textToSpeak, rate, btnElement);
   }
 
   speakFullAnswer(rate = 1.0, btnElement = null) {
@@ -993,7 +1122,7 @@ class ToeicTrainerApp {
   }
 
   // ==========================================
-  // Cheat Sheet Modal & Internal Tab Switch
+  // Cheat Sheet Modal & Internal Tab Switch (Part 2, 3, 4)
   // ==========================================
   openModal() {
     this.stopSpeaking();
@@ -1009,17 +1138,13 @@ class ToeicTrainerApp {
   }
 
   switchModalTab(part) {
-    if (part === 'part3') {
-      this.modalTabP3.classList.add('active');
-      this.modalTabP4.classList.remove('active');
-      this.modalP3Content.style.display = 'block';
-      this.modalP4Content.style.display = 'none';
-    } else {
-      this.modalTabP4.classList.add('active');
-      this.modalTabP3.classList.remove('active');
-      this.modalP4Content.style.display = 'block';
-      this.modalP3Content.style.display = 'none';
-    }
+    this.modalTabP2.classList.toggle('active', part === 'part2');
+    this.modalTabP3.classList.toggle('active', part === 'part3');
+    this.modalTabP4.classList.toggle('active', part === 'part4');
+
+    this.modalP2Content.style.display = part === 'part2' ? 'block' : 'none';
+    this.modalP3Content.style.display = part === 'part3' ? 'block' : 'none';
+    this.modalP4Content.style.display = part === 'part4' ? 'block' : 'none';
   }
 
   // ==========================================

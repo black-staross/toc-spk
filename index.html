@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>토익스피킹 파트 3 & 4 마스터 북 | Apple Glass Edition</title>
-  <meta name="description" content="토익스피킹 파트 3 & 파트 4 120~140점(IM3~IH) 완벽 대비 웹북. 책갈피 탭 분할, 실제 시험 환경 질문 해석 숨김, 표 기반 파트 4 및 45초 읽기 타이머, Daniel 전담 음성, 만능문장 족보 탑재.">
+  <title>토익스피킹 파트 2, 3, 4 마스터 북 | Apple Glass Edition</title>
+  <meta name="description" content="토익스피킹 파트 2, 파트 3, 파트 4 120~140점(IM3~IH) 완벽 대비 웹북. 사진 묘사 파트 2 신규 탑재, 책갈피 탭 분할, 실제 시험 환경 질문해석 숨김, 45초/30초 실전 타이머, Daniel 전담 음성.">
   <!-- Google Fonts: Pretendard & Inter (Medium / SemiBold 600) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,9 +20,19 @@
   <div class="app-container">
     
     <!-- ==========================================
-         TOP BOOKMARK TABS (책갈피 북마크 리본 바)
+         TOP BOOKMARK TABS (책갈피 북마크 리본 바: PART 2, 3, 4)
          ========================================== -->
     <nav class="book-bookmarks-bar" aria-label="파트 선택 책갈피">
+      <button id="tabPart2" class="bookmark-tab" data-part="part2" title="Part 2: 사진 묘사하기로 이동">
+        <div class="bookmark-ribbon-tip"></div>
+        <span class="bookmark-icon">🖼️</span>
+        <div class="bookmark-text-wrap">
+          <span class="bookmark-title">PART 2 책갈피</span>
+          <span class="bookmark-desc">사진 묘사하기 (Q3 & Q4)</span>
+        </div>
+        <span class="bookmark-badge">14세트 (기출 사진)</span>
+      </button>
+
       <button id="tabPart3" class="bookmark-tab active" data-part="part3" title="Part 3: 일상 질문 답하기로 이동">
         <div class="bookmark-ribbon-tip"></div>
         <span class="bookmark-icon">🔖</span>
@@ -57,7 +67,7 @@
             <span id="appTitlePart">Part 3 실전 트레이너</span>
           </h1>
           <p class="app-tagline" id="appTagline">
-            책갈피 탭 전환 · 실전 환경 문제해석 숨김(답안 토글 시 표시) · Daniel 영국 남성 음성 · 만능문장 족보
+            파트 2/3/4 책갈피 전환 · 실전 환경 문제해석 숨김 · Daniel 영국 남성 음성 · 문법 분석 & 만능문장 족보
           </p>
         </div>
 
@@ -91,7 +101,7 @@
     <!-- Navigation & Filter Toolbar -->
     <nav class="glass-toolbar">
       <div class="toolbar-left">
-        <label for="setFilter" class="filter-label" id="filterLabel">주제 세트 선택:</label>
+        <label for="setFilter" class="filter-label" id="filterLabel">주제 세트 (16개 테마 전체 선택):</label>
         <select id="setFilter" class="glass-select set-select">
           <!-- Dynamically populated based on active part -->
         </select>
@@ -142,6 +152,39 @@
             <span id="cardPatternBadge" class="pill pill-pattern">의문사 공식</span>
           </div>
         </div>
+
+        <!-- ==========================================
+             PART 2 PICTURE / PHOTO VIEW CONTAINER
+             (Visible ONLY in Part 2 Mode)
+             ========================================== -->
+        <section id="part2PhotoArea" class="part2-photo-container" style="display: none;">
+          <div class="photo-directions-banner">
+            <div class="directions-left">
+              <span class="directions-badge p2-badge">DIRECTIONS</span>
+              <span class="directions-text">
+                In this part, you will describe the picture on your screen in as much detail as you can. You will have <strong>45 seconds</strong> to prepare, then <strong>30 seconds</strong> to speak. (Questions 3-4)
+              </span>
+            </div>
+          </div>
+
+          <!-- Frosted Photo Frame View -->
+          <div class="photo-display-frame">
+            <div class="photo-frame-top">
+              <span class="photo-scene-badge" id="p2SceneTag">📸 EXAM PHOTO #1: 식료품점/마트</span>
+              <span class="photo-location-tag" id="p2LocationTag">Location: at a grocery store</span>
+            </div>
+            
+            <!-- Dynamic Illustrated Scene Canvas -->
+            <div class="photo-canvas-wrapper" id="p2PhotoCanvas">
+              <!-- Rendered via JS -->
+            </div>
+
+            <!-- Key Scene Elements Breakdown -->
+            <div class="photo-scene-elements" id="p2SceneElements">
+              <!-- Element pills injected dynamically -->
+            </div>
+          </div>
+        </section>
 
         <!-- ==========================================
              PART 4 DOCUMENT / SCHEDULE TABLE CONTAINER
@@ -210,11 +253,11 @@
         </section>
 
         <!-- Upper Section: Question (실제 시험처럼 영어 지문만 표시) -->
-        <section class="card-question-box" aria-label="질문 지문">
+        <section class="card-question-box" id="questionBoxSection" aria-label="질문 지문">
           <div class="box-title-row">
             <div class="q-title-left">
-              <span class="box-tag">QUESTION</span>
-              <span class="box-exam-note">※ 실제 시험 환경: 한글 해석은 숨겨져 있으며, 모범답안을 누르면 나타납니다.</span>
+              <span class="box-tag" id="qBoxTag">QUESTION</span>
+              <span class="box-exam-note" id="qBoxExamNote">※ 실제 시험 환경: 한글 해석은 숨겨져 있으며, 모범답안을 누르면 나타납니다.</span>
             </div>
             <div class="audio-button-cluster" id="qSpeechControls">
               <button class="audio-btn normal" id="qSpeakNormalBtn" title="Daniel 보통 속도로 듣기 (1.0x)">
@@ -239,7 +282,7 @@
           </div>
         </section>
 
-        <!-- Exam Countdown Timer Strip (3s Prep -> Beep -> 15s/30s Answer) -->
+        <!-- Exam Countdown Timer Strip (Real Exam Prep -> Answer) -->
         <section class="card-timer-strip" id="timerSection">
           <div class="timer-meta-bar">
             <span id="timerPhaseBadge" class="timer-phase-badge prep">준비 시간</span>
@@ -253,7 +296,7 @@
           </div>
           <div class="timer-btn-row">
             <button id="startTimerBtn" class="btn-timer-glow play">
-              ▶️ 실전 카운트다운 시작 (3초 ➡️ 답변)
+              ▶️ 실전 카운트다운 시작
             </button>
             <button id="resetTimerBtn" class="btn-timer-glow reset" style="display: none;">
               🔄 타이머 리셋
@@ -276,7 +319,7 @@
           <!-- Hidden Question Korean Translation (Revealed ONLY when answer is opened) -->
           <div class="q-translation-box" id="qTranslationBox">
             <div class="q-translation-header">
-              <span class="q-trans-badge">💡 질문 한국어 해석</span>
+              <span class="q-trans-badge" id="qTransBadge">💡 질문/사진 한국어 상세 해설</span>
               <span class="q-trans-sub">모범답안과 함께 매칭하여 검토하세요</span>
             </div>
             <p id="answerQuestionKo" class="q-translation-text"></p>
@@ -363,7 +406,7 @@
     </footer>
   </div>
 
-  <!-- Modal: Comprehensive Jenny's Magic Sentence Formulas (Part 3 & Part 4 Tabs) -->
+  <!-- Modal: Comprehensive Jenny's Magic Sentence Formulas (Part 2, Part 3, Part 4 Tabs) -->
   <div id="cheatSheetModal" class="glass-modal-overlay" style="display: none;">
     <div class="glass-modal-sheet">
       <div class="modal-nav">
@@ -374,8 +417,11 @@
         <button id="closeModalBtn" class="modal-close-icon" aria-label="닫기">✕</button>
       </div>
 
-      <!-- Modal Internal Part Switcher Tabs -->
+      <!-- Modal Internal Part Switcher Tabs (Part 2, Part 3, Part 4) -->
       <div class="modal-tab-row">
+        <button id="modalTabP2" class="modal-nav-tab">
+          🖼️ PART 2 사진 묘사 만능 템플릿
+        </button>
         <button id="modalTabP3" class="modal-nav-tab active">
           🔖 PART 3 만능문장 15대 공식
         </button>
@@ -386,6 +432,90 @@
 
       <div class="modal-scroll-content">
         
+        <!-- ==========================================
+             PART 2 MODAL CONTENT
+             ========================================== -->
+        <div id="modalP2Content" class="modal-part-view" style="display: none;">
+          <div class="modal-callout">
+            <strong>💡 시험장 파트 2(사진 묘사) 핵심 4단계 공식:</strong>
+            1) <strong>장소 도입:</strong> "This is a picture taken at [장소 / outdoors / indoors]."<br>
+            2) <strong>중심 인물/동작:</strong> "In the middle of the picture / On the right side, there is a [man/woman]. He/She is [동작 ~ing]."<br>
+            3) <strong>주변 인물/사물:</strong> "Next to her, there is [인물]. / In the foreground/background, I can see [사물]."<br>
+            4) <strong>마무리 총평:</strong> "Overall, it seems like they are busy / it seems like a peaceful day."
+          </div>
+
+          <div class="cheat-category-header">
+            <span class="badge-fire">🔥 파트 2 핵심 만능 템플릿</span>
+            <h3>기출 100% 커버 8대 핵심 동작 및 구도 공식</h3>
+          </div>
+
+          <div class="cheat-cards-grid">
+            <div class="formula-card">
+              <span class="formula-num">P2-1</span>
+              <div class="formula-topic">장소 도입 (Location)</div>
+              <div class="formula-en">"This is a picture taken at a [grocery store / cafe / park / restaurant / store]."</div>
+              <div class="formula-ko">이 사진은 [식료품점/카페/공원/식당/상점]에서 찍힌 사진입니다.</div>
+              <div class="formula-ext">실내/야외: "taken indoors / taken outdoors"</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">P2-2</span>
+              <div class="formula-topic">물건 집으려 손 뻗기 (초빈출 동작)</div>
+              <div class="formula-en">"He/She is reaching for an item on the shelf."</div>
+              <div class="formula-ko">그/그녀는 선반에 있는 물건을 집으려고 손을 뻗고 있습니다.</div>
+              <div class="formula-ext">마트, 서점, 옷가게, 창고 필수 표현</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">P2-3</span>
+              <div class="formula-topic">결제 및 카드 건네기 / 받기 (대칭 동작)</div>
+              <div class="formula-en">"He is handing over a credit card, and she is receiving it."</div>
+              <div class="formula-ko">남성은 신용카드를 건네주고 있고, 여성은 그것을 받고 있습니다.</div>
+              <div class="formula-ext">계산대, 프런트 데스크 필수 짝꿍 표현</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">P2-4</span>
+              <div class="formula-topic">카트 밀기 & 통화하기 (멀티태스킹)</div>
+              <div class="formula-en">"He is pushing a cart while talking on the phone."</div>
+              <div class="formula-ko">그는 전화 통화를 하면서 카트를 밀고 있습니다.</div>
+              <div class="formula-ext">동시 동작: while ~ing 구문으로 고득점 확보</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">P2-5</span>
+              <div class="formula-topic">사물 진열 및 주차 상태 (수동태 표현)</div>
+              <div class="formula-en">"Products are displayed on the shelves. / Cars are parked in the background."</div>
+              <div class="formula-ko">제품들이 선반에 진열되어 있습니다. / 배경에 차들이 주차되어 있습니다.</div>
+              <div class="formula-ext">사물 묘사 시 'be + p.p.' 수동태 활용</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">P2-6</span>
+              <div class="formula-topic">필기하기 & 전자기기 사용</div>
+              <div class="formula-en">"He is writing something down, and she is typing on a laptop."</div>
+              <div class="formula-ko">그는 무언가를 적고 있고, 그녀는 노트북으로 타이핑하고 있습니다.</div>
+              <div class="formula-ext">도서관, 사무실, 회의실 필수 표현</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">P2-7</span>
+              <div class="formula-topic">벽/창틀에 기대기 & 제스처 취하기</div>
+              <div class="formula-en">"She is leaning against the wall while making a hand gesture."</div>
+              <div class="formula-ko">그녀는 손짓을 하며 벽에 기대고 있습니다.</div>
+              <div class="formula-ext">자세 및 손동작 묘사 디테일 가산점</div>
+            </div>
+
+            <div class="formula-card">
+              <span class="formula-num">P2-8</span>
+              <div class="formula-topic">마무리 총평 (Closing Formula)</div>
+              <div class="formula-en">"Overall, it seems like they are busy. / Overall, it seems like a peaceful day."</div>
+              <div class="formula-ko">전반적으로 그들은 바빠 보입니다. / 전반적으로 평화로운 날 같습니다.</div>
+              <div class="formula-ext">남은 3초 동안 침묵 없이 자연스럽게 마무리</div>
+            </div>
+          </div>
+        </div>
+
         <!-- ==========================================
              PART 3 MODAL CONTENT
              ========================================== -->
@@ -552,7 +682,6 @@
               <div class="formula-topic">Q10 필수: 2가지 공통 세션 나열 서두</div>
               <div class="formula-en">"Sure, there are two scheduled sessions [by 강사 / on 주제 / in 장소]."</div>
               <div class="formula-ko">네, [해당 조건]에 예정된 세션은 2개가 있습니다.</div>
-              <div class="formula-ext">침묵 없이 서두를 뗀 뒤 First, ~, Second, ~ 로 전개</div>
             </div>
 
             <div class="formula-card">
@@ -560,7 +689,6 @@
               <div class="formula-topic">일시 및 시작 시간 안내</div>
               <div class="formula-en">"It is scheduled to start at [시간] on [날짜]."</div>
               <div class="formula-ko">[날짜] [시간]에 시작하기로 예정되어 있습니다.</div>
-              <div class="formula-ext">변형: "It will take place from [시작시간] to [종료시간]."</div>
             </div>
 
             <div class="formula-card">
@@ -568,7 +696,6 @@
               <div class="formula-topic">장소 및 위치 안내</div>
               <div class="formula-en">"It will be held at [장소/방 이름] on the [층수] floor."</div>
               <div class="formula-ko">[층수]층에 있는 [장소/방 이름]에서 열릴 예정입니다.</div>
-              <div class="formula-ext">적용: 회의실 번호(Room 201), 메인 홀(Main Hall), 컨퍼런스 룸</div>
             </div>
 
             <div class="formula-card">
@@ -576,7 +703,6 @@
               <div class="formula-topic">비용 및 참가비 안내</div>
               <div class="formula-en">"The registration fee is [금액] per person."</div>
               <div class="formula-ko">등록비는 1인당 [금액]입니다.</div>
-              <div class="formula-ext">변형: "Admission is free for all registered members." (무료인 경우)</div>
             </div>
 
             <div class="formula-card">
@@ -584,7 +710,6 @@
               <div class="formula-topic">발표자 / 강연자 소개</div>
               <div class="formula-en">"[이름], who is [직책/소속], will give a lecture / presentation on [주제]."</div>
               <div class="formula-ko">[소속]의 [이름]님이 [주제]에 대해 강연/발표할 예정입니다.</div>
-              <div class="formula-ext">표의 Speaker 열과 Topic 열을 한 번에 엮는 최고급 구문</div>
             </div>
 
             <div class="formula-card">
@@ -592,7 +717,6 @@
               <div class="formula-topic">취소선 및 변경 사항 대처</div>
               <div class="formula-en">"The session on [주제] has been cancelled due to [사유]."</div>
               <div class="formula-ko">[주제] 세션은 [사유]로 인해 취소되었습니다.</div>
-              <div class="formula-ext">표에 취소선(Strike-through)이 그어져 있거나 별표(*)가 있을 때 사용</div>
             </div>
 
             <div class="formula-card">
@@ -600,7 +724,6 @@
               <div class="formula-topic">추가 요청 / 제공 여부 확인</div>
               <div class="formula-en">"Yes, [제공내역, e.g. lunch / parking] will be provided for free."</div>
               <div class="formula-ko">네, [점심/주차]는 무료로 제공됩니다.</div>
-              <div class="formula-ext">표 하단 비고란(Notes)의 무료 제공 사항 물어볼 때 사용</div>
             </div>
           </div>
         </div>
