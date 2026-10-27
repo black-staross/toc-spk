@@ -2075,73 +2075,107 @@ kbd {
   color: var(--text-tertiary);
 }
 
-.photo-canvas-wrapper {
+/* ==========================================================================
+   REAL EXAM PHOTO VIEWPORT (실제 시험 실사 사진 뷰어)
+   ========================================================================== */
+.real-photo-viewport {
   width: 100%;
-  min-height: 260px;
-  background: linear-gradient(135deg, #f0f4f9 0%, #e5ecf5 100%);
+  max-width: 680px;
+  margin: 0 auto;
+  min-height: 280px;
+  max-height: 480px;
+  background: #111418;
   border-radius: var(--radius-md);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   overflow: hidden;
-  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.12);
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
-.scene-artwork {
+.p2-real-photo-image {
   width: 100%;
   height: 100%;
-  min-height: 260px;
+  max-height: 480px;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  image-rendering: -webkit-optimize-contrast;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.real-photo-viewport:hover .p2-real-photo-image {
+  transform: scale(1.025);
+}
+
+.photo-loading-spinner {
+  font-family: var(--font-family);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px 16px;
-  position: relative;
-}
-
-.scene-icon-hero {
-  font-size: 3.8rem;
-  margin-bottom: 10px;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.12));
-}
-
-.scene-title-overlay {
-  font-family: var(--font-en);
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: var(--text-primary);
+  padding: 40px;
   text-align: center;
+  animation: pulse-loading 1.4s infinite;
 }
 
-.scene-desc-overlay {
-  font-family: var(--font-family);
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  text-align: center;
-  margin-top: 4px;
-  max-width: 480px;
+@keyframes pulse-loading {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
 }
 
-.scene-elements-badges {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-top: 14px;
-}
-
-.scene-elem-chip {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: var(--radius-pill);
-  padding: 4px 10px;
-  font-size: 0.74rem;
+.photo-watermark {
+  position: absolute;
+  bottom: 12px;
+  right: 14px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #ffffff;
+  font-size: 0.72rem;
   font-weight: 700;
-  color: var(--text-primary);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  letter-spacing: 0.5px;
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Part 2 Model Answer Inside: Key Scene Points Box */
+.p2-points-liquid-card {
+  margin-top: 14px;
+  margin-bottom: 8px;
+  padding: 14px 18px;
+  background: rgba(0, 113, 227, 0.05);
+  border: 1px solid rgba(0, 113, 227, 0.22);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.p2-points-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.p2-points-icon {
+  font-size: 1.15rem;
+}
+
+.p2-points-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--apple-blue);
+  letter-spacing: -0.2px;
 }
 
 .photo-scene-elements {
@@ -2154,16 +2188,42 @@ kbd {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--glass-inner-box);
-  border: 1px solid var(--glass-border-subtle);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 113, 227, 0.2);
   border-radius: var(--radius-sm);
   padding: 6px 12px;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   color: var(--text-secondary);
 }
 
 .p2-key-element-pill strong {
   color: var(--apple-blue);
+  font-weight: 700;
+}
+
+/* Part 4 Model Answer Inside: Caller Context Translation Box */
+.p4-answer-context-kr-box {
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: rgba(52, 199, 89, 0.08);
+  border: 1px solid rgba(52, 199, 89, 0.3);
+  border-radius: var(--radius-sm);
+}
+
+.p4-ctx-subtag {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #248a3d;
+  margin-bottom: 4px;
+}
+
+.p4-ctx-text {
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  line-height: 1.55;
+  font-weight: 500;
+  margin: 0;
 }
 
 /* ==========================================================================

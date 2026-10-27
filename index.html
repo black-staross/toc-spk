@@ -30,7 +30,7 @@
           <span class="bookmark-title">PART 2 책갈피</span>
           <span class="bookmark-desc">사진 묘사하기 (Q3 & Q4)</span>
         </div>
-        <span class="bookmark-badge">14세트 (기출 사진)</span>
+        <span class="bookmark-badge">26세트 (기출 실사 사진)</span>
       </button>
 
       <button id="tabPart3" class="bookmark-tab active" data-part="part3" title="Part 3: 일상 질문 답하기로 이동">
@@ -174,14 +174,11 @@
               <span class="photo-location-tag" id="p2LocationTag">Location: at a grocery store</span>
             </div>
             
-            <!-- Dynamic Illustrated Scene Canvas -->
-            <div class="photo-canvas-wrapper" id="p2PhotoCanvas">
-              <!-- Rendered via JS -->
-            </div>
-
-            <!-- Key Scene Elements Breakdown -->
-            <div class="photo-scene-elements" id="p2SceneElements">
-              <!-- Element pills injected dynamically -->
+            <!-- Real Exam Photo Container (실제 사진 표시 뷰어) -->
+            <div class="real-photo-viewport" id="p2PhotoViewport">
+              <div class="photo-loading-spinner" id="p2PhotoSpinner">📸 고화질 실사 시험 사진 로딩 중...</div>
+              <img id="p2RealPhotoImg" class="p2-real-photo-image" src="" alt="TOEIC Speaking Part 2 Real Photo" style="display: none;">
+              <div class="photo-watermark">TOEIC Speaking Real Exam Photo (Q3~Q4)</div>
             </div>
           </div>
         </section>
@@ -240,13 +237,12 @@
               </table>
             </div>
 
-            <!-- Caller Context Banner -->
+            <!-- Caller Context Banner (실제 시험처럼 영어 발화 상황만 노출) -->
             <div id="p4ContextBanner" class="caller-context-banner">
               <span class="caller-icon">📞</span>
               <div class="caller-body">
                 <span class="caller-title">전화 문의자 / 발화 상황:</span>
                 <p id="p4ContextText" class="caller-text"></p>
-                <p id="p4ContextKr" class="caller-text-kr"></p>
               </div>
             </div>
           </div>
@@ -323,6 +319,23 @@
               <span class="q-trans-sub">모범답안과 함께 매칭하여 검토하세요</span>
             </div>
             <p id="answerQuestionKo" class="q-translation-text"></p>
+
+            <!-- PART 4 CALLER CONTEXT KOREAN TRANSLATION (Hidden inside model answer) -->
+            <div id="p4AnswerContextKrBox" class="p4-answer-context-kr-box" style="display: none;">
+              <span class="p4-ctx-subtag">📞 전화 문의자 발화 상황 한국어 해석:</span>
+              <p id="p4AnswerContextKrText" class="p4-ctx-text"></p>
+            </div>
+          </div>
+
+          <!-- PART 2 KEY SCENE POINTS CARD (Hidden inside model answer) -->
+          <div class="p2-points-liquid-card" id="p2PointsCard" style="display: none;">
+            <div class="p2-points-header">
+              <span class="p2-points-icon">🎯</span>
+              <span class="p2-points-title">사진 속 핵심 묘사 포인트 (Key Scene Points)</span>
+            </div>
+            <div class="photo-scene-elements" id="p2SceneElements">
+              <!-- Element pills injected dynamically -->
+            </div>
           </div>
 
           <div class="box-title-row">

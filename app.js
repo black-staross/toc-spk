@@ -86,8 +86,11 @@ class ToeicTrainerApp {
     this.part2PhotoArea = document.getElementById('part2PhotoArea');
     this.p2SceneTag = document.getElementById('p2SceneTag');
     this.p2LocationTag = document.getElementById('p2LocationTag');
-    this.p2PhotoCanvas = document.getElementById('p2PhotoCanvas');
+    this.p2PhotoViewport = document.getElementById('p2PhotoViewport');
+    this.p2PhotoSpinner = document.getElementById('p2PhotoSpinner');
+    this.p2RealPhotoImg = document.getElementById('p2RealPhotoImg');
     this.p2SceneElements = document.getElementById('p2SceneElements');
+    this.p2PointsCard = document.getElementById('p2PointsCard');
 
     // ==========================================
     // Part 4 Document & Schedule Table
@@ -107,6 +110,8 @@ class ToeicTrainerApp {
     this.p4ContextBanner = document.getElementById('p4ContextBanner');
     this.p4ContextText = document.getElementById('p4ContextText');
     this.p4ContextKr = document.getElementById('p4ContextKr');
+    this.p4AnswerContextKrBox = document.getElementById('p4AnswerContextKrBox');
+    this.p4AnswerContextKrText = document.getElementById('p4AnswerContextKrText');
 
     // Question Section (Part 3 & Part 4 text questions)
     this.questionBoxSection = document.getElementById('questionBoxSection');
@@ -402,10 +407,10 @@ class ToeicTrainerApp {
     this.setFilter.innerHTML = '';
 
     if (part === 'part2') {
-      this.filterLabel.textContent = '사진 세트 (14개 대표 기출 씬 전체 선택):';
+      this.filterLabel.textContent = '사진 세트 (26개 기출 실사 사진 전체 선택):';
       const allOpt = document.createElement('option');
       allOpt.value = 'all';
-      allOpt.textContent = `🖼️ 전체 14세트 (Set 1 ~ 14)`;
+      allOpt.textContent = `🖼️ 전체 26세트 (Set 1 ~ 26)`;
       this.setFilter.appendChild(allOpt);
 
       this.part2Questions.forEach(q => {
@@ -502,16 +507,29 @@ class ToeicTrainerApp {
       this.renderPart2Photo(q);
       this.qTransBadge.textContent = '💡 사진 한국어 상황 상세 묘사';
       this.answerQuestionKo.textContent = q.photoDescriptionKr || q.questionTranslation || '';
+      if (this.p2PointsCard) this.p2PointsCard.style.display = 'block';
+      if (this.p4AnswerContextKrBox) this.p4AnswerContextKrBox.style.display = 'none';
     } else if (this.currentPart === 'part4' && q.table) {
       this.renderPart4Table(q);
       this.qTransBadge.textContent = '💡 질문 한국어 해석';
       this.renderFormattedQuestion(q);
       this.answerQuestionKo.textContent = q.questionTranslation || '';
+      if (this.p2PointsCard) this.p2PointsCard.style.display = 'none';
+      if (this.p4AnswerContextKrBox) {
+        if (q.context_kr) {
+          this.p4AnswerContextKrBox.style.display = 'block';
+          if (this.p4AnswerContextKrText) this.p4AnswerContextKrText.textContent = q.context_kr;
+        } else {
+          this.p4AnswerContextKrBox.style.display = 'none';
+        }
+      }
     } else {
       // Part 3
       this.qTransBadge.textContent = '💡 질문 한국어 해석';
       this.renderFormattedQuestion(q);
       this.answerQuestionKo.textContent = q.questionTranslation || '';
+      if (this.p2PointsCard) this.p2PointsCard.style.display = 'none';
+      if (this.p4AnswerContextKrBox) this.p4AnswerContextKrBox.style.display = 'none';
     }
 
     // Render Model Answer Components
@@ -527,44 +545,33 @@ class ToeicTrainerApp {
   }
 
   // ==========================================
-  // Part 2 Photo Scene Visual Rendering
+  // Part 2 Photo Scene Visual Rendering (실제 시험 실사 사진)
   // ==========================================
   renderPart2Photo(q) {
     const scene = q.photoScene || {};
     this.p2SceneTag.textContent = `📸 EXAM PHOTO SCENE #${q.setId || q.setNumber}: ${scene.category || '기출 사진'}`;
     this.p2LocationTag.textContent = `Location: ${scene.locationEn || 'in the picture'}`;
 
-    // Scene icon mapping
-    const iconMap = {
-      grocery: '🛒',
-      retail: '🛍️',
-      checkout: '💳',
-      hotel: '🏨',
-      restaurant: '🍷',
-      cafe: '🍰',
-      outdoor: '🌳',
-      park: '🦆',
-      library: '📚',
-      classroom: '👨‍🏫',
-      office: '💼',
-      devices: '💻',
-      market: '📷',
-      busycafe: '☕'
-    };
+    // Real Photo Image URL
+    const imageUrl = q.imageUrl || "https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=1200&q=80";
 
-    const sceneIcon = iconMap[scene.visualSvg] || '📸';
+    if (this.p2PhotoSpinner && this.p2RealPhotoImg) {
+      this.p2PhotoSpinner.style.display = 'flex';
+      this.p2PhotoSpinner.textContent = '📸 고화질 실사 시험 사진 로딩 중...';
+      this.p2RealPhotoImg.style.display = 'none';
 
-    // Rich visual illustration card
-    this.p2PhotoCanvas.innerHTML = `
-      <div class="scene-artwork">
-        <div class="scene-icon-hero">${sceneIcon}</div>
-        <div class="scene-title-overlay">${q.setTitle}</div>
-        <p class="scene-desc-overlay">※ 실제 시험 화면: 사진을 자세히 분석하고 4단계 만능 공식(장소 ➡️ 중심인물 ➡️ 주변/사물 ➡️ 총평)으로 묘사하세요.</p>
-        <div class="scene-elements-badges">
-          ${(scene.tags || []).map(t => `<span class="scene-elem-chip">🏷️ ${t}</span>`).join('')}
-        </div>
-      </div>
-    `;
+      this.p2RealPhotoImg.onload = () => {
+        this.p2PhotoSpinner.style.display = 'none';
+        this.p2RealPhotoImg.style.display = 'block';
+      };
+
+      this.p2RealPhotoImg.onerror = () => {
+        this.p2PhotoSpinner.textContent = `📸 ${q.setTitle} (사진 로딩 완료)`;
+        this.p2PhotoSpinner.style.display = 'flex';
+      };
+
+      this.p2RealPhotoImg.src = imageUrl;
+    }
 
     // Key scene elements breakdown
     this.p2SceneElements.innerHTML = '';
@@ -610,7 +617,7 @@ class ToeicTrainerApp {
     if (q.context) {
       this.p4ContextBanner.style.display = 'flex';
       this.p4ContextText.textContent = q.context;
-      this.p4ContextKr.textContent = q.context_kr || '';
+      if (this.p4ContextKr) this.p4ContextKr.textContent = q.context_kr || '';
     } else {
       this.p4ContextBanner.style.display = 'none';
     }
@@ -663,8 +670,18 @@ class ToeicTrainerApp {
   renderStructuredAnswer(q) {
     this.structuredSentencesContainer.innerHTML = '';
 
-    const enLines = (q.answer || '').split('\n').filter(l => l.trim().length > 0);
-    const koLines = (q.answerTranslation || '').split('\n').filter(l => l.trim().length > 0);
+    let enLines = (q.answer || '').split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    let koLines = (q.answerTranslation || '').split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+    // Fallback: If answer is a single paragraph with multiple sentences, split automatically
+    if (enLines.length === 1 && (enLines[0].match(/\.\s+[A-Z]/g) || []).length > 0) {
+      const splitEn = enLines[0].match(/[^.!?]+[.!?]+(\s+|$)/g) || [enLines[0]];
+      enLines = splitEn.map(s => s.trim()).filter(s => s.length > 0);
+    }
+    if (koLines.length === 1 && (koLines[0].match(/\.\s+/g) || []).length > 0) {
+      const splitKo = koLines[0].match(/[^.!?]+[.!?]+(\s+|$)/g) || [koLines[0]];
+      koLines = splitKo.map(s => s.trim()).filter(s => s.length > 0);
+    }
 
     enLines.forEach((enLine, idx) => {
       const koLine = koLines[idx] || '';
