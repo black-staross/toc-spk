@@ -670,8 +670,18 @@ class ToeicTrainerApp {
   renderStructuredAnswer(q) {
     this.structuredSentencesContainer.innerHTML = '';
 
-    const enLines = (q.answer || '').split('\n').filter(l => l.trim().length > 0);
-    const koLines = (q.answerTranslation || '').split('\n').filter(l => l.trim().length > 0);
+    let enLines = (q.answer || '').split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    let koLines = (q.answerTranslation || '').split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+    // Fallback: If answer is a single paragraph with multiple sentences, split automatically
+    if (enLines.length === 1 && (enLines[0].match(/\.\s+[A-Z]/g) || []).length > 0) {
+      const splitEn = enLines[0].match(/[^.!?]+[.!?]+(\s+|$)/g) || [enLines[0]];
+      enLines = splitEn.map(s => s.trim()).filter(s => s.length > 0);
+    }
+    if (koLines.length === 1 && (koLines[0].match(/\.\s+/g) || []).length > 0) {
+      const splitKo = koLines[0].match(/[^.!?]+[.!?]+(\s+|$)/g) || [koLines[0]];
+      koLines = splitKo.map(s => s.trim()).filter(s => s.length > 0);
+    }
 
     enLines.forEach((enLine, idx) => {
       const koLine = koLines[idx] || '';
