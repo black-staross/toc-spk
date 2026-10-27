@@ -404,10 +404,10 @@ class ToeicTrainerApp {
     this.setFilter.innerHTML = '';
 
     if (part === 'part2') {
-      this.filterLabel.textContent = '사진 세트 (14개 대표 기출 씬 전체 선택):';
+      this.filterLabel.textContent = '사진 세트 (26개 기출 실사 사진 전체 선택):';
       const allOpt = document.createElement('option');
       allOpt.value = 'all';
-      allOpt.textContent = `🖼️ 전체 14세트 (Set 1 ~ 14)`;
+      allOpt.textContent = `🖼️ 전체 26세트 (Set 1 ~ 26)`;
       this.setFilter.appendChild(allOpt);
 
       this.part2Questions.forEach(q => {
