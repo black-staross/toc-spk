@@ -10,86 +10,13 @@ import {
 import { getQuestions, ApiError } from './api';
 import {
   MOCK_USER_PROFILE,
-  MOCK_PART2_QUESTIONS,
-  MOCK_PART3_QUESTIONS,
-  MOCK_PART4_SETS,
+  FULL_MASTER_QUESTIONS,
   MOCK_CHEAT_SHEETS,
 } from './mockData';
 
-/**
- * ==============================================================================
- * [Fallback Mock Data]
- * 백엔드 FastAPI 서버 미구동 상태에서도 개발/시연이 중단되지 않도록 제공되는
- * api-types.ts 규격 맞춤 Fallback Mock 데이터 세트
- * ==============================================================================
- */
-const FALLBACK_MOCK_DATA: ToeicQuestionDetailResponse[] = [
-  // Part 2 Fallback
-  ...MOCK_PART2_QUESTIONS.map((q) => ({
-    id: q.id,
-    part: 'part2' as const,
-    setId: q.setId,
-    qNumber: q.qNumber,
-    prepTime: q.prepTime,
-    responseTime: q.responseTime,
-    question: q.question,
-    questionTranslation: q.questionTranslation,
-    answer: q.answer,
-    answerTranslation: q.answerTranslation,
-    magicSentences: q.magicSentences,
-    scoreTip: q.scoreTip,
-    vocabulary: q.vocabulary,
-    grammarPoints: q.grammarPoints,
-    imageUrl: q.imageUrl,
-    photoScene: q.photoScene,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  })),
-  // Part 3 Fallback
-  ...MOCK_PART3_QUESTIONS.map((q) => ({
-    id: q.id,
-    part: 'part3' as const,
-    setId: q.setId,
-    qNumber: q.qNumber,
-    prepTime: q.prepTime,
-    responseTime: q.responseTime,
-    question: q.question,
-    questionTranslation: q.questionTranslation,
-    keyPattern: q.keyPattern,
-    answer: q.answer,
-    answerTranslation: q.answerTranslation,
-    magicSentences: q.magicSentences,
-    scoreTip: q.scoreTip,
-    vocabulary: q.vocabulary,
-    grammarPoints: q.grammarPoints,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  })),
-  // Part 4 Fallback (scheduleTable 필드 매핑)
-  ...MOCK_PART4_SETS.flatMap((set) =>
-    set.questions.map((q, idx) => ({
-      id: q.id || 300 + idx,
-      part: 'part4' as const,
-      setId: set.setNumber,
-      qNumber: q.qNumber,
-      prepTime: q.prepTime,
-      responseTime: q.responseTime,
-      question: q.question,
-      questionTranslation: q.questionTranslation,
-      answer: q.answer,
-      answerTranslation: q.answerTranslation,
-      magicSentences: q.magicSentences,
-      scoreTip: q.scoreTip,
-      vocabulary: q.vocabulary,
-      grammarPoints: q.grammarPoints,
-      scheduleTable: set.table,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }))
-  ),
-];
+// 백엔드 FastAPI 서버 미구동 상태에서도 전체 98개 문항을 완벽 학습할 수 있는 Fallback 데이터셋
+const FALLBACK_MOCK_DATA: ToeicQuestionDetailResponse[] = FULL_MASTER_QUESTIONS;
 
-// 타이머 인터페이스
 interface ExamTimerState {
   phase: 'idle' | 'prep' | 'response' | 'finished';
   timeLeft: number;
@@ -100,7 +27,7 @@ interface ExamTimerState {
 
 export const ToeicSpeakingApp: React.FC = () => {
   // ----------------------------------------------------------------------------
-  // 1. 서버 통신 및 학습 인터페이스 상태 관리
+  // 1. 상태 관리
   // ----------------------------------------------------------------------------
   const [currentPart, setCurrentPart] = useState<ToeicPart>('part3');
   const [selectedSetId, setSelectedSetId] = useState<number | 'all'>('all');
@@ -168,12 +95,10 @@ export const ToeicSpeakingApp: React.FC = () => {
     []
   );
 
-  // 파트 또는 세트 필터 변경 시 API 자동 호출
   useEffect(() => {
     if (!isUsingFallback) {
       fetchQuestionsFromApi(currentPart, selectedSetId);
     } else {
-      // 오프라인 Mock 데이터 모드일 때의 필터링
       let filtered = FALLBACK_MOCK_DATA.filter((q) => q.part === currentPart);
       if (selectedSetId !== 'all') {
         filtered = filtered.filter((q) => q.setId === selectedSetId);
@@ -184,7 +109,6 @@ export const ToeicSpeakingApp: React.FC = () => {
     }
   }, [currentPart, selectedSetId, isUsingFallback, fetchQuestionsFromApi]);
 
-  // 오프라인 Fallback Mock 데이터로 전환 핸들러
   const handleEnableFallbackMock = () => {
     setIsUsingFallback(true);
     setApiError(null);
@@ -202,12 +126,14 @@ export const ToeicSpeakingApp: React.FC = () => {
 
   const activeQuestion: ToeicQuestionDetailResponse | undefined = questions[currentIndex];
 
-  // 세트 선택 옵션 계산 (1, 2, 3...)
   const availableSetIds = useMemo(() => {
     const setSet = new Set<number>();
-    questions.forEach((q) => setSet.add(q.setId));
+    const pool = isUsingFallback
+      ? FALLBACK_MOCK_DATA.filter((q) => q.part === currentPart)
+      : questions;
+    pool.forEach((q) => setSet.add(q.setId));
     return Array.from(setSet).sort((a, b) => a - b);
-  }, [questions]);
+  }, [questions, isUsingFallback, currentPart]);
 
   // ----------------------------------------------------------------------------
   // 3. Web Speech API (TTS) 로직 (Daniel 음성 지향)
@@ -254,7 +180,7 @@ export const ToeicSpeakingApp: React.FC = () => {
   // 4. 문제 전환 및 실전 타이머
   // ----------------------------------------------------------------------------
   const resetTimer = useCallback(() => {
-    const prep = activeQuestion?.prepTime || 3;
+    const prep = activeQuestion?.prepTime || (currentPart === 'part2' ? 45 : 3);
     setTimerState({
       phase: 'idle',
       timeLeft: prep,
@@ -262,7 +188,7 @@ export const ToeicSpeakingApp: React.FC = () => {
       progressPercent: 0,
       isRunning: false,
     });
-  }, [activeQuestion]);
+  }, [activeQuestion, currentPart]);
 
   const handlePartSwitch = (part: ToeicPart) => {
     stopSpeech();
@@ -295,7 +221,7 @@ export const ToeicSpeakingApp: React.FC = () => {
 
   const startExamTimer = () => {
     if (!activeQuestion) return;
-    const prepTime = activeQuestion.prepTime;
+    const prepTime = activeQuestion.prepTime || (currentPart === 'part2' ? 45 : 3);
     setTimerState({
       phase: 'prep',
       timeLeft: prepTime,
@@ -321,7 +247,7 @@ export const ToeicSpeakingApp: React.FC = () => {
       }, 1000);
     } else if (timerState.isRunning && timerState.timeLeft <= 0) {
       if (timerState.phase === 'prep') {
-        const responseTime = activeQuestion?.responseTime || 15;
+        const responseTime = activeQuestion?.responseTime || (currentPart === 'part2' ? 30 : 15);
         try {
           const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
           const osc = ctx.createOscillator();
@@ -353,9 +279,8 @@ export const ToeicSpeakingApp: React.FC = () => {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [timerState.isRunning, timerState.timeLeft, timerState.phase, activeQuestion]);
+  }, [timerState.isRunning, timerState.timeLeft, timerState.phase, activeQuestion, currentPart]);
 
-  // Part 4 전용 45초 표 읽기 카운트다운
   useEffect(() => {
     let p4Interval: NodeJS.Timeout | null = null;
     if (isP4ReadingActive && p4ReadingTime > 0) {
@@ -370,10 +295,9 @@ export const ToeicSpeakingApp: React.FC = () => {
     };
   }, [isP4ReadingActive, p4ReadingTime]);
 
-  // 단축키 제어 (ArrowLeft, ArrowRight, Space, 1, 2, Esc)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
 
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
@@ -400,16 +324,31 @@ export const ToeicSpeakingApp: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   });
 
-  // 모범답안 문장 배열 파싱
+  // [요청 3 반영] 파트 2, 3, 4 모두 정교한 문장 단위 분할 (줄바꿈 또는 마침표/물음표/느낌표 기준)
   const structuredSentences = useMemo(() => {
     if (!activeQuestion) return [];
-    const enLines = activeQuestion.answer.split('\n').filter((l) => l.trim().length > 0);
-    const koLines = activeQuestion.answerTranslation.split('\n').filter((l) => l.trim().length > 0);
+    
+    // 줄바꿈으로 먼저 나누고, 단일 긴 줄인 경우 문장 부호로 재분할
+    let rawEn = activeQuestion.answer.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+    let rawKo = activeQuestion.answerTranslation.split('\n').map(s => s.trim()).filter(s => s.length > 0);
 
-    return enLines.map((en, idx) => ({
+    if (rawEn.length === 1 && rawEn[0].includes('.')) {
+      const matchEn = rawEn[0].match(/[^.!?]+[.!?]+(\s+|$)/g);
+      if (matchEn && matchEn.length > 1) {
+        rawEn = matchEn.map(s => s.trim());
+      }
+    }
+    if (rawKo.length === 1 && rawKo[0].includes('.')) {
+      const matchKo = rawKo[0].match(/[^.!?]+[.!?]+(\s+|$)/g);
+      if (matchKo && matchKo.length > 1) {
+        rawKo = matchKo.map(s => s.trim());
+      }
+    }
+
+    return rawEn.map((en, idx) => ({
       index: idx + 1,
       en,
-      ko: koLines[idx] || '',
+      ko: rawKo[idx] || '',
     }));
   }, [activeQuestion]);
 
@@ -420,7 +359,7 @@ export const ToeicSpeakingApp: React.FC = () => {
       <div className="fixed top-1/4 -right-24 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
       <div className="fixed -bottom-24 left-1/3 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
 
-      {/* Main Responsive Viewport */}
+      {/* Main Viewport */}
       <div className="w-full max-w-5xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 flex flex-col gap-5 sm:gap-6">
         
         {/* =======================================================================
@@ -440,7 +379,7 @@ export const ToeicSpeakingApp: React.FC = () => {
               <span className={`text-xs sm:text-sm font-bold tracking-tight ${currentPart === 'part2' ? 'text-emerald-700' : 'text-slate-700'}`}>
                 PART 2 책갈피
               </span>
-              <span className="hidden sm:inline text-xs text-slate-500 truncate">사진 묘사하기 (Q3~Q4)</span>
+              <span className="hidden sm:inline text-xs text-slate-500 truncate">고화질 사진 묘사 (26세트)</span>
             </div>
           </button>
 
@@ -457,7 +396,7 @@ export const ToeicSpeakingApp: React.FC = () => {
               <span className={`text-xs sm:text-sm font-bold tracking-tight ${currentPart === 'part3' ? 'text-blue-700' : 'text-slate-700'}`}>
                 PART 3 책갈피
               </span>
-              <span className="hidden sm:inline text-xs text-slate-500 truncate">일상 질문 답하기 (Q5~Q7)</span>
+              <span className="hidden sm:inline text-xs text-slate-500 truncate">일상 질문 답하기 (48문항)</span>
             </div>
           </button>
 
@@ -474,7 +413,7 @@ export const ToeicSpeakingApp: React.FC = () => {
               <span className={`text-xs sm:text-sm font-bold tracking-tight ${currentPart === 'part4' ? 'text-purple-700' : 'text-slate-700'}`}>
                 PART 4 책갈피
               </span>
-              <span className="hidden sm:inline text-xs text-slate-500 truncate">표/일정표 보고 답하기</span>
+              <span className="hidden sm:inline text-xs text-slate-500 truncate">표/일정표 보고 답하기 (24문항)</span>
             </div>
           </button>
         </nav>
@@ -486,7 +425,7 @@ export const ToeicSpeakingApp: React.FC = () => {
           <div className="flex flex-col gap-1.5">
             <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200/60 text-blue-600 px-3 py-1 rounded-full text-xs font-semibold w-fit">
               <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-              <span>Target: {MOCK_USER_PROFILE.targetScore} · 실전 대비판</span>
+              <span>Target: {MOCK_USER_PROFILE.targetScore} · 실전 마스터판 (98문항 전체)</span>
             </div>
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2 flex-wrap">
               <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
@@ -499,7 +438,9 @@ export const ToeicSpeakingApp: React.FC = () => {
               </span>
             </h1>
             <p className="text-xs sm:text-sm text-slate-500">
-              FastAPI 서버 실시간 연동 모드 · Daniel 전담 영국식 음성 · 만능문장 족보집
+              {currentPart === 'part2' && '기출 26개 고화질 실사 사진 · 45초 준비 / 30초 답변 · 문장별 개별 발음'}
+              {currentPart === 'part3' && '16개 테마 48개 전 문항 · 한글해석 블라인드 · 문장별 개별 발음'}
+              {currentPart === 'part4' && '8개 세트 24문항 전체 일정표 · 45초 표 읽기 · 문의자 발화상황 연계'}
             </p>
           </div>
 
@@ -516,7 +457,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                 </div>
               </div>
               <button
-                onClick={() => speakText("Hello! I am Daniel, ready to assist your TOEIC speaking practice.", 1.0)}
+                onClick={() => speakText("Hello! I am Daniel, your dedicated British voice coach.", 1.0)}
                 className="text-xs font-semibold bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-600 px-2.5 py-1 rounded-full transition-all border border-blue-200"
               >
                 ▶️ 샘플
@@ -551,7 +492,7 @@ export const ToeicSpeakingApp: React.FC = () => {
         </header>
 
         {/* =======================================================================
-            TOOLBAR (세트 필터, 진행 카운터, 이전/다음 버튼)
+            TOOLBAR
             ======================================================================= */}
         <nav aria-label="문항 제어 툴바" className="bg-white/80 backdrop-blur-xl border border-white/80 rounded-2xl p-3 sm:p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -568,9 +509,9 @@ export const ToeicSpeakingApp: React.FC = () => {
                 setIsAnswerVisible(false);
                 resetTimer();
               }}
-              className="flex-1 sm:w-56 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs sm:text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer"
+              className="flex-1 sm:w-60 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs sm:text-sm font-semibold text-slate-700 outline-none cursor-pointer"
             >
-              <option value="all">전체 세트 문항 보기</option>
+              <option value="all">전체 세트 (총 {questions.length}문항)</option>
               {availableSetIds.map((sid) => (
                 <option key={sid} value={sid}>
                   Set {sid} 문항
@@ -579,8 +520,8 @@ export const ToeicSpeakingApp: React.FC = () => {
             </select>
 
             {isUsingFallback && (
-              <span className="text-[11px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full border border-amber-300">
-                오프라인 Mock 모드
+              <span className="text-[11px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full border border-amber-300 whitespace-nowrap">
+                오프라인 마스터 모드
               </span>
             )}
           </div>
@@ -624,110 +565,46 @@ export const ToeicSpeakingApp: React.FC = () => {
         </nav>
 
         {/* =======================================================================
-            [UI 상태 1] 스켈레톤 UI (로딩 상태)
+            MAIN CARD VIEWPORT
             ======================================================================= */}
         {isLoading ? (
-          <main aria-busy="true" aria-label="데이터 로딩 중" className="bg-white/85 backdrop-blur-2xl border border-white/90 rounded-2xl sm:rounded-3xl p-5 sm:p-8 lg:p-10 shadow-2xl shadow-slate-300/40 flex flex-col gap-6 animate-pulse">
-            {/* Top Pills Skeleton */}
-            <div className="flex items-center justify-between gap-3 pb-4 border-b border-slate-100">
-              <div className="flex gap-2">
-                <div className="h-6 w-20 bg-slate-200 rounded-full" />
-                <div className="h-6 w-16 bg-slate-200 rounded-full" />
-                <div className="h-6 w-24 bg-slate-200 rounded-full" />
-              </div>
-              <div className="h-6 w-28 bg-slate-200 rounded-full" />
+          /* Skeleton */
+          <main aria-busy="true" className="bg-white/85 backdrop-blur-2xl border border-white/90 rounded-3xl p-6 sm:p-10 shadow-2xl animate-pulse flex flex-col gap-6">
+            <div className="h-6 w-36 bg-slate-200 rounded-full" />
+            <div className="w-full aspect-[16/9] max-h-[360px] bg-slate-200/80 rounded-2xl flex items-center justify-center text-slate-400 font-bold">
+              📸 고화질 시험 사진 로딩 중...
             </div>
-
-            {/* Part 2 / Part 4 Specific Skeleton */}
-            {currentPart === 'part2' && (
-              <div className="w-full aspect-[16/9] max-h-[360px] bg-slate-200/80 rounded-2xl flex items-center justify-center text-slate-400 font-bold text-sm">
-                📸 시험 사진 로딩 중...
-              </div>
-            )}
-            {currentPart === 'part4' && (
-              <div className="h-44 bg-slate-200/70 rounded-2xl w-full" />
-            )}
-
-            {/* Question Text Skeleton */}
-            <div className="flex flex-col gap-3">
-              <div className="h-4 w-32 bg-slate-200 rounded-md" />
-              <div className="h-20 bg-slate-100 border border-slate-200/60 rounded-2xl p-4 flex flex-col gap-2">
-                <div className="h-4 bg-slate-200 rounded w-5/6" />
-                <div className="h-4 bg-slate-200 rounded w-4/6" />
-              </div>
-            </div>
-
-            {/* Timer Skeleton */}
-            <div className="h-20 bg-slate-100 rounded-2xl p-4 flex flex-col justify-between">
-              <div className="flex justify-between">
-                <div className="h-4 w-28 bg-slate-200 rounded-full" />
-                <div className="h-6 w-12 bg-slate-200 rounded-md" />
-              </div>
-              <div className="h-2 w-full bg-slate-200 rounded-full" />
-            </div>
-
-            {/* Bottom Toggle Skeleton */}
-            <div className="flex justify-center pt-2">
-              <div className="h-11 w-64 bg-slate-200 rounded-2xl" />
-            </div>
+            <div className="h-20 bg-slate-100 rounded-2xl" />
           </main>
         ) : apiError ? (
-          /* =======================================================================
-             [UI 상태 2] 네트워크 에러 처리 UI (FastAPI 서버 연결 오류 등)
-             ======================================================================= */
-          <main className="bg-white/90 backdrop-blur-2xl border border-rose-200 rounded-2xl sm:rounded-3xl p-6 sm:p-10 shadow-xl flex flex-col items-center text-center gap-4 animate-fadeIn">
-            <div className="w-16 h-16 rounded-3xl bg-rose-100 text-rose-600 flex items-center justify-center text-3xl shadow-inner">
+          /* Error State with Fallback */
+          <main className="bg-white/90 backdrop-blur-2xl border border-rose-200 rounded-3xl p-8 sm:p-12 shadow-xl flex flex-col items-center text-center gap-4 animate-fadeIn">
+            <div className="w-16 h-16 rounded-3xl bg-rose-100 text-rose-600 flex items-center justify-center text-3xl">
               ⚠️
             </div>
-            <div className="flex flex-col gap-1.5 max-w-md">
-              <div className="inline-flex items-center justify-center gap-1.5 bg-rose-50 border border-rose-200 text-rose-700 px-3 py-1 rounded-full text-xs font-bold w-fit mx-auto">
-                <span>{apiError.statusCodeText || '통신 오류'}</span>
-              </div>
-              <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 mt-1">
-                서버에서 데이터를 불러오지 못했습니다
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                {apiError.message}
-              </p>
-            </div>
-
-            {/* 액션 버튼: 다시 시도 & 오프라인 Mock 데이터 모드 전환 */}
-            <div className="flex flex-col sm:flex-row items-center gap-3 mt-2 w-full sm:w-auto">
+            <h3 className="text-xl font-extrabold text-slate-900">서버 통신 오류</h3>
+            <p className="text-xs sm:text-sm text-slate-600 max-w-md leading-relaxed">{apiError.message}</p>
+            <div className="flex gap-3 mt-2">
               <button
                 onClick={() => fetchQuestionsFromApi(currentPart, selectedSetId)}
-                className="w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25 transition-all active:scale-95 flex items-center justify-center gap-2"
+                className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-md active:scale-95"
               >
-                <span>🔄</span>
-                <span>서버 재연결 시도</span>
+                🔄 재연결 시도
               </button>
               <button
                 onClick={handleEnableFallbackMock}
-                className="w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition-all active:scale-95 flex items-center justify-center gap-2"
+                className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-slate-800 hover:bg-slate-900 text-white shadow-md active:scale-95"
               >
-                <span>📦</span>
-                <span>오프라인 Mock Data로 진행</span>
+                📦 98문항 전체 오프라인 모드
               </button>
             </div>
           </main>
         ) : !activeQuestion ? (
-          /* =======================================================================
-             [UI 상태 3] Empty State (조회 결과 없음)
-             ======================================================================= */
-          <main className="bg-white/90 rounded-3xl p-12 text-center border border-slate-200 shadow-sm flex flex-col items-center gap-3">
-            <span className="text-4xl">📭</span>
-            <p className="text-base font-bold text-slate-700">해당 파트 또는 세트에 등록된 문제가 없습니다.</p>
-            <button
-              onClick={() => setSelectedSetId('all')}
-              className="text-xs font-semibold bg-blue-600 text-white px-4 py-2 rounded-xl"
-            >
-              전체 세트 보기로 초기화
-            </button>
+          <main className="bg-white/90 rounded-3xl p-12 text-center border border-slate-200 shadow-sm">
+            <p className="font-bold text-slate-700">등록된 문제가 없습니다.</p>
           </main>
         ) : (
-          /* =======================================================================
-             [정상 렌더링] 실전 문제 카드 뷰포트
-             ======================================================================= */
-          <main className="bg-white/85 backdrop-blur-2xl border border-white/90 rounded-2xl sm:rounded-3xl p-4 sm:p-7 lg:p-9 shadow-2xl shadow-slate-300/40 flex flex-col gap-6 transition-all duration-300">
+          <main className="bg-white/85 backdrop-blur-2xl border border-white/90 rounded-2xl sm:rounded-3xl p-4 sm:p-7 lg:p-9 shadow-2xl shadow-slate-300/40 flex flex-col gap-6">
             
             {/* Top Meta Pill Header */}
             <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-100">
@@ -757,7 +634,9 @@ export const ToeicSpeakingApp: React.FC = () => {
               </div>
             </div>
 
-            {/* PART 2 전용: 실사 시험 사진 뷰어 프레임 */}
+            {/* ===================================================================
+                [요청 1 반영] PART 2 전용: 고화질 실사 시험 사진 뷰어 프레임
+                =================================================================== */}
             {activeQuestion.part === 'part2' && 'photoScene' in activeQuestion && (
               <section aria-label="Part 2 사진 뷰어" className="flex flex-col gap-3">
                 <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-3.5 flex items-start gap-3">
@@ -769,27 +648,54 @@ export const ToeicSpeakingApp: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="border border-slate-200 rounded-2xl overflow-hidden bg-slate-900/5 shadow-inner">
+                <div className="border border-slate-200 rounded-2xl overflow-hidden bg-slate-900/5 shadow-inner flex flex-col">
                   <div className="bg-slate-100 px-4 py-2 border-b border-slate-200 flex items-center justify-between text-xs">
                     <span className="font-bold text-slate-700">📸 EXAM PHOTO SCENE</span>
-                    <span className="text-slate-500 font-medium">{(activeQuestion as Part2QuestionResponse).photoScene?.locationEn}</span>
+                    <span className="text-slate-500 font-medium font-mono text-[11px] bg-white px-2 py-0.5 rounded-full border border-slate-200">
+                      {(activeQuestion as Part2QuestionResponse).photoScene?.locationEn}
+                    </span>
                   </div>
-                  <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full max-h-[460px] overflow-hidden bg-slate-100 flex items-center justify-center">
+                  <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full max-h-[460px] overflow-hidden bg-slate-900/10 flex items-center justify-center">
                     <img
                       src={(activeQuestion as Part2QuestionResponse).imageUrl}
-                      alt="Part 2 Exam Scene"
-                      className="w-full h-full object-cover sm:object-contain transition-transform duration-500 hover:scale-[1.02]"
+                      alt="Part 2 Realistic Exam Scene"
+                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.02]"
                       loading="lazy"
                     />
                     <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md text-white text-[10px] sm:text-xs px-2.5 py-1 rounded-md font-mono">
-                      TOEIC Speaking Real Photo
+                      TOEIC Speaking Realistic Photo (Q3~Q4)
                     </div>
                   </div>
+
+                  {/* 1:1 사진 상황 해설 및 핵심 묘사 키포인트 태그 */}
+                  {(activeQuestion as Part2QuestionResponse).photoDescriptionKr && (
+                    <div className="bg-white p-3.5 sm:p-4 border-t border-slate-200 flex flex-col gap-2.5">
+                      <div className="flex items-start gap-2 text-xs sm:text-sm text-slate-700 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <span className="text-base shrink-0">🔍</span>
+                        <div>
+                          <strong className="text-slate-900 font-bold block mb-0.5">사진 1:1 상황 팩트 해설:</strong>
+                          <p className="text-slate-600 font-medium">{(activeQuestion as Part2QuestionResponse).photoDescriptionKr}</p>
+                        </div>
+                      </div>
+
+                      {(activeQuestion as Part2QuestionResponse).photoScene?.tags && (activeQuestion as Part2QuestionResponse).photoScene.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          {(activeQuestion as Part2QuestionResponse).photoScene.tags.map((t, ti) => (
+                            <span key={ti} className="text-[11px] sm:text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-lg font-medium">
+                              ✓ {t}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </section>
             )}
 
-            {/* PART 4 전용: 일정표 및 45초 분석 시뮬레이터 */}
+            {/* ===================================================================
+                [요청 2 반영] PART 4 전용: 동적 컬럼 표 & 누락 없는 전체 일정표 + Caller Context
+                =================================================================== */}
             {activeQuestion.part === 'part4' && 'scheduleTable' in activeQuestion && (
               <section aria-label="Part 4 일정표" className="flex flex-col gap-4">
                 <div className="bg-purple-50/80 border border-purple-200 rounded-2xl p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -817,14 +723,14 @@ export const ToeicSpeakingApp: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Schedule Table */}
+                {/* Schedule Table (동적 컬럼 렌더링으로 모든 세트의 누락 방지) */}
                 <div className="border border-slate-200/90 rounded-2xl overflow-hidden bg-white shadow-sm">
                   <div className="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-4">
                     <span className="text-[10px] font-extrabold tracking-widest text-blue-400 uppercase">
                       REFERENCE DOCUMENT
                     </span>
                     <h3 className="text-base sm:text-lg font-bold mt-0.5">
-                      {(activeQuestion as Part4QuestionResponse).scheduleTable?.headerTitle}
+                      {(activeQuestion as Part4QuestionResponse).scheduleTable?.headerTitle || (activeQuestion as any).setTitle}
                     </h3>
                     <div className="flex flex-wrap gap-2 mt-2">
                       {(activeQuestion as Part4QuestionResponse).scheduleTable?.metaInfo?.map((meta, i) => (
@@ -835,38 +741,54 @@ export const ToeicSpeakingApp: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* 동적 컬럼 테이블 */}
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs sm:text-sm border-collapse">
-                      <thead>
-                        <tr className="bg-slate-100 text-slate-600 uppercase font-bold text-[11px] border-b border-slate-200">
-                          <th className="p-3">Date</th>
-                          <th className="p-3">Time</th>
-                          <th className="p-3">Event / Topic</th>
-                          <th className="p-3">Location</th>
-                          <th className="p-3">Note</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100">
-                        {(activeQuestion as Part4QuestionResponse).scheduleTable?.rows?.map((row, rIdx) => {
-                          const isCancelled = Boolean(row.isCancelled);
-                          return (
-                            <tr
-                              key={rIdx}
-                              className={`hover:bg-slate-50 transition-colors ${
-                                isCancelled ? 'line-through text-slate-400 bg-rose-50/30' : 'text-slate-800'
-                              }`}
-                            >
-                              <td className="p-3 font-semibold whitespace-nowrap">{String(row.date || '')}</td>
-                              <td className="p-3 font-mono whitespace-nowrap">{String(row.time || '')}</td>
-                              <td className="p-3 font-bold text-blue-900">{String(row.event || '')}</td>
-                              <td className="p-3">{String(row.location || '')}</td>
-                              <td className="p-3 text-slate-500">{String(row.note || '')}</td>
+                    {(() => {
+                      const rows = (activeQuestion as Part4QuestionResponse).scheduleTable?.rows || [];
+                      const colKeys = rows.length > 0 ? Object.keys(rows[0]).filter(k => k !== 'isCancelled') : ['time', 'event', 'location'];
+                      return (
+                        <table className="w-full text-left text-xs sm:text-sm border-collapse">
+                          <thead>
+                            <tr className="bg-slate-100 text-slate-600 uppercase font-bold text-[11px] border-b border-slate-200">
+                              {colKeys.map((k) => (
+                                <th key={k} className="p-3 capitalize">{k}</th>
+                              ))}
                             </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {rows.map((row: any, rIdx: number) => {
+                              const isCancelled = Boolean(row.isCancelled || (row.activity && String(row.activity).includes('CANCEL')) || (row.status && String(row.status).includes('CANCEL')));
+                              return (
+                                <tr
+                                  key={rIdx}
+                                  className={`hover:bg-slate-50 transition-colors ${
+                                    isCancelled ? 'line-through text-slate-400 bg-rose-50/30' : 'text-slate-800'
+                                  }`}
+                                >
+                                  {colKeys.map((k) => (
+                                    <td key={k} className={`p-3 ${k === 'time' ? 'font-mono' : k === 'event' || k === 'topic' || k === 'program' ? 'font-bold text-blue-900' : ''}`}>
+                                      {String(row[k] || '')}
+                                    </td>
+                                  ))}
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      );
+                    })()}
                   </div>
+
+                  {/* Caller Context Box (전화 문의자 상황) */}
+                  {(activeQuestion as Part4QuestionResponse).context && (
+                    <div className="bg-amber-50/70 border-t border-amber-200/80 p-3.5 flex items-start gap-3">
+                      <span className="text-lg">📞</span>
+                      <div className="flex flex-col text-xs sm:text-sm">
+                        <span className="font-bold text-amber-900">전화 문의자 / 발화 상황:</span>
+                        <p className="text-amber-800 italic mt-0.5 font-medium">{(activeQuestion as Part4QuestionResponse).context}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </section>
             )}
@@ -986,7 +908,7 @@ export const ToeicSpeakingApp: React.FC = () => {
             {isAnswerVisible && (
               <section aria-label="모범답안 및 해설" className="flex flex-col gap-5 pt-4 border-t border-slate-200 animate-fadeIn">
                 
-                {/* 질문 번역 */}
+                {/* 질문 번역 & 발화 상황 번역 */}
                 <div className="bg-blue-50/80 border border-blue-200/80 rounded-2xl p-4 flex flex-col gap-1.5">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-blue-900">💡 질문 한국어 상세 해설:</span>
@@ -995,6 +917,11 @@ export const ToeicSpeakingApp: React.FC = () => {
                   <p className="text-xs sm:text-sm text-blue-950 font-medium whitespace-pre-line leading-relaxed">
                     {activeQuestion.questionTranslation}
                   </p>
+                  {(activeQuestion as Part4QuestionResponse).context_kr && (
+                    <div className="mt-2 pt-2 border-t border-blue-200 text-xs text-blue-800">
+                      <strong>📞 전화 문의자 발화상황 번역:</strong> {(activeQuestion as Part4QuestionResponse).context_kr}
+                    </div>
+                  )}
                 </div>
 
                 {/* 답안 헤더 */}
@@ -1024,7 +951,9 @@ export const ToeicSpeakingApp: React.FC = () => {
                   </div>
                 </div>
 
-                {/* 문장별 분할 뷰어 */}
+                {/* =================================================================
+                    [요청 3 반영] 문장별 분할 뷰어 (파트 2, 3, 4 모두 개별 발음 버튼 제공)
+                    ================================================================= */}
                 <div className="flex flex-col gap-2.5">
                   {structuredSentences.map((sent) => (
                     <div
@@ -1032,6 +961,17 @@ export const ToeicSpeakingApp: React.FC = () => {
                       className="bg-slate-50/90 hover:bg-blue-50/40 border border-slate-200/80 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition-colors"
                     >
                       <div className="flex flex-col gap-1 flex-1">
+                        {currentPart === 'part2' && (
+                          <div className="mb-0.5">
+                            <span className="text-[10px] sm:text-[11px] font-extrabold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 inline-block">
+                              {sent.index === 0 && '🐰 1단계: 장소 도입 (This is a picture taken in...)'}
+                              {sent.index === 1 && '👤 2단계: 중심 인물/피사체 동작 (In the center/foreground...)'}
+                              {sent.index === 2 && '🔍 3단계: 세부 사물/주변 인물 (Next to / On the table...)'}
+                              {sent.index === 3 && (structuredSentences.length > 4 ? '🏙️ 3단계: 배경/환경 (In the background...)' : '✨ 4단계: 마무리 및 총평 (Overall, it seems...')}
+                              {sent.index >= 4 && '✨ 4단계: 마무리 및 총평 (Overall, it seems...)'}
+                            </span>
+                          </div>
+                        )}
                         <span className="text-xs sm:text-sm font-semibold text-slate-900 leading-relaxed font-sans">
                           {sent.en}
                         </span>
@@ -1044,11 +984,12 @@ export const ToeicSpeakingApp: React.FC = () => {
                           setSpeakingSentenceIndex(sent.index);
                           speakText(sent.en, 1.0, () => setSpeakingSentenceIndex(null));
                         }}
-                        className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full border transition-all shrink-0 ${
+                        className={`inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full border transition-all shrink-0 ${
                           speakingSentenceIndex === sent.index
                             ? 'bg-blue-600 text-white border-blue-600 animate-pulse'
-                            : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300 hover:text-blue-600'
+                            : 'bg-white text-slate-700 border-slate-200 hover:border-blue-400 hover:text-blue-600 shadow-sm active:scale-95'
                         }`}
+                        title="이 문장만 개별 발음 듣기"
                       >
                         <span>🔊</span>
                         <span>문장듣기</span>
@@ -1057,25 +998,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                   ))}
                 </div>
 
-                {/* 만능문장 하이라이트 */}
-                {activeQuestion.magicSentences && activeQuestion.magicSentences.length > 0 && (
-                  <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200/90 rounded-2xl p-4 flex flex-col gap-2 shadow-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">🐰</span>
-                      <span className="text-xs sm:text-sm font-extrabold text-purple-900">
-                        시계토끼 핵심 만능문장 공식 포인트
-                      </span>
-                    </div>
-                    <ul className="flex flex-col gap-1.5 pl-2">
-                      {activeQuestion.magicSentences.map((ms, i) => (
-                        <li key={i} className="text-xs sm:text-sm text-purple-950 font-semibold flex items-start gap-2">
-                          <span className="text-purple-600 mt-0.5 font-bold">✔</span>
-                          <span>{ms}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                {/* [요청 3 반영: 시계토끼 핵심문장 보라색 카드는 해설에서 제거하고 상단 만능문장 족보집 모달 안에 모두 통합] */}
 
                 {/* 어휘 & 발음기호 */}
                 {activeQuestion.vocabulary && activeQuestion.vocabulary.length > 0 && (
@@ -1083,7 +1006,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <span className="text-base">📖</span>
                       <span className="text-xs sm:text-sm font-bold text-slate-800">
-                        핵심 어휘 및 IPA 발음기호 (클릭 시 원어민 음성 재생)
+                        핵심 어휘 및 IPA 발음기호 (단어 클릭 시 원어민 음성 재생)
                       </span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -1182,7 +1105,7 @@ export const ToeicSpeakingApp: React.FC = () => {
       </div>
 
       {/* =========================================================================
-          MODAL: 만능문장 종합 족보집
+          [요청 3 반영] MODAL: 시계토끼 만능문장 종합 족보집 (모든 파트 핵심 공식 총집합)
           ========================================================================= */}
       {isCheatSheetOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-3.5 sm:p-6 animate-fadeIn">
@@ -1191,12 +1114,13 @@ export const ToeicSpeakingApp: React.FC = () => {
               <div className="flex items-center gap-2">
                 <span className="text-2xl">🐰</span>
                 <h3 className="text-base sm:text-lg font-extrabold text-slate-800">
-                  시계토끼 만능문장 종합 족보집
+                  시계토끼 만능문장 종합 족보집 (모든 파트 공식 집대성)
                 </h3>
               </div>
               <button
                 onClick={() => setIsCheatSheetOpen(false)}
                 className="w-8 h-8 rounded-full bg-slate-200/70 hover:bg-slate-300 text-slate-600 flex items-center justify-center font-bold text-sm transition-colors"
+                aria-label="닫기"
               >
                 ✕
               </button>
@@ -1211,7 +1135,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                     : 'border-transparent text-slate-500 hover:text-slate-700'
                 }`}
               >
-                🖼️ PART 2 공식
+                🖼️ PART 2 4단계 묘사 공식
               </button>
               <button
                 onClick={() => setModalTab('part3')}
@@ -1221,7 +1145,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                     : 'border-transparent text-slate-500 hover:text-slate-700'
                 }`}
               >
-                🔖 PART 3 공식
+                🔖 PART 3 만능문장 7대 공식
               </button>
               <button
                 onClick={() => setModalTab('part4')}
@@ -1231,7 +1155,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                     : 'border-transparent text-slate-500 hover:text-slate-700'
                 }`}
               >
-                📑 PART 4 공식
+                📑 PART 4 Q8~Q10 응답 족보
               </button>
             </div>
 

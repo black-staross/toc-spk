@@ -57,6 +57,7 @@ export interface Part2QuestionResponse extends BaseToeicQuestion {
   part: 'part2';
   imageUrl: string;
   photoScene: PhotoScene;
+  photoDescriptionKr?: string; // 사진 1:1 상황 팩트 해설
 }
 
 export interface Part3QuestionResponse extends BaseToeicQuestion {
@@ -67,6 +68,9 @@ export interface Part3QuestionResponse extends BaseToeicQuestion {
 export interface Part4QuestionResponse extends BaseToeicQuestion {
   part: 'part4';
   scheduleTable: ScheduleTable;
+  context?: string;       // 영문 전화 발화 상황 지문
+  context_kr?: string;    // 발화 상황 한국어 번역
+  setTitle?: string;
 }
 
 export type ToeicQuestionDetailResponse =
