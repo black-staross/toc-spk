@@ -90,6 +90,7 @@ class ToeicTrainerApp {
     this.p2PhotoSpinner = document.getElementById('p2PhotoSpinner');
     this.p2RealPhotoImg = document.getElementById('p2RealPhotoImg');
     this.p2SceneElements = document.getElementById('p2SceneElements');
+    this.p2PointsCard = document.getElementById('p2PointsCard');
 
     // ==========================================
     // Part 4 Document & Schedule Table
@@ -109,6 +110,8 @@ class ToeicTrainerApp {
     this.p4ContextBanner = document.getElementById('p4ContextBanner');
     this.p4ContextText = document.getElementById('p4ContextText');
     this.p4ContextKr = document.getElementById('p4ContextKr');
+    this.p4AnswerContextKrBox = document.getElementById('p4AnswerContextKrBox');
+    this.p4AnswerContextKrText = document.getElementById('p4AnswerContextKrText');
 
     // Question Section (Part 3 & Part 4 text questions)
     this.questionBoxSection = document.getElementById('questionBoxSection');
@@ -504,16 +507,29 @@ class ToeicTrainerApp {
       this.renderPart2Photo(q);
       this.qTransBadge.textContent = '💡 사진 한국어 상황 상세 묘사';
       this.answerQuestionKo.textContent = q.photoDescriptionKr || q.questionTranslation || '';
+      if (this.p2PointsCard) this.p2PointsCard.style.display = 'block';
+      if (this.p4AnswerContextKrBox) this.p4AnswerContextKrBox.style.display = 'none';
     } else if (this.currentPart === 'part4' && q.table) {
       this.renderPart4Table(q);
       this.qTransBadge.textContent = '💡 질문 한국어 해석';
       this.renderFormattedQuestion(q);
       this.answerQuestionKo.textContent = q.questionTranslation || '';
+      if (this.p2PointsCard) this.p2PointsCard.style.display = 'none';
+      if (this.p4AnswerContextKrBox) {
+        if (q.context_kr) {
+          this.p4AnswerContextKrBox.style.display = 'block';
+          if (this.p4AnswerContextKrText) this.p4AnswerContextKrText.textContent = q.context_kr;
+        } else {
+          this.p4AnswerContextKrBox.style.display = 'none';
+        }
+      }
     } else {
       // Part 3
       this.qTransBadge.textContent = '💡 질문 한국어 해석';
       this.renderFormattedQuestion(q);
       this.answerQuestionKo.textContent = q.questionTranslation || '';
+      if (this.p2PointsCard) this.p2PointsCard.style.display = 'none';
+      if (this.p4AnswerContextKrBox) this.p4AnswerContextKrBox.style.display = 'none';
     }
 
     // Render Model Answer Components
@@ -601,7 +617,7 @@ class ToeicTrainerApp {
     if (q.context) {
       this.p4ContextBanner.style.display = 'flex';
       this.p4ContextText.textContent = q.context;
-      this.p4ContextKr.textContent = q.context_kr || '';
+      if (this.p4ContextKr) this.p4ContextKr.textContent = q.context_kr || '';
     } else {
       this.p4ContextBanner.style.display = 'none';
     }
