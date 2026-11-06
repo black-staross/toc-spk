@@ -19,7 +19,7 @@ import {
 
 // 기본 API 서버 주소 (FastAPI 기본 포트 8000)
 const API_BASE_URL =
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL) ||
+  (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_API_BASE_URL) ||
   'http://localhost:8000/api/v1';
 
 /**

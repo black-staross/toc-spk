@@ -1,0 +1,392 @@
+=== Part 2 ===
+01 [183.4s] RAW: >> 이것은 공원에서 찍힌 사진이에요. This is a picture taken at a park. This is a picture taken at a park. This is a picture at a park.
+   EN_AUTO:  is a picture taken at a park. This is a  picture taken at a park. The first  thing you can see in this picture is
+02 [199.2s] RAW: 이 사진에서 가장 먼저 볼 수 있는 것은 두 명의 여자예요. I can see in this picture is women. The first thing I can see in this picture is two women. The first thing I can see in this picture is two women. The first thing I can see in this picture is women.
+   EN_AUTO:  two women. In the foreground of the
+03 [219.4s] RAW: 사진의 전경에는 분수대가 보여요. in the foreground of the picture, I can see a fountain.
+   EN_AUTO:  picture, I can see a fountain.
+04 [226.5s] RAW: >> 사진의 중앙에는 분수대가 보여요. I can see a f.
+   EN_AUTO:  In the center of the picture, I can see  a fountain. In the background of the
+05 [233.2s] RAW: 사진의 배경에는 분수대가 보여요. I can see
+   EN_AUTO:  picture, I can see a fountain. On the
+06 [241.4s] RAW: 사진의 왼쪽에는 인도가 있어요. On the left side of the picture, there is a sidewalk. On the left side of the picture, there is a sidewalk.
+   EN_AUTO:  left side of the picture, there is a  sidewalk. On the left side of the  picture, there is a sidewalk. On the
+07 [251.8s] RAW: 사진의 오른쪽에는 인도가 있어요. on the right side of the picture, there is a sidewalk. On the right side of the picture, there is a sidewalk.
+   EN_AUTO:  right side of the picture, there is a  sidewalk. On the right side of the  picture, there is a sidewalk. There is
+08 [263.1s] RAW: 그녀의 옆에 또 다른 여자가 있어요. next to her, there is another woman. Next to her, there is another woman. Next to her, there is another woman. Next to her, there is another woman.
+   EN_AUTO:  another woman next to her. Next to her,  there is another woman. Next to her,  there is another woman. Next to her,
+09 [279.0s] RAW: 그녀의 뒤에서 있는 두 명의 남성이 보여요. behind her. I can see two men standing behind her. I can see two men standing behind her. I can see two men standing behind her. I can see two men standing.
+   EN_AUTO:  there is another woman. I can see two  men standing behind her. I can see two  men standing behind her. I can see two  men standing.
+10 [296.5s] RAW: 그들 중 대부분은 정장을 입고 있어요. Most of them are wearing formal clothes. Most of them are wearing formal clothes. Most of them are wearing formal clothes. Most of them are wearing formal clothes.
+   EN_AUTO:  Most of them are wearing formal clothes . Most of them are wearing formal  clothes. Most of them are wearing  formal clothes. Some of them are  wearing casual clothes. Some of them
+11 [313.4s] RAW: 그들 중 일부는 캐주얼한 옷을 입고 있어요. Some of them are wearing casual clothes. Some of them are wearing casual clothes. Some of them are wearing casual clothes. Some of them are wearing casual clothes.
+   EN_AUTO:  are wearing casual clothes. Some of  them are wearing casual clothes. Some  of them are wearing casual clothes. She
+12 [330.4s] RAW: 그녀는 메뉴판을 보고 있어요. She is looking at a menu. She is looking at a menu. She is looking at a menu.
+   EN_AUTO:  is looking at a menu. She is looking at  a menu. He is writing something down.
+13 [343.0s] RAW: 그는 무언가를 적고 있어요. He is writing something down. He is writing something down. He is writing something down. He is writing something down.
+   EN_AUTO:  He is writing something down. He is
+14 [356.0s] RAW: 그는 물을 마시고 있어요.
+   EN_AUTO:  writing something down.  He is drinking some water. She is
+15 [368.4s] RAW: 그녀는 고객들에게 음식을 제공하고 있어요.
+   EN_AUTO:  serving food to customers. She is
+16 [385.2s] RAW: 그녀는 컵을 들고 있어요. She is holding a cup. She is holding a cup. She is holding a cup. She is holding a cup.
+   EN_AUTO:  holding a cup. They are at the checkout
+17 [397.6s] RAW: 그들은 계산대에서 있어요.
+   EN_AUTO:  counter. They are having a conversation
+18 [411.8s] RAW: 그들은 대화를 나누고 있어요. are
+   EN_AUTO: . She is looking into a bag. He is
+19 [426.5s] RAW: 그녀는 가방 안을 들여다보고 있어요. is looking into a bag. She is looking into a bag. She is looking into a bag. She is looking into a bag.
+   EN_AUTO: 
+20 [441.0s] RAW: 그는 고객들을 돕고 있어요. He is helping customers. He is helping customers. He is helping customers. He is helping customers.
+   EN_AUTO:  helping customers. He is helping  customers. They are sitting at a table.
+21 [454.8s] RAW: 그들은 테이블에 앉아 있어요. They are sitting at a table. They are sitting at a table. They are sitting at a table. They are sitting at a table.
+   EN_AUTO:  He is looking for something. He is  looking for something. He is looking
+22 [468.5s] RAW: 그는 무언가를 찾고 있어요. He is looking for something. He is looking for something. He is looking for something. He is looking for something.
+   EN_AUTO:  for something. He is handing over a  credit card. He is handing over a  credit card. He is handing over a
+23 [482.5s] RAW: 그는 신용 카드를 건네주고 있어요. He is handing over a credit card. He is handing over a credit card. He is handing over a credit card. He is handing over a credit card.
+   EN_AUTO:  credit card. He is handing over a  credit card. He is handing over a  credit card. He is pushing a shopping  cart. He is pushing a card. He is
+24 [497.0s] RAW: 그는 카트를 밀고 있어요. He is pushing a c. He is pushing a c. He is pushing a c is pushing a card.
+   EN_AUTO:  pushing a card. He is looking at a  product. He is looking at a product. He
+25 [509.3s] RAW: 그는 제품을 보고 있어요. He is looking at a product. He is looking at a product. He is looking at a product. He is looking at a product.
+   EN_AUTO:  is looking at a product. He is looking  at a product. They are waiting in line.
+26 [522.0s] RAW: 그들은 줄을 서서 기다리고 있어요. They are waiting in line. They are waiting in line. They are waiting in line. They are waiting in line.
+   EN_AUTO:  They are waiting in line. They are  waiting in line. They are waiting in  line. They are arranging items. They
+27 [533.9s] RAW: 그들은 물건들을 정리하고 있어요. They are arranging items. They are arranging items. They are arranging items. They are arranging items.
+   EN_AUTO:  are arranging items. They are arranging  items. She is holding a shopping bag.
+28 [546.2s] RAW: 그녀는 쇼핑백을 들고 있어요. She is holding a shopping bag. She is holding a shopping bag. She is holding a shopping bag. She is holding a shopping bag.
+   EN_AUTO:  He is reaching for an item. He is  reaching for an item. He is reaching
+29 [559.9s] RAW: 그는 물건을 집으려고 손을 뻗고 있어요. He is reaching for an item. He is reaching for an item. He is reaching for an item. He is reaching for an item.
+   EN_AUTO:  for an item. He is holding a plastic  bag. He is holding a plastic bag. He is
+30 [573.9s] RAW: 그는 비닐봉지를 들고 있어요. He is holding a plastic bag. He is holding a plastic bag. He is holding a plastic bag. He is holding a plastic bag.
+   EN_AUTO:  holding a plastic bag. He is holding a  plastic bag. He is holding a plastic  bag. He is raising one hand. She is
+31 [588.4s] RAW: 그는 한 손을 들고 있어요. He is raising his hand. He is raising his hand. He is raising his hand. He is raising his hand.
+   EN_AUTO:  holding a document. He is holding a
+32 [602.0s] RAW: 그녀는 문서를 들고 있어요. is holding a document. She is holding a document. She is holding a document. She is holding a document.
+   EN_AUTO:  document. He is holding a document. He  is making a presentation. He is making
+33 [615.6s] RAW: 그는 발표를 하고 있어요. He is making a presentation. He is making a presentation. He is making a presentation. He is making a presentation.
+   EN_AUTO:  a presentation. He is making a  presentation. He is using a tablet PC.
+34 [629.9s] RAW: 그는 태블릿을 사용하고 있어요. He is using a tablet PC. He is using a tablet PC. He is using a tablet PC. He is using a tablet PC.
+   EN_AUTO:  He is using a tablet PC. He is using a  tablet PC. They are reading a document.
+35 [644.6s] RAW: 그들은 문서를 읽고 있어요. are reading a document. They are reading a document. They are reading a document.
+   EN_AUTO:  They are reading a document. He is
+36 [659.6s] RAW: 그는 옷걸리에 옷을 걸고 있어요. He is hanging his cles on a rack. He is hanging his cloes on a rack. He is hanging his cloes on a rack. He is hanging his cloes on a rack.
+   EN_AUTO:  hanging his cloes on a rack. She is
+37 [675.2s] RAW: 그녀는 종이 한 장을 죽고 있어요. She is picking up a piece of paper. She is picking up a piece of paper. She is picking up a piece of paper. She is picking up a piece of paper.
+   EN_AUTO:  picking up a piece of paper. There is a
+38 [691.0s] RAW: 사진을 찍고 있는 한 남자가 있어요. There is a man taking a picture. There is a man taking a picture. There is a man taking a picture. There is a man taking a picture.
+   EN_AUTO:  man taking a picture. She is walking a
+39 [707.8s] RAW: 그녀는 걔를 산책시키고 있어요. She is walking a dog. She is walking a dog. She is walking a dog. Walking a dog.
+   EN_AUTO:  dog. He is lying on the ground. She is
+40 [720.7s] RAW: 그는 바닥에 누워 있어요. He is lying on the ground. He is lying on the ground. He is lying on the ground. He is lying on the ground.
+   EN_AUTO: 
+41 [734.2s] RAW: 그녀는 유모차를 밀고 있어요. She is pushing a baby stroller. She is pushing a baby stroller. She is pushing a baby stroller. She is pushing a baby stroller.
+   EN_AUTO:  pushing a baby stroller. She is pushing  a baby stroller. He is riding a boat.
+42 [749.2s] RAW: 그는 보트를 타고 있어요. He is riding a boat. He is riding a boat. He is riding a boat. He is riding a boat.
+   EN_AUTO:  He is riding a boat. He is riding a  boat. He is riding a boat. He is riding  a boat. He is loading a box into a
+43 [762.7s] RAW: 그는 트럭에 상자를 씻고 있어요. is loading a box into a truck. He is loading a box into a truck. He is loading a box into a truck. He is loading a box into a truck.
+   EN_AUTO:  truck. He is loading a box into a truck . He is loading a box into a truck. He  is loading a box into a truck. He is
+44 [779.2s] RAW: 그는 해변 의자에서 쉬고 있어요. beach chair. He is relaxing on a beach chair. He is relaxing on a beach chair. He is relaxing on a beach chair.
+   EN_AUTO:  resting on a beach chair. He is  relaxing on a beach chair. He is  relaxing on a beach chair. They are  walking down the stairs. They are
+45 [795.4s] RAW: 그들은 계단을 내려가고 있어요. They are walking down the stairs. They are walking down the stairs. They are walking down the stairs.
+   EN_AUTO:  walking down the stairs. They are  walking down the stairs. They are
+46 [811.1s] RAW: 그들은 길을 건너고 있어요. They are crossing the street. They are crossing the street. They are crossing the street.
+   EN_AUTO:  walking down the stairs. They are  crossing the street. They are crossing  the street. They are walking on the
+47 [826.9s] RAW: 그들은 길을 걸어가고 있어요. They are walking on the street. They are walking on the street. They are walking on the street.
+   EN_AUTO:  street. They are walking on the street.  She is looking at a smartphone. She is
+48 [841.2s] RAW: 그녀는 스마트폰을 보고 있어요. She is looking at a smartone. She is looking at a smartone. She is looking at a smart. is looking at a smart.
+   EN_AUTO:  looking at a smartphone. She is looking  at a smartphone. She is looking at a  smartphone. They are performing. They
+49 [857.4s] RAW: 그들은 공연하고 있어요. They are performing. They are performing. They are performing. They are performing.
+   EN_AUTO:  are performing. They are performing.  They are performing. They are  performing. This is a photo taken in a
+=== Part 3 ===
+01 [1580.9s] RAW: 그것은 저의 스트레스를 풀어 줘요. 저는 요즘 스트레스를 많이 받아요. 그래서 그것이 필요해요. out days so i need iteves my i'm stressed out these days so i need it iteves my stress i'm stressed out these days so i need it relieves my stress stressed out these day so need it
+   EN_AUTO:  these days, so I need it. It relieves  my stress. I'm stressed out these days,  so I need it. It relieves my stress. It  relieves my stress. I'm stressed out  these days, so I need it. It relieves  my stress. It relieves my stress. I'm  stressed out these days, so I need it.
+02 [1619.4s] RAW: >> 그것은 더 저렴해서 저는 돈을 저렴 할 수 있어요. I can save money. Cheaper so I can save money. It's cheaper so I can save money. It's cheaper so I can save money.
+   EN_AUTO:  It relieves my stress. It relieves my
+03 [1636.7s] RAW: 가격이 합리적이에요. The price is reasonable. The price is reasonable. The price is reasonable. The price is reasonable.
+   EN_AUTO:  stress. I'm stressed out these days, so  I need it. It relieves my stress. It  relieves my stress. I'm stressed out
+04 [1650.2s] RAW: 그것은 더 빨라서 나는 시간을 절약할 수 있어요. It's faster so I can save time. It's faster so I can save time. It's faster so I can save time. It's faster so I can save time.
+   EN_AUTO:  these days, so I need it. It relieves  my stress. It relieves my stress. I'm  stressed out these days, so I need it.  It relieves my stress. It relieves my
+05 [1667.4s] RAW: 저는 친구들에게서 많은 유용한 정보를 얻을 수 있어요. I can get a lot of useful information from my friends. I can get a lot of useful information from my friends. I can get a lot of useful information from my friends. I can get a lot of useful information from my friends.
+   EN_AUTO:  stress. I'm stressed out these days, so  I need it. It relieves my stress. It  relieves my stress. I ' I can get a lot of useful information  from my friends. It's more reliable, so  the information is more trustworthy.
+06 [1687.7s] RAW: >> 그것은 더 믿을 만해서 정보가 더 신뢰가 가요. It's more reliable. So the information is more trustworthy. It's more reliable. So the information is more trustworthy. It's more reliable. So the information is more trustworthy. It's more reliable. So the information is more trustworthy.
+   EN_AUTO:  It's more reliable. So the information  is more trustworthy. It's more reliable . So the information is more  trustworthy. It's more reliable. So the  information is more trustworthy. It's  more reliable. So the information is  more trustworthy. I can get information
+07 [1710.0s] RAW: 언제나 정보를 내 스마트폰에서 얻을 수 있어요. I can get information anytime anywh on my smartone. I can get information any anywh on my smartone. I can get information any any on my smart. I can get information any on my smart.
+   EN_AUTO:  anytime on my smartphone. I can get  information anytime on my smartphone. I  can get information anytime on my  smartphone. I can get information  anytime on my smartphone. I can get  information anytime on my smartphone.
+08 [1731.2s] RAW: 그것은 좋은 시설들을 가지고 있어요. It has great facilities. It has great facilities. It has great facilities. It has great facilities.
+   EN_AUTO:  It has good facilities. It has great  facilities. It has great facilities. It  has great facilities. It has great
+09 [1744.6s] RAW: 그곳은 인기 있는 곳이라 사람들이 아주 좋아해요. place
+   EN_AUTO:  facilities. It is a popular place, so  people really like it. They are too old
+10 [1761.7s] RAW: 그것들은 너무 오래되어서 새로운 것이 생기면 좋을 것 같아요. They are too old. So I think it's good to have new ones. They are too old. So, I think it's good to have new ones. They are too old. So, I think it's good to have new ones. They are too old. So, I think it's good to have new ones.
+   EN_AUTO: , so I think it would be good to have  new ones. They are too old. So, I think  it's good to have new ones. They are  too old. So, I think it's good to have  new ones. They are too old. So, I think  it's good to have new ones. It would be
+11 [1783.4s] RAW: >> 여기에 더 많은 가게들이 있다면 더 편리할 거예요. If we had more stores here, it would be more convenient. If we had more stores here, it would be more convenient. If we had more stores here, it would be more convenient.
+   EN_AUTO:  more convenient if there were more  stores here. If we had more stores here , it would be more convenient. If we  had more stores here, it would be more  convenient. I'm a student, so my budget
+12 [1804.7s] RAW: 저는 학생이라 예산이 빠듯해요. A student so my budget is tight. I'm a student so my budget is tight. I'm a student. So my budget is tight. A student soudght.
+   EN_AUTO:  is tight. I'm a student, so my budget  is tight. A student, so my budget is  tight. I can't afford to buy expensive
+13 [1822.4s] RAW: 저는 비싼 것을 살 여유가 없어요. I can't afford to buy expensive things. I can't afford to buy expensive things. I can't afford to buy expensive things. I can't afford to buy expensive things.
+   EN_AUTO:  things. I can't afford to buy expensive  things. I can't afford to buy expensive  things. I can't afford to buy expensive  things. I don't want to waste too much
+14 [1839.8s] RAW: 저는 그것에 돈을 너무 많이 낭비하고 싶지 않아요. I don't want to waste too much money on that. I don't want to waste too much money on that. I don't wan to waste too much money on that. I don't wan to waste too much money on that.
+   EN_AUTO:  money on that. I don't want to waste  too much money on that. That is a waste
+15 [1858.1s] RAW: 그건 돈 낭비예요. It's a waste of money. It's a waste of money. It's a waste of money. It's a waste of money.
+   EN_AUTO:  of money. It's a waste of money. It's a  waste of money. It's a waste of money.  It's a waste of money. I'm a student,  so I'm busy with my studies. I'm
+16 [1870.9s] RAW: >> 저는 학생이어서 학업에 바빠요. I'm a student so I'm busy with my school work. I'm a student so I'm busy with my school work. I'm a student so I'm busy with my school work. I'm a student so busy with my school work.
+   EN_AUTO:  a student, so I'm busy with my  schoolwork. I'm a student, so I'm busy  with my schoolwork. I'm a student, so  I'm busy with my schoolwork. I'm a  student so busy with my schoolwork. I
+17 [1890.1s] RAW: 저는 시간이 별로 없어요. I don't have much time. I don't have much time. I don't have much time. I don't have much time.
+   EN_AUTO:  don't have much time. I don't have much  time. I don't have much time. I don't  have much time. I don't have much time.  I don't have much time. I
+18 [1903.4s] RAW: >> 저는 그것의 시간을 낭비하고 싶지 않아요. Don't was time on that. I don't want was time on that. I don't want a waste time on that. was on that.
+   EN_AUTO:  don't want to waste time on that. Don't  was time on that. I don't want was time  on that. I don't want a waste of time  on that. It's a waste of time. It's a
+19 [1919.0s] RAW: 그것은 시간 낭비예요. It's a waste of time. It's a waste of time. It's a waste of time. It's a waste of time.
+   EN_AUTO:  waste of time. It's a waste of time.  It's a waste of time. It's a waste of  time. It's a waste of time. It's
+20 [1932.0s] RAW: >> 그것은 저한테 꼭 필요해요. It's necessary for me. It's necessary for me. It's necessary for me.
+   EN_AUTO:  absolutely necessary for me. It's  necessary for me. It's necessary for me . I use it frequently. It makes me
+21 [1945.9s] RAW: 저는 그것을 자주 이용해요. I frequently use it. I frequently use it. I frequently use it. I frequently use it.
+   EN_AUTO:  happy and allows me to have a great
+22 [1959.8s] RAW: 그것은 저를 행복하게 해주고 좋은 경험을 할 수 있게 해 줘요. It makes me happy and I can have a great experience. It makes me happy and I can have a great experience. It makes me happy and I can have a great experience. It makes me happy and can experience.
+   EN_AUTO:  experience. They provide a good  environment and a pleasant experience.
+23 [1981.6s] RAW: 그들은 좋은 환경과 즐거운 경험을 제공해요. They provide a good environment and a pleasant experience. They provide a good environment and a pleasant experience. They provide a good environment and experience.
+   EN_AUTO:  They provide a good environment and a  pleasant experience. They provide a  good environment and a pleasant  experience. I like to try new things.
+24 [2003.9s] RAW: 저는 새로운 것들을 도전해 보는 것을 좋아해요. I like to try new things. I like to try new things. I like to try new things. I like to try new things.
+   EN_AUTO:  It's reliable, so I can trust the  product.
+25 [2019.6s] RAW: >> 그것은 믿을 만에서 저는 그 제품을 신뢰할 수 있어요. It's reliable so I can trust the product. It's reliable so I can trust the product. It's reliable. So I can trust the product. It's reliable. So I can trust the product.
+   EN_AUTO:  It's reliable, so I can trust the  product. It's popular, so people will
+26 [2039.9s] RAW: 그것은 인기 있는 것이라 사람들이 좋아할 거예요. It's a popular item, so people will love it. It's a popular item, so people will love it. It's a popular item, so people will love it. It's a popular item, so people will love it.
+   EN_AUTO:  like it. It's a popular item, so people  will love it. It's a popular item, so  people will love it. It's a popular  item, so people will love it. It's a  popular item, so people will love it.
+27 [2059.9s] RAW: 그것은 정서적인 가치가 담겨 있어요. sentimental value. It has sentimental value. It has sentimental value. It has sentimental value.
+   EN_AUTO:  It holds emotional value. It has  sentimental value. It has sentimental  value. It has sentimental value. It has  sentimental value. It is a good gift.
+28 [2075.4s] RAW: 그것은 좋은 선물이에요. It's a good gift. It's a good gift. It's a good gift. It's a good gift.
+   EN_AUTO:  It's a good gift. It's a good gift.  It's a good gift. It's a good gift.  It's a good gift. It's a good gift.  It's a good gift. It's a part of my
+29 [2087.6s] RAW: 그것은 제 일상의 일부예요. It's part of my routine. It's part of my routine. It's part of my routine. It's part of my routine.
+   EN_AUTO:  daily routine. It's part of my routine.
+30 [2100.6s] RAW: >> 그것은 제 습관이에요. It's my habit. It's my habit. It's my habit. It's my habit.
+   EN_AUTO:  It's part of my routine. It's part of  my routine. It's part of my routine.  It's part of my routine. It's my habit.  It's my habit. It's my habit. It's my
+31 [2112.9s] RAW: 저는 그것이 정말 좋았어요. I really liked it. I really liked it. I really liked it. I really liked it.
+   EN_AUTO:  habit. I really liked it. I really  liked it. I really liked it. I really
+32 [2125.4s] RAW: >> 그것은 훌륭했어요. It was great. It was great. It was great. It was great.
+   EN_AUTO:  liked it.  It was great. It was great. It was  great. It was great. It was awesome. It
+33 [2137.0s] RAW: 그것은 근사했어요. It was awesome. It was awesome. It was awesome. It was awesome.
+   EN_AUTO:  was awesome. It was awesome. It's
+34 [2149.1s] RAW: >> 그것은 더 싸고 더 빨라요. It's cheaper and faster. It's cheaper and faster. It's cheaper and faster. It's cheaper and faster.
+   EN_AUTO:  cheaper and  faster. It's cheaper and faster. It's  cheaper and faster. It's cheaper and  faster. It's cheaper and faster. It's
+35 [2163.8s] RAW: 그것은 매우 편리하고 유용해요. It's very convenient and useful. It's very convenient and useful. It's very convenient and useful. It's very convenient and useful.
+   EN_AUTO:  very convenient and useful. It's very  convenient and useful. It's very  convenient and useful. It's very  convenient and useful. It's very  convenient and useful. It's very  convenient and useful. It's very
+36 [2179.8s] RAW: 그것은 저에게 매우 도움이 돼요. It's very helpful to me. It's very helpful to me. It's very helpful to me. It's very helpful to me.
+   EN_AUTO:  helpful to me. It's very helpful to me.  It's very helpful to me. It's very  helpful to me. It's very helpful to me.
+37 [2194.6s] RAW: 그것은 제가 가장 좋아하는 일이에요. My thing to do. It's my thing to do.
+   EN_AUTO:  It's very helpful to me. It's my  favorite thing to do. It's my favorite  thing to do. It's my favorite thing to  do. It's my favorite thing to do. It
+38 [2209.6s] RAW: 그것은 저를 행복하게 해 줘서 저는 걱정을 잊을 수 있어요. Makes me happy so I can forget about my worries. It makes me happy so I can forget about my worries. It makes me happy so I can forget about my worries. It makes me happy so I can forget about my worries.
+   EN_AUTO:  makes me happy so I can forget about my  worries. It makes me happy so I can  forget about my worries. It makes me  happy so I can forget about my worries.  It makes me happy so I can forget about  my worries. It makes me happy so I can  forget about my worries. It is more fun
+39 [2232.3s] RAW: 그것은 더 재미있고 즐거움을 줘서 저는 지루해지지 않아요. It's more fun and entertaining so I don't get bored. It's more fun and entertaining so I don't get bored. It's more fun and entertaining so I don't get bored. It's more fun and entertaining so bored.
+   EN_AUTO:  and enjoyable, so I don't get bored.  It's more fun and entertaining so I  don't get bored. It's more fun and  entertaining so I don't get bored. It's  more fun and entertaining so I don't  get bored. It's more fun and  entertaining so I don't get bored. I
+40 [2254.9s] RAW: 저는 시 함께하는 것이 더 재미있다고 생각해요. I think it's more fun to do things in a group. I think it's more fun to do things in a group. I think it's more fun to do things in a group. I think it's more fun to do things in a group.
+   EN_AUTO:  think it's more fun to do things  together. I think it's more fun to do  things in a group. I think it's more  fun to do things in a group. I think  it's more fun to do things in a group.  I think it's more fun to do things in a  group. I can meet new people and make
+41 [2273.5s] RAW: 저는 새로운 사람들을 만날 수 있고 친구들을 사귈 수 있어요. I can meet new people and make friends. I can meet new people and make friends. I can meet new people and make friends. I can meet new people and make friends.
+   EN_AUTO:  friends. I can meet new people and make  friends. I can meet new people and make  friends. I can meet new people and make  friends. I feel more comfortable and
+42 [2293.0s] RAW: 저는 더 편안함을 느끼고 더 잘 집중할 수 있어요. I feel more comfortable and I can focus better. I feel more comfortable and I can focus better. I feel more comfortable and I can focus better. I feel more comfortable better.
+   EN_AUTO:  can focus better. I feel more  comfortable and I can focus better. I  feel more comfortable and I can focus  better. I feel more comfortable. I
+43 [2312.5s] RAW: 저는 다른 사람들을 기다리느라 시간을 낭비할 필요가 없어요. I don't have to waste time waiting for others. I don't have to waste time waiting for others. I don't have to waste time waiting for others. I don't have to waste time waiting for others.
+   EN_AUTO:  don't have to waste time waiting for  others. I don't have to waste time  waiting for others. I don't have to  waste time waiting for others. I don't  have to waste time waiting for others.
+44 [2331.6s] RAW: 저는 집에서 더 편안함을 느껴요. I feel more comfortable at home. I feel more comfortable at home. I feel more comfortable at home. I feel more comfortable at home.
+   EN_AUTO:  I feel more comfortable at home. I feel  more comfortable at home. I feel more  comfortable at home. I feel more  comfortable at home. I feel more  comfortable at home. I can save time
+45 [2346.8s] RAW: 외출하느라 시간을 낭비할 필요가 없기 때문에 저는 시간을 절약할 수 있어요. I can save time because I don't have to waste time going out. I can save time because I don't have to waste time going out. I can save time because I don't have to waste time going out.
+   EN_AUTO:  because I don't have to waste time  going out. I can save time because I  don't have to waste time going out. I  can save time because I don't have to  waste time going out. It's more
+46 [2368.8s] RAW: 그것은 더 개인적이고 더 밀접한 관계를 싸울 수 있어요. It's more personal and builds a closer relationship. It's more personal and builds a closer relationship. It's more personal and builds a closer relationship. It's more personal and builds a closer relationship.
+   EN_AUTO:  personal and builds a closer  relationship. It's more personal and  builds a closer relationship. It's more  personal and builds a closer  relationship. It's more personal and  builds a closer relationship. It causes
+47 [2390.4s] RAW: 그것은 오해를 덜 불러일으켜요. Ites less misunderstanding. It causes less misunderstanding. It causes less misunderstanding. It causes less misunderstanding.
+   EN_AUTO:  less misunderstanding. It causes less  misunderstanding. It causes less  misunderstanding. It relieves my stress
+=== Part 4 ===
+01 [3158.2s] RAW: 회의가 6월 20일에 힐튼 호텔에서 개최될 예정이에요. J 20th at Hilton Hotel the conference will be held on June 20th at Hilton Hotel the conference will be held on June 20th at Hilton Hotel on June 20th at Hilton Hotel
+   EN_AUTO:  scheduled to be held at the Hilton  Hotel on June 20th. The meeting will
+02 [3181.8s] RAW: me 9시에 시작할 거예요. 9 me at 9 me at 9
+   EN_AUTO:  start at 9:00. The seminar will end at
+03 [3199.0s] RAW: >> 세미나는 오후 5시에 끝날 거예요. at 5m 5m 5m 5m
+   EN_AUTO:  5:00.
+04 [3216.4s] RAW: 아니 유감스럽지만 잘못 알고 계십니다. 사실은 등록 및 커피 타임은 오전 9시에 시작할 거예요. No, I'm afraid that you have the wrong information. Actually the registration and coffee session will start at 9 am No, I'm afraid that you have the wrong information. Actually the registration and coffee session will start at 9 am. No, I'm afraid that you have the wr information. Actually, the register and coffee session will start at 9 am. No, I'm afraid that you have the WR information. Actually, the registraation and cy session will start at 9.
+   EN_AUTO:  No. I'm sorry to say, but you are  mistaken. In fact, registration and  coffee time will start at 9:00.  Actually, the registration and coffee  session will start at 9 am. No, I'm  afraid you have the wrong information.  Actually, the registration and coffee  session will start at 9 am. No, I'm  afraid you have the WR information.  Actually, the registration and coffee  session will start at 9 am. No, I'm  afraid you have the WR information.  Actually, the registration and coffee  session at 9 am. There are two sessions
+05 [3259.4s] RAW: 두 개의 세션이 있어요. 먼저 오후 1시에는 레이 킹스턴의 소셜 미디어 마케팅에 관한 워크숍이 있어요. 다음으로 오후 2시 30분에는 마케팅을 통해 스포츠 팬들에게 어필하기에 대한 케빈 델몬트의 토론이 있어요. There are two sessions. First at 1 pm there is a workshop on social media maray kingston. Next at 2:30 PM there is a discussion on appealing to sports fans through maring by Kevin Delmont. There are two sessions. First at 1 PM there is a workshop on social media maring by Ray Kingston. Next at 2:30 PM there is a discussion on appealing to sports fans through maring by Kevin Delmont. There are two sessions. First at 1 PM there is a workshop on social media maray Kingston. Next at 2:30 PM there is a discussion on appealing to sports fans through maring by Kevin Delmont. There are two sessions. First at 1 PM there is a workshop on social media maray Kingston. Next at 2:30 PM is onev.
+   EN_AUTO: . First, at 1 pm, there is a workshop  on social media marketing by Ray  Kingston. Next, at 2:30 pm, there is a  discussion by Kevin Delmont on  appealing to sports fans through  marketing. There are two sessions.  First, at 1 pm, there is a workshop on  social media marketing by Ray Kingston.  Next, at 2:30 PM, there is a discussion  on appealing to sports fans through  maring by Kevin Delmont. There are two  sessions. First, at 1 PM, there is a  workshop on social media by Maray  Kingston. Next, at 2:30 PM, there is a  discussion on appealing to sports fans  through maring by Kevin Delmont. There  are two sessions. First, at 1 PM, there  is a workshop on social media by Maray  Kingston. Next, at 2:30 PM, is onev.
+06 [3331.8s] RAW: 당신은 오전 10시에 샌프란시스코에서 출발할 거예요. from San Francisco at 10 am will depart from San Francisco at 10 am will depart from San Francisco at 10 am depart from San Francisco at 10 am
+   EN_AUTO:  You will depart from San Francisco at  10 AM. You will depart from San  Francisco at 10 AM. You will depart
+07 [3351.9s] RAW: >> 당신은 오후 3시에 로스앤젤레스에 도착할 거예요. Losmel
+   EN_AUTO:  from San Francisco at 10 AM. You will  arrive in Los Angeles at 3 PM. You will  arrive in Los Angeles at 3 PM. You will  arrive in Los Angeles at 3 PM. You will
+08 [3370.4s] RAW: 당신은 대한항공 배고기를 탈 거예요. A 105 will takean air 105 will takean air 105 will takean air 105
+   EN_AUTO:  take a Korean Air boat. You will take  Korean Air 105. You will take Korean  Air 105. You will take Korean Air 105.  You will take Korean Air 105. You will
+09 [3387.3s] RAW: >> 당신은 글랜 호텔에 머무를 거예요. You will stay at glel. You will stay at Glen Hotel. You will stay at Glen Hotel. You will stay at Glen Hotel.
+   EN_AUTO:  stay at the Glen Hotel. You will stay  at the Glen Hotel. You will stay at the  Glen Hotel. You will stay at the Glen
+10 [3402.0s] RAW: 당신은 점심 식사를 할 거예요. You will have lunch. >> 당신은 저녁 식사를 할 거예요. You will have dinner. >> 당신은 회의를 할 거예요. You will have a meeting. >> 당신은 연설을 할 거예요. You will give a speech. >> 당신은 present이을 할 거예요. You will give a presentation. 당신은 강의를 할 거예요. You will give a lecture. >> 인터뷰가 예정되어 있었으나 취소되었어요. There was supposed to be an interview but it has been canceled. There was supposed to be an interview but it has been canceled. There was supposed to be an interview but it has been canceled.
+   EN_AUTO:  Hotel.  You will have lunch. You will have  dinner. You will have a meeting. You  will have a meeting.  You will give a speech.  You will give a presentation. You will  give a lecture. There was supposed to  be an interview, but it has been  canceled. There was  supposed to be an interview, but it has  been canceled. There was supposed to be  an interview, but it has been canceled.
+11 [3456.3s] RAW: 미팅이 예정되어 있었으나 연기되었어요. There was supposed to be a meeting, but it has been postponed. There was supposed to be a meeting, but it has been postponed. There was supposed to be a meeting, but it has been postponed. There was supposed to be a meeting, but it has been postponed.
+   EN_AUTO:  There was supposed to be a meeting, but  it has been postponed. There was  supposed to be a meeting, but it has  been postponed. There was supposed to  be a meeting, but it has been postponed . There was supposed to be a meeting,  but it has been postponed. A meeting
+12 [3476.3s] RAW: 화요일 오후 2시에 제인 화이트 씨와의 미팅이 예정되어 있었으나 금요일로 조정되었어요. to be a mee with Jane White at 2m on Tuesday but it has been reschedul to frid there was supposed to be a mee with Jane White at 2 PM on Tuesday but it has been reschedul to frid there was supposed to be a mee with Jane White at 2 pm on Tuesday but it has been rescheduled to frid there was supposed to be a mee with Jane White at 2m onesday but it has been rescheduled to frid
+   EN_AUTO:  with Ms. Jane White was scheduled for  Tuesday at 2 PM, but it has been  rescheduled to Friday. There was  supposed to be a meeting with J White  at 2 PM on Tuesday, but it has been  rescheduled to Friday. There was  supposed to be a meeting with Jane  White at 2 PM on Tuesday, but it has  been rescheduled to Friday. There was  supposed to be a meeting with Jane  White at 2 PM on Tuesday, but it has  been rescheduled to Friday. She
+13 [3512.7s] RAW: 그녀는 2010년에 의 밴쿠버 예술대학교에서 디자인 전공으로 석사학위를 취득했어요. ignity in 2010 got a master deree in design fromc univity in 2010 got a master deree design fromcver art unersity in 2010
+   EN_AUTO:  obtained a Master's degree in Design  from the University of the Art and  Design in 2010. She received a Master  of Design degree from Art University in  2010.  From 2015 to 2017, she worked as a
+14 [3543.1s] RAW: >> 2015년부터 2017년까지 그녀는 제스퍼 패션 잡지사에서 이사로 일했어요. 2015 to 2017 worked at Jasper Fion magazine as a from 2015 to 2017 she worked at Jasper Fion magazine as a director from 2015 to 2017 she worked at Jasper Fion Magazine as a director from 2015 to 2017 she worked at Jasper Fashion magazine as a director.
+   EN_AUTO:  director at Jasper Fashion Magazine.
+15 [3576.8s] RAW: 17년부터 지금까지 그녀는 토론토 패션 잡지사에서 편집장으로 일해오고 있어요. from 2017 up to now she has worked at Toronto Fashion magazine as a chief editor. From 2017 up to now she has worked at Toronto Fion Magazine as a chief editor from 2017 up to now she has worked at Toronto Fion Magazine as a chief editor from 2017 up to worked at Fion Magazine as a
+   EN_AUTO:  Since 2017, she has been working as the  chief editor at a Toronto fashion  magazine. From 2017 up to now, she has  worked at Toronto Fion Magazine as a  chief editor. From 2017 up to worked at  Fion Magazine as a. I think she is
+16 [3610.3s] RAW: 저는 그녀가 자격을 갖췄다고 생각해요. 왜냐하면 I think she is qualified because I think she is qualified because I think she is qualified because I think she is qualified because
+   EN_AUTO:  qualified because I think she is  qualified because I think she is  qualified because I think she is  qualified because He speaks Spanish
+17 [3626.8s] RAW: 그는 스페인어를 유창하게 구사해요. He is fluent in Spanish. He is fluent in Spanish. He is fluent in Spanish. He is fluent in Spanish.
+   EN_AUTO:  fluently. He is fluent in Spanish. He  is fluent in Spanish. He is fluent in  Spanish. She is fluent in Spanish. She
+18 [3641.6s] RAW: 그녀는 필라테스 자격증이 있어요. certified in Pilades. She is certified in Pilades. She is certified in Pilades. She is certified in Pilades.
+   EN_AUTO:  is certified in Pilates. She is  certified in Pilates. She is certified  in Pilates. He has experience in
+19 [3656.9s] RAW: 그는 교육 분야의 경험이 있어요. He has experience in education. He has experience in education. He has experience in education. exp
+   EN_AUTO:  education. He has experience in  education. He has experience in  education. You will interview Jessica
+20 [3673.6s] RAW: 당신은 제시카 앤더슨과 오전 9시의 면접을 볼 거예요. Will interview Jessica Anderson at 9. You will interview Jessica Anderson at 9 am. You will interview Jessica Anderson at 9 am. You will interview Jessica Anderson at 9 am.
+   EN_AUTO:  Anderson at 9 am. You will interview  Jessica Anderson at 9 am. I have an
+21 [3695.2s] RAW: 마케팅 부장직에 지원하는 에코전자의 존 화이트 씨와 면접이 있어요. John White ey the mar joh ectics mar
+   EN_AUTO:  interview with Mr. John White from Echo  Electronics, who is applying for the  position of Marketing Manager. John  White ey the mar joh ectics mar She has
+22 [3727.6s] RAW: 그녀는 5년의 경력이 있어요. has years of experience has years of experience has years of experience has years of experience
+   EN_AUTO:  5 years of experience. She has years of  experience. She has years of experience . He is applying for the editor
+23 [3743.2s] RAW: 그는 편집자 직책에 지원하고 있어요. is editor is
+   EN_AUTO:  position. He is applying for the editor  position. You have to pay $ 20 for the
+24 [3759.5s] RAW: 5일 pa 수업으로 20달러를 지불하셔야 해요. You have to pay for the oil painting class. You have to pay for the oil painting class. You have to pay for the oil painting class. You have to pay for the oil painting class.
+   EN_AUTO:  5-day painting class. You have to pay  for the oil painting class. You have to  pay for the oil painting class. You  have to pay for the oil painting class.
+25 [3781.3s] RAW: 그것은 20달러예요.
+   EN_AUTO:  It's $ 20.
+26 [3793.7s] RAW: 1월 3일까지 등록하셔야 해요. You should register by January 3d. You should register by January 3d. You should register by January 3d. register byd
+   EN_AUTO:  You should register by January 3rd. You  should register by January 3rd. You  should register by January 3rd. You  should register by January 3rd. If you
+27 [3810.0s] RAW: 당신이 회원이라면 20달러예요. If you are a member, it's a member. If you are a member, it's a member.
+   EN_AUTO:  are a member, it's $ 20. If you are a  member, it's a member. It's free. It's
+28 [3827.2s] RAW: 그것은 무료예요. It's free. It's free. It's free. It's free.
+   EN_AUTO:  free. It's free. It's free. It's
+29 [3837.4s] RAW: >> 그것은 회원들을 위한 것이에요. It's for members. It's for members. It's for members. It's for members.
+   EN_AUTO:  for members. It's for members. It's for  members. It's for members. There is a
+30 [3849.1s] RAW: 초보자를 위한 요리 수업이 있어요. There is a cooking for beginers class. There is a cooking for beginners class. There is a cooking for beginers class.
+   EN_AUTO:  cooking class for beginners. There is a  cooking class for beginners. There is a  cooking class for beginners. An
+31 [3866.2s] RAW: 강사가 회화 수업을 지도할 거예요. Sean Ken will teach the painting class. Sean Ken will teach the painting class. Se will teach the painting class. Sean Ken will teach the painting class.
+   EN_AUTO:  instructor will teach the painting  class. Sean Ken will teach the painting  class. Sean Ken will teach the painting  class. There is a class on French art  history. There is a class on French art
+32 [3882.8s] RAW: 프랑스 예술사에 관한 수업이 있어요. There is a class on French art history. There is a class on French art history. There is a class on French art history. There is a class on French art history.
+   EN_AUTO:  history. There is a class on French art  history. There is a class on French art  history. Instructor Jennifer Houston is
+33 [3899.4s] RAW: 제니퍼 휴스턴 강사가 컴퓨터 기술에 관한 수업을 지도할 예정이에요. Jennifer Houston will teach on computer skills. Jennifer Houston will teach a class on computer skills. Jennifer Houston will teach a class on computer skills. Jennifer Houston will teach a class on computer skills.
+   EN_AUTO:  scheduled to teach a class on computer  skills. Jennifer Houston will teach a  class on computer skills. Jennifer  Houston will teach a class on computer  skills. Jennifer Houston will teach a  class on computer skills. The meeting
+=== Part 5 ===
+01 [4629.9s] RAW: 그들은 새로운 것들을 배울 수 있어요. They can learn new things. They can learn new things. They can learn new things. They can learn new things.
+   EN_AUTO:  learn new things. They can meet new
+02 [4643.5s] RAW: 그들은 새로운 사람들을 만나고 인맥을 넓힐 수 있어요. They can meet new people and expand their network. They can meet new people and expand their network. They can meet new people and expand their network. new people
+   EN_AUTO:  people and expand their network. They  can meet new people and expand their  network. They can meet new people and  expand their network. They can meet new  people and expand their network. They
+03 [4664.3s] RAW: 그들은 많은 것을 경험하고 그들의 견문을 넓힐 수 있어요.
+   EN_AUTO:  can experience many things and broaden  their horizons. They cannot make the
+04 [4688.0s] RAW: 그들은 올바른 결정을 하지 못하는데 왜냐하면 그들은 아직 충분히 성숙하지 않기 때문이에요. Can't make good decisions because they are not mature enough. They can't make good decisions because they are not mature enough. They can't make good decisions because they are not mature enough. They can't make good decisions because they are not mature enough.
+   EN_AUTO:  right decisions because they are not  yet mature enough. They can't make good  decisions because they are not mature  enough. They can't make good decisions  because they are not mature enough.  They can't make good decisions because  they are not mature enough. Their  concentration will be scattered. They
+05 [4716.1s] RAW: 그들은 집중력이 분산될 거예요. They will be distracted. They will be distracted. They will be distracted. They will be distracted.
+   EN_AUTO:  will be distracted. They will be  distracted. They will be distracted.  They will be distracted.  They will be distracted. They cannot
+06 [4730.0s] RAW: >> 그들은 공부에 집중할 수가 없어요.
+   EN_AUTO:  concentrate on their studies. They
+07 [4738.6s] RAW: 그들은 일에 집중할 수가 없어요. They can't focus on their work. They can't focus on their work.
+   EN_AUTO:  cannot concentrate on their work. They  can't focus on their work. They cannot
+08 [4749.0s] RAW: 그들은 학교에서 좋은 성적을 받을 수 없어요. grades good grades at school. They can't get good grades at school.
+   EN_AUTO:  get good grades at school. They can't  get good grades at school. They will
+09 [4765.4s] RAW: 그들은 학급에서 뒤쳐질 거예요. They will fall behind in class. They will fall behind in class. They will fall behind in class. They will fall behind in class.
+   EN_AUTO:  fall behind in class. They will fall  behind in class. They will fall behind  in class. They will fall behind in  class. They can't work efficiently.
+10 [4780.7s] RAW: 그들은 효율적으로 일할 수 없어요. They can't work efficiently. They can't work efficiently. They can't work efficiently. They can't work efficiently.
+   EN_AUTO:  They can't work efficiently. They can't  work efficiently. They can't work  efficiently. They can save money. They
+11 [4796.5s] RAW: 그들은 돈을 절약할 수 있어요. They can save money. They can save money. They can save money. They can save money.
+   EN_AUTO:  can save money. They can save money.  They can save money. The cost of living
+12 [4809.2s] RAW: 생활비가 너무 비싸요. The cost of living is too high. The cost of living is too high. The cost of living is too high. The cost of living is too high.
+   EN_AUTO:  is too high. The cost of living is too  high. The cost of living is too high.
+13 [4823.4s] RAW: 그들은 생계를 유지할 수 없어요. They can't make a living. They can't make a living. They can't make a living. They can't make a living.
+   EN_AUTO:  They can't make a living. They can't  make a living. They can't make a living . I can get a high salary. I can get a
+14 [4836.6s] RAW: >> 저는 높은 급여을 받을 수 있어요. I can get a high salary. I can get a high salary. 저는 더 높은 급여을 받을 수 있어요. I can get a higher salary. I can get a higher salary.
+   EN_AUTO:  high salary. I can get a higher salary.
+15 [4853.4s] RAW: 그것은 삶을 더 낮게 만들어 주기 때문에 좋은 투자예요. That's a good investment because it makes lives better. That's a good investment because it makes lives better. That's a good investment because it makes lives better. That's a good investment because it makes lives better.
+   EN_AUTO:  That's a good investment because it  makes lives better. That's a good  investment because it makes lives  better. They can focus better. They can
+16 [4872.8s] RAW: 그들은 더 잘 집중할 수 있어요. They can focus better. They can focus better. They can focus better. They can focus better.
+   EN_AUTO:  focus better. They can focus better.  They can focus better. They will not be
+17 [4885.8s] RAW: 그들은 다른 사람들 때문에 방해받지 않을 거예요. distct will not be distracted by others. They will not be distracted by others. They will not be distracted by others.
+   EN_AUTO:  distracted by others. They will not be  distracted by others. They can set  their own schedule. They can set their  own schedule. They can set their own
+18 [4903.8s] RAW: 그들은 그들만의 일정을 짤 수 있어요. They can set their own schedule. They can set their own schedule. They can set their own schedule. They can set their own schedule.
+   EN_AUTO:  schedule. They can set their own  schedule. They can set their own  schedule. They can have more freedom.
+19 [4919.0s] RAW: 그들은 더 많은 자유를 가질 수 있어요. They can have more freedom. They can have more freedom. They can have more freedom. They can have more freedom.
+   EN_AUTO:  They can have more freedom. They can  have more freedom. They can get
+20 [4934.4s] RAW: 그들은 정보를 얻고 그것을 다른 사람들과 공유할 수 있어요.
+   EN_AUTO:  information and share it with others.  They can get information and share it  with other people. It feels more like a  family. It feels more like a family. It
+21 [4955.0s] RAW: 그것은 더 가족처럼 느껴져요. It feels more like a family. It feels more like a family. It feels more like a family. It feels more like a family.
+   EN_AUTO:  feels more like a family.
+22 [4968.8s] RAW: >> 그들은 인터넷상에서 많은 유용한 정보를 얻을 수 있어요. They can get a lot of useful information on the intern. They can get a lot of useful information on the internet.
+   EN_AUTO:  They can get a lot of useful  information on the internet. They can
+23 [4981.1s] RAW: 그들은 인터넷상에서 많은 최신 정보를 얻을 수 있어요. Can of latation on can of latest information on
+   EN_AUTO:  get a lot of the latest information on  the internet.
+24 [4995.0s] RAW: >> 그것은 더 빠르고 더 편리해요. faster and more convenient. It's faster and more convenient. It's faster and more convenient. It's faster and more convenient.
+   EN_AUTO:  It is faster and more convenient. It's  faster and more convenient. It's faster  and more convenient. It's faster and  more convenient. There is a lot of
+25 [5010.4s] RAW: 인터넷에는 많은 부정확한 정보가 있어서 믿을 만하지가 않아요. There is a lot of inaccurate information on the internet soiable. There is a lot of inaccurate information on the internet so it's notiable. There is a lot of inaccurate information on the internet so it's notiable.
+   EN_AUTO:  inaccurate information on the internet,  so it's not reliable. There is a lot of  inaccurate information on the internet,  so it's notable. It distracts students,
+26 [5038.4s] RAW: 그것은 학생들의 집중을 분산시켜서 학생들은 공부에 집중할 수 없어요. distracting for students. So students can't focus on their studies. It is very distracting for students. So students can't focus on their studies.
+   EN_AUTO:  so they can't focus on their studies.  It is very distracting for students. So  students can't focus on their studies.
+27 [5054.4s] RAW: >> 그것은 학생들의 집중을 분산시켜서 학생들은 일에 집중할 수 없어요. is very distracting for students. So students can't focus on their work. stud
+   EN_AUTO:  It distracts students, so they can't  focus on their work. I can get  responses right away. I can get
+28 [5071.8s] RAW: 저는 즉시 답변을 받을 수 있어요. I can get responses right away. I can get responses right away. I can get responses right away. I can get responses right away.
+   EN_AUTO:  responses right away. I can get  responses right away. I can get  responses right away. I can understand
+29 [5088.3s] RAW: 저는 화자의 감정을 더 정확하게 이해할 수 있어요. I can understand the speakers feeling more accurately. I can understand the speakers feeling more accurately. I can understand the speakers feeling more accurately. Can understanders more accurately.
+   EN_AUTO:  the speaker's emotions more accurately.  I can understand the speakers' emotions  more accurately. I can understand the  speakers feeling more accurately. They  can create a friendly work atmosphere.
+30 [5109.8s] RAW: 그들은 친근한 업무 분위기를 만들 수 있어요. Can create
+   EN_AUTO:  They can create a friendly atmosphere.
+31 [5120.3s] RAW: 그들은 친근한 분위기를 만들 수 있어요.
+   EN_AUTO:  They can create a friendly atmosphere.  They can communicate with others better . They can communicate with others
+32 [5132.0s] RAW: 그들은 다른 사람들과 더 잘 소통할 수 있어요. They can communicate with others better. They can communicate with others better. They can communicate with others better. They can communicate with others better.
+   EN_AUTO:  better. Communicate with others better.  They can be excellent team members and  build good relationships with others.
+33 [5149.9s] RAW: 그들은 훌륭한 팀원이 될 수 있고 다른 사람들과 좋은 관계를 맺을 수 있어요. can be good team players and make good relationships with others. They can be good team players and make good relationships with others. They can be good team players and make good relationships with others. They can be good team players and make good relationships with others.
+   EN_AUTO:  They can be good team players and make  good relationships with others. They  can be good team players and make good  relationships with others. They can be  good team players and make good  relationships with others. They can  have a good reputation. They can have a  good reputation. They can have a good
+34 [5174.7s] RAW: 그들은 좋은 평판을 받을 수 있어요. They can have a good reputation. They can have a good reputation. They can have a good reputation. They can have a good reputation.
+   EN_AUTO:  reputation. They can have a good  reputation. They can be very  influential. They can be very
+35 [5189.9s] RAW: 그들은 매우 영향력이 있을 수 있어요. They can be very influential. They can be very influential. They can be very influential. They can be very influential.
+   EN_AUTO:  influential. They can be very  influential. They can be very  influential. They can be very
+36 [5205.4s] RAW: 그들은 다른 사람들을 동기 부여할 수 있어요. They can motivate others. They can motivate others. They can motivate others. They can motivate others.
+   EN_AUTO:  influential. They can motivate others.  They can motivate others. They can  motivate others. They can motivate  others. Everything is always changing
+37 [5220.4s] RAW: 모든 것이 항상 변화하고 경쟁이 치열해요. Everything is always changing and there is a lot of competition. Everything is always changing and there is a lot of competition. Everything is always changing and there is a lot of competition. Everything is always changing and there is a lot of competition.
+   EN_AUTO:  and competition is fierce. Everything  is always changing and there is a lot  of competition. Everything is always  changing and there is a lot of  competition. Everything is always  changing and there is a lot of  competition. They face many challenges
+38 [5242.3s] RAW: 그들은 많은 도전과 어려움에 직면해요. difficulties. They face a lot of challenges and difficulties. They face a lot of challenges and difficulties.
+   EN_AUTO:  and difficulties. They face many  challenges and difficulties. They face  many challenges and difficulties. He is
+39 [5261.4s] RAW: 그는 그의 자신감 덕분에 다양한 상황을 처리할 수 있어요. He is able to handle a variety of situations due to his confidence. He is able to handle a variety of situations due to his confidence. He is able to handle a variety of situations due to his confidence. He is able to handle a variety of situations due to his confidence.
+   EN_AUTO:  able to handle a variety of situations  thanks to his confidence. He is able to  handle a variety of situations due to  his confidence. He is able to handle a  variety of situations due to his  confidence. They have a lot of
+40 [5286.5s] RAW: 그들은 많은 경험을 가지고 있어요.
+   EN_AUTO:  experience. They have a lot of
+41 [5294.8s] RAW: 그들은 많은 지식을 가지고 있어요.
+   EN_AUTO:  knowledge. Employees can work more
+42 [5304.7s] RAW: 직원들은 더 효율적이고 더 생산적으로 일할 수 있어요. employees can work more efficiently and productively. Employees can work more efficiently and productively. Employees can work more efficiently and productively. Employees can work more efficiently and
+   EN_AUTO:  efficiently and productively. Employees  can work more efficiently and  productively. Employees can work more  efficiently and productively. The
+43 [5324.2s] RAW: productively.들의 직원들은 그들의 직업에 더 만족할 수 있어요. employees can be more satisfied with their jobs. Employees can be more satisfied with their jobs. Employees can be more satisfied with their jobs. Employees can be more satisfied with their jobs.
+   EN_AUTO:  employees can be more satisfied with  their jobs. It can make a better work
+44 [5348.8s] RAW: 그것은 더 나은 업무 환경을 만들 수 있어요. It can make a better work environment. It can make a better work environment. It can make a better work environment. It can make a better work environment.
+   EN_AUTO:  environment. They might appear less
+45 [5367.0s] RAW: >> 그들은 덜 전문적으로 보일 수 있어요. might professional. They might appear less professional. They might appear less professional. Profal.
+   EN_AUTO:  professional. Customers will feel
+46 [5382.8s] RAW: 고객들은 만족감을 느낄 것이고 계속 충성할 거예요. Customers will satisfied and remain loyal. Customers will feel satisfied and remain loyal. Customers will feel satisfied and remain loyal. Customers will feel satisfied and remain loyal.
+   EN_AUTO:  satisfied and remain loyal. It will
+47 [5404.1s] RAW: 그것은 더 많은 고객을 유치할 거예요. attract more customers. It will attract more customers. It will attract more customers. It will attract more customers.
+   EN_AUTO:  attract more customers. The business
+48 [5420.0s] RAW: 그 사업은 더 성공할 거예요. The business will be more successful. The business will be more successful. The business will be more successful.
+   EN_AUTO:  will be more successful. People
+49 [5435.3s] RAW: 사람들은 소셜 미디어를 자주 이용해서 그것은 매우 효과적일 거예요. People frequently use social media so it will be very effective. People frequently use social media so it will be very effective. People frequently use social media so it will be very effective. People frequently use social media so it will be very effective.
+   EN_AUTO:  frequently use social media, so it will  be very effective. People frequently  use social media, so it will be very  effective. People frequently use social  media, so it will be very effective. It  relieves their stress, and they can
+50 [5461.9s] RAW: 그것은 그들의 스트레스를 풀어주고 그들은 편이 쉴 수 있어요. Itesaxes and their stress and relax.
+   EN_AUTO:  rest comfortably. It relieves their  stress and relax. It is good for their  physical health. It is good for their
+51 [5482.3s] RAW: 그것은 그들의 신체적 건강에 좋아요. 그것은 그들의 정신적 건강에 좋아요.
+   EN_AUTO:  mental health.  It is good for their health. It is not
+52 [5495.7s] RAW: >> 그것은 그들의 건강에 좋아요.
+   EN_AUTO:  good for their health. It is not good  for their health. It is not good for
+53 [5503.0s] RAW: 그것은 그들의 건강에 좋지 않아요. It is not good for their health. It is not good for their health. It is not good for their health. It is not good for their health.
+   EN_AUTO:  their health. It is not good for their  health. It can develop healthy habits.
+54 [5518.0s] RAW: 그것은 건강한 습관들을기를 수 있어요. It can develop healthy habits. It can develop healthy habits. It can develop healthy habits. It can develop healthy habits.
+   EN_AUTO:  It can develop healthy habits. It can  develop healthy habits. It can develop  healthy habits. It can develop healthy
+55 [5533.1s] RAW: 그것은 건강하지 않은 습관들을기를 수 있어요. It can develop unhealthy habits. It can develop unhealthy habits. It can develop unhealthy habits.
+   EN_AUTO:  habits. It can develop unhealthy habits . It can develop unhealthy habits. It  can develop unhealthy habits. It is
+56 [5549.6s] RAW: 그것은 환경에 좋아요. It is good for the environment. It is good for the environment. It is good for the environment.
+   EN_AUTO:  good for the environment. It is good  for the environment. It is good for the  environment. Environmental pollution is
+57 [5564.2s] RAW: 환경오염은 요즘 심각한 문제예요. isue these days. Pollution is a serious issue these days. Pollution is a serious issue these days. Pollution is a serious issue these days.
+   EN_AUTO:  a serious problem these days. Pollution  is a serious issue these days.  Pollution is a serious issue these days . Pollution is a serious issue these  days. It can create a cleaner
+58 [5581.3s] RAW: 그것은 더 깨끗한 환경을 만들 수 있어요. It can make a cleaner environment. It can make a cleaner environment. It can make a cleaner environment. It can make a cleaner environment.
+   EN_AUTO:  environment. It can make a cleaner  environment. It can make a cleaner  environment. It can make a cleaner  environment. We will be able to protect
+59 [5598.4s] RAW: 우리는 환경을 보호할 수 있을 거예요. We will be able to protect the environment. We will be able to protect the environment. We will be able to protect the environment. We will be able to protect the environment.
+   EN_AUTO:  the environment. We will be able to  protect the environment. We will be  able to protect the environment. We  will be able to protect the environment . Above all, people can find answers
+60 [5616.8s] RAW: 무엇보다도 사람들은 인터넷에서 아주 빠르게 답을 찾을 수 있어요. 그래서 시간을 절략할 수 있고 정보를 바로 얻을 수 있어요. 하지만 예전에는 사람들이 도서관에 가서 책을 뒤져야 했어요. 그래서 그들이 찾고 있던 것을 찾는데 시간이 오래 걸렸어요. most of all people can find answers very quickly on the internet so they can save time and get the information right away. However, in the P to go to the libr and look through books. So it took a long time to find what they were looking for. Most of all people can find anwers very quickly on the intern so they can save time and get the information right away. However, in the P to go to the library and look through B so it took a long time to find what they look for most of all people can find anwers very quickly on the intern so they can save time and get the information right away however in the p to go to the libr and look through books so it took a long time to find what they look for most of all people can find anw time people
+   EN_AUTO:  very quickly on the internet. So they  can save time and get information right  away. However, in the past, people had  to go to the library and search through  books. So it took a long time to find  what they were looking for. Most of all , people can find answers very quickly  on the intern so they can save time and  get the information right away. However , in the PBR, they have to go to the  library and look through books. So it  took a long time to find what they were  looking for. Most of all, people can  find answers very quickly on the intern  so they can save time and get the  information right away. However, in the  P, they have to go to the library and  look through books. So it took a long  time to find what they were looking for . Most of all, people can find answers  very quickly on the intern so they can  save time and get the information right  away. However, in the P, people have to  go to the library. In the past,
+61 [5707.5s] RAW: 예전에는 학생들이 공부를 하기 위해 교실에 가야만 했어요. Students had to go to a classroom to study. Previously, students had to go to a classroom to study. Previously, students had to go to a classroom to study. Previously, students had to go to a classroom to study.
+   EN_AUTO:  students had to go to a classroom to  study. Previously, students had to go  to a classroom to study. Previously,  students had to go to a classroom to  study. Previously, students had to go  to a classroom to study. But nowadays,
+62 [5729.9s] RAW: >> 하지만 요즘은 그들은 어디 가지 않아도 온라인으로 공부할 수 있어요. But these days they can study online without going anywhere. But these days they can study online without going anywhere. But these days they can study online without going anywhere. But these days can study online without going any.
+   EN_AUTO:  they can study online without having to  go anywhere. People used to wait for
+63 [5754.3s] RAW: 사람들이 예전에는 택시를 기다리곤 했지만 지금은 택시를 부르기 위해 모바일 애플리케이션을 사용해요. People used to wait for a taxy but now they use mobile apps to call a taxy. People used to wait for a taxi but now they use mobile apps to call a taxy. People used to wait for a tax but now they use mobile apps to call a taxy.
+   EN_AUTO:  taxis, but now they use mobile  applications to call a taxi. People  used to wait for a taxi, but now they  use mobile apps to call a taxi. People  used to wait for a taxi, but now they  use mobile apps to call a taxi. People  used to wait for a taxi, but now they  use mobile apps to call a taxi.
+64 [5783.8s] RAW: 과거와 비교하면 사람들은 온라인에서 정보를 더욱 쉽고 빠르게 얻을 수 있어요. moreas compas compas people
+   EN_AUTO:  Compared to the past, people can get  information more easily and quickly  online. Thanks to this, many office
+65 [5814.8s] RAW: 기술 덕분에 많은 직장인들이 재태 근무을 하고 시간을 절약할 수 있어요. Thanks to technology workers can work from home and save time. Thanks to technology many workers can work from home and save time. Thanks to technology many workers can work from home and save time. Thanks to technology many workers can work from home and save time.
+   EN_AUTO:  workers can work from home and save  time. They can learn new things. They

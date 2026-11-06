@@ -56,6 +56,8 @@ export const MOCK_PART2_QUESTIONS: Part2QuestionResponse[] = (masterRawData.part
   scoreTip: q.scoreTip || '4단계 시계토끼 공식(장소 → 중심 인물 → 주변 → 마무리 총평)으로 30초를 완성하세요.',
   vocabulary: q.vocabulary || [],
   grammarPoints: q.grammarPoints || [],
+  youtubeTimestamp: q.youtubeTimestamp || (q.id ? q.id * 30 : 60),
+  youtubeVideoId: q.youtubeVideoId || 'sample',
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 }));
@@ -77,6 +79,8 @@ export const MOCK_PART3_QUESTIONS: Part3QuestionResponse[] = (masterRawData.part
   scoreTip: q.scoreTip || '질문을 주어로 받아치고 만능문장을 붙여 15초/30초를 채우세요.',
   vocabulary: q.vocabulary || [],
   grammarPoints: q.grammarPoints || [],
+  youtubeTimestamp: q.youtubeTimestamp || (q.id ? q.id * 45 : 120),
+  youtubeVideoId: q.youtubeVideoId || 'sample',
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 }));
@@ -104,6 +108,8 @@ export const MOCK_PART4_QUESTIONS: Part4QuestionResponse[] = MOCK_PART4_SETS.fla
     scheduleTable: set.table || { headerTitle: set.title, metaInfo: [], rows: [] },
     context: set.context || '',
     context_kr: set.context_kr || '',
+    youtubeTimestamp: q.youtubeTimestamp || (q.id ? q.id * 50 : 200),
+    youtubeVideoId: q.youtubeVideoId || 'sample',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   }))

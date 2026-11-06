@@ -49,6 +49,8 @@ export interface BaseToeicQuestion {
   scoreTip: string;
   vocabulary: VocabularyItem[];
   grammarPoints?: GrammarPoint[];
+  youtubeTimestamp?: number;
+  youtubeVideoId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -138,3 +140,5 @@ export interface PaginatedResponse<T> {
 }
 
 export type QuestionListApiResponse = PaginatedResponse<ToeicQuestionDetailResponse>;
+
+export type { CheatFormula, UserStudyProfile } from './types';
