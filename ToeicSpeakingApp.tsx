@@ -1,1200 +1,1731 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import {
-  ToeicPart,
-  ToeicQuestionDetailResponse,
-  Part2QuestionResponse,
-  Part3QuestionResponse,
-  Part4QuestionResponse,
-  QuestionQueryParams,
-} from './api-types';
-import { getQuestions, ApiError } from './api';
-import {
-  MOCK_USER_PROFILE,
-  FULL_MASTER_QUESTIONS,
-  MOCK_CHEAT_SHEETS,
-} from './mockData';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import masterDataRaw from './data/toeic_parts_master.json';
+import magicDataRaw from './data/magic_187_vocab.json';
 
-// 백엔드 FastAPI 서버 미구동 상태에서도 전체 98개 문항을 완벽 학습할 수 있는 Fallback 데이터셋
-const FALLBACK_MOCK_DATA: ToeicQuestionDetailResponse[] = FULL_MASTER_QUESTIONS;
-
-interface ExamTimerState {
-  phase: 'idle' | 'prep' | 'response' | 'finished';
-  timeLeft: number;
-  totalDuration: number;
-  progressPercent: number;
-  isRunning: boolean;
+interface SentenceItem {
+  step?: string;
+  en: string;
+  chunking?: string;
+  ko: string;
 }
 
+interface MagicSentenceItem {
+  en: string;
+  ko: string;
+  tip?: string;
+}
+
+interface VocabItem {
+  word: string;
+  ipa: string;
+  pos: string;
+  meaning: string;
+}
+
+interface ScheduleTable {
+  headerTitle: string;
+  metaInfo: { label: string; value: string }[];
+  rows: { date: string; time: string; event: string; location: string; note: string }[];
+}
+
+interface StandardQuestion {
+  id: string;
+  part: number;
+  qNum: string;
+  category?: string;
+  typeId?: string;
+  typeName?: string;
+  typeBadge?: string;
+  topic: string;
+  prepTime: number;
+  responseTime: number;
+  imageRelPath?: string;
+  imageBase64?: string;
+  question?: string;
+  questionKo?: string;
+  sentences: SentenceItem[];
+  magicSentences?: MagicSentenceItem[];
+  vocabulary: VocabItem[];
+  readingTips?: string;
+  explanation?: string;
+}
+
+interface Part4Question {
+  qId: string;
+  qNum: string;
+  topic: string;
+  prepTime: number;
+  responseTime: number;
+  question: string;
+  questionKo: string;
+  sentences: SentenceItem[];
+  magicSentences?: MagicSentenceItem[];
+  vocabulary: VocabItem[];
+  explanation?: string;
+}
+
+interface Part4Set {
+  id: string;
+  part: number;
+  setNum: string;
+  tableTypeId: string;
+  tableTypeName: string;
+  tableTypeBadge: string;
+  topic: string;
+  prepTime: number;
+  scheduleTable: ScheduleTable;
+  questions: Part4Question[];
+}
+
+interface MagicBookItem {
+  id: string;
+  part: number;
+  category: string;
+  en: string;
+  ko: string;
+  tip: string;
+  keywords: string;
+}
+
+const masterData = masterDataRaw as {
+  title: string;
+  part3Types: { id: string; name: string }[];
+  part4TableTypes: { id: string; name: string }[];
+  part1: StandardQuestion[];
+  part2: StandardQuestion[];
+  part3: StandardQuestion[];
+  part4: Part4Set[];
+  part5: StandardQuestion[];
+};
+
+const magicData = magicDataRaw as {
+  metadata: {
+    title: string;
+    total_count: number;
+  };
+  items: MagicBookItem[];
+};
+
+type ActivePart = 'part1' | 'part2' | 'part3' | 'part4' | 'part5';
+type TimerStatus = 'idle' | 'prep' | 'resp' | 'done';
+
 export const ToeicSpeakingApp: React.FC = () => {
-  // ----------------------------------------------------------------------------
-  // 1. 상태 관리
-  // ----------------------------------------------------------------------------
-  const [currentPart, setCurrentPart] = useState<ToeicPart>('part3');
-  const [selectedSetId, setSelectedSetId] = useState<number | 'all'>('all');
-  const [questions, setQuestions] = useState<ToeicQuestionDetailResponse[]>([]);
-  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [activePart, setActivePart] = useState<ActivePart>('part1');
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [part3TypeFilter, setPart3TypeFilter] = useState<string>('ALL');
+  const [part4TableTypeFilter, setPart4TableTypeFilter] = useState<string>('ALL');
 
-  // 로딩 & 에러 & 오프라인 폴백 상태
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [apiError, setApiError] = useState<ApiError | null>(null);
-  const [isUsingFallback, setIsUsingFallback] = useState<boolean>(false);
+  // 모범답안 펼침 상태
+  const [isAnswerOpen, setIsAnswerOpen] = useState<boolean>(false);
+  const [p4AnswerOpenMap, setP4AnswerOpenMap] = useState<Record<string, boolean>>({});
 
-  // UI 인터랙션 상태
-  const [isAnswerVisible, setIsAnswerVisible] = useState<boolean>(false);
-  const [isExamMode, setIsExamMode] = useState<boolean>(true);
-  const [isCheatSheetOpen, setIsCheatSheetOpen] = useState<boolean>(false);
-  const [modalTab, setModalTab] = useState<ToeicPart>('part3');
+  // Part 4 질문 지문 숨김 토글 상태 (듣기 시험 특성 반영)
+  const [p4QuestionVisibleMap, setP4QuestionVisibleMap] = useState<Record<string, boolean>>({});
 
-  // 오디오 발음 재생(TTS) 상태
-  const [speakingSentenceIndex, setSpeakingSentenceIndex] = useState<number | null>(null);
+  // 문항 목록 드로어 상태
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
 
-  // 실전 타이머 상태
-  const [timerState, setTimerState] = useState<ExamTimerState>({
-    phase: 'idle',
-    timeLeft: 3,
-    totalDuration: 3,
-    progressPercent: 0,
-    isRunning: false,
+  // 시계토끼 만능문장 187 모달 상태
+  const [isVocabModalOpen, setIsVocabModalOpen] = useState<boolean>(false);
+  const [modalPartFilter, setModalPartFilter] = useState<string>('ALL');
+  const [modalSearch, setModalSearch] = useState<string>('');
+  const [memorizedIds, setMemorizedIds] = useState<Record<string, boolean>>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('toeic_memorized_187') || '{}');
+    } catch {
+      return {};
+    }
   });
 
-  // Part 4 전용 45초 표 읽기 실전 타이머 상태
-  const [p4ReadingTime, setP4ReadingTime] = useState<number>(45);
-  const [isP4ReadingActive, setIsP4ReadingActive] = useState<boolean>(false);
-
-  // ----------------------------------------------------------------------------
-  // 2. 실제 FastAPI 서버 데이터 로딩 로직 (fetch/axios)
-  // ----------------------------------------------------------------------------
-  const fetchQuestionsFromApi = useCallback(
-    async (targetPart: ToeicPart, targetSetId: number | 'all') => {
-      setIsLoading(true);
-      setApiError(null);
-
-      const params: QuestionQueryParams = {
-        part: targetPart,
-        limit: 100,
-      };
-      if (targetSetId !== 'all') {
-        params.setId = targetSetId;
-      }
-
-      try {
-        const response = await getQuestions(params);
-        setQuestions(response.items);
-        setCurrentIndex(0);
-        setIsUsingFallback(false);
-      } catch (err: unknown) {
-        if (err instanceof ApiError) {
-          setApiError(err);
-        } else {
-          setApiError(new ApiError('알 수 없는 오류가 발생했습니다.', 500));
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
-
-  useEffect(() => {
-    if (!isUsingFallback) {
-      fetchQuestionsFromApi(currentPart, selectedSetId);
-    } else {
-      let filtered = FALLBACK_MOCK_DATA.filter((q) => q.part === currentPart);
-      if (selectedSetId !== 'all') {
-        filtered = filtered.filter((q) => q.setId === selectedSetId);
-      }
-      setQuestions(filtered);
-      setCurrentIndex(0);
-      setIsLoading(false);
+  // 3. 다크모드 상태 (로컬스토리지 연동)
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('toeic_dark_mode') === 'true';
+    } catch {
+      return false;
     }
-  }, [currentPart, selectedSetId, isUsingFallback, fetchQuestionsFromApi]);
+  });
 
-  const handleEnableFallbackMock = () => {
-    setIsUsingFallback(true);
-    setApiError(null);
-    setIsLoading(true);
-    setTimeout(() => {
-      let filtered = FALLBACK_MOCK_DATA.filter((q) => q.part === currentPart);
-      if (selectedSetId !== 'all') {
-        filtered = filtered.filter((q) => q.setId === selectedSetId);
+  const toggleDarkMode = () => {
+    setIsDarkMode(prev => {
+      const next = !prev;
+      localStorage.setItem('toeic_dark_mode', String(next));
+      if (typeof document !== 'undefined') {
+        document.documentElement.classList.toggle('dark', next);
       }
-      setQuestions(filtered);
-      setCurrentIndex(0);
-      setIsLoading(false);
-    }, 200);
+      return next;
+    });
   };
 
-  const activeQuestion: ToeicQuestionDetailResponse | undefined = questions[currentIndex];
-
-  const availableSetIds = useMemo(() => {
-    const setSet = new Set<number>();
-    const pool = isUsingFallback
-      ? FALLBACK_MOCK_DATA.filter((q) => q.part === currentPart)
-      : questions;
-    pool.forEach((q) => setSet.add(q.setId));
-    return Array.from(setSet).sort((a, b) => a - b);
-  }, [questions, isUsingFallback, currentPart]);
-
-  // ----------------------------------------------------------------------------
-  // 3. Web Speech API (TTS) 로직 (Daniel 음성 지향)
-  // ----------------------------------------------------------------------------
-  const stopSpeech = useCallback(() => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.toggle('dark', isDarkMode);
     }
-    setSpeakingSentenceIndex(null);
+  }, [isDarkMode]);
+
+  // 2. 발음 선택 상태 (본문 칸 선택 후 하단 바에서 재생)
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [selectedSpeechText, setSelectedSpeechText] = useState<string>('');
+
+  // 음성 재생 키
+  const [playingKey, setPlayingKey] = useState<string | null>(null);
+
+  // CBT 타이머 상태
+  const [timerStatus, setTimerStatus] = useState<TimerStatus>('idle');
+  const [timeLeft, setTimeLeft] = useState<number>(45);
+  const timerIntervalRef = useRef<any>(null);
+
+  // 1. Daniel 음성 고정 탐색
+  const getDanielVoice = (): SpeechSynthesisVoice | null => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null;
+    const voices = window.speechSynthesis.getVoices();
+    if (!voices || voices.length === 0) return null;
+
+    const daniel = voices.find(v => (v.name || '').toLowerCase().includes('daniel'));
+    if (daniel) return daniel;
+
+    const enMale = voices.find(v => {
+      const n = (v.name || '').toLowerCase();
+      const l = (v.lang || '').toLowerCase();
+      return l.startsWith('en') && (n.includes('guy') || n.includes('andrew') || n.includes('tom') || n.includes('alex') || n.includes('evan'));
+    });
+    if (enMale) return enMale;
+
+    return voices.find(v => (v.lang || '').toLowerCase().startsWith('en')) || voices[0] || null;
+  };
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        getDanielVoice();
+      };
+    }
+    return () => {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    };
   }, []);
 
-  const speakText = useCallback(
-    (text: string, rate: number = 1.0, onEndCallback?: () => void) => {
-      if (!('speechSynthesis' in window)) {
-        alert('현재 브라우저 환경에서 음성 합성을 지원하지 않습니다.');
+  // 독립 정지 함수
+  const stopSpeech = () => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    setPlayingKey(null);
+  };
+
+  const speakText = (text: string, rate: number, key: string) => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+
+    if (playingKey === key) {
+      stopSpeech();
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    setPlayingKey(key);
+
+    const cleaned = text.replace(/[↗↘↑↓/]/g, ' ').replace(/\s+/g, ' ').trim();
+    const utter = new SpeechSynthesisUtterance(cleaned);
+    const voice = getDanielVoice();
+    if (voice) {
+      utter.voice = voice;
+      utter.lang = voice.lang || 'en-US';
+    } else {
+      utter.lang = 'en-US';
+    }
+    utter.rate = rate;
+    utter.pitch = 0.98;
+
+    utter.onend = () => {
+      setPlayingKey(curr => (curr === key ? null : curr));
+    };
+    utter.onerror = () => {
+      setPlayingKey(curr => (curr === key ? null : curr));
+    };
+
+    window.speechSynthesis.speak(utter);
+  };
+
+  // 1 & 2. 하단 플로팅 바에서 현재 선택된 텍스트 재생
+  const playSelectedRate = (rate: number) => {
+    if (!selectedSpeechText) {
+      // 선택된 항목이 없으면 기본 텍스트 자동 지정
+      if (activePart === 'part1' && currentStandardQ) {
+        const full = currentStandardQ.sentences.map(s => s.en).join(' ');
+        setSelectedItemId(`${currentStandardQ.id}-full`);
+        setSelectedSpeechText(full);
+        speakText(full, rate, `selected-${rate}`);
         return;
       }
-      stopSpeech();
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'en-US';
-      utterance.rate = rate;
-
-      const voices = window.speechSynthesis.getVoices();
-      const preferred =
-        voices.find((v) => v.name.toLowerCase().includes('daniel')) ||
-        voices.find((v) => v.lang.startsWith('en') && (v.name.includes('Male') || v.name.includes('Eddy'))) ||
-        voices.find((v) => v.lang.startsWith('en'));
-
-      if (preferred) utterance.voice = preferred;
-
-      utterance.onend = () => {
-        setSpeakingSentenceIndex(null);
-        if (onEndCallback) onEndCallback();
-      };
-      utterance.onerror = () => setSpeakingSentenceIndex(null);
-
-      window.speechSynthesis.speak(utterance);
-    },
-    [stopSpeech]
-  );
-
-  // ----------------------------------------------------------------------------
-  // 4. 문제 전환 및 실전 타이머
-  // ----------------------------------------------------------------------------
-  const resetTimer = useCallback(() => {
-    const prep = activeQuestion?.prepTime || (currentPart === 'part2' ? 45 : 3);
-    setTimerState({
-      phase: 'idle',
-      timeLeft: prep,
-      totalDuration: prep,
-      progressPercent: 0,
-      isRunning: false,
-    });
-  }, [activeQuestion, currentPart]);
-
-  const handlePartSwitch = (part: ToeicPart) => {
-    stopSpeech();
-    setCurrentPart(part);
-    setSelectedSetId('all');
-    setCurrentIndex(0);
-    setIsAnswerVisible(false);
-    resetTimer();
-    setIsP4ReadingActive(false);
-    setP4ReadingTime(45);
-  };
-
-  const handlePrevQuestion = () => {
-    if (currentIndex > 0) {
-      stopSpeech();
-      setCurrentIndex((prev) => prev - 1);
-      setIsAnswerVisible(false);
-      resetTimer();
-    }
-  };
-
-  const handleNextQuestion = () => {
-    if (currentIndex < questions.length - 1) {
-      stopSpeech();
-      setCurrentIndex((prev) => prev + 1);
-      setIsAnswerVisible(false);
-      resetTimer();
-    }
-  };
-
-  const startExamTimer = () => {
-    if (!activeQuestion) return;
-    const prepTime = activeQuestion.prepTime || (currentPart === 'part2' ? 45 : 3);
-    setTimerState({
-      phase: 'prep',
-      timeLeft: prepTime,
-      totalDuration: prepTime,
-      progressPercent: 0,
-      isRunning: true,
-    });
-  };
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
-    if (timerState.isRunning && timerState.timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimerState((prev) => {
-          const nextTime = prev.timeLeft - 1;
-          const pct = ((prev.totalDuration - nextTime) / prev.totalDuration) * 100;
-          return {
-            ...prev,
-            timeLeft: nextTime,
-            progressPercent: Math.min(pct, 100),
-          };
-        });
-      }, 1000);
-    } else if (timerState.isRunning && timerState.timeLeft <= 0) {
-      if (timerState.phase === 'prep') {
-        const responseTime = activeQuestion?.responseTime || (currentPart === 'part2' ? 30 : 15);
-        try {
-          const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
-          const osc = ctx.createOscillator();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(880, ctx.currentTime);
-          osc.connect(ctx.destination);
-          osc.start();
-          osc.stop(ctx.currentTime + 0.3);
-        } catch {
-          // Web Audio 제한 시 무시
+      if (activePart === 'part4' && currentP4Set && currentP4Set.questions.length > 0) {
+        const q = currentP4Set.questions[0];
+        setSelectedItemId(`${q.qId}-prompt`);
+        setSelectedSpeechText(q.question);
+        speakText(q.question, rate, `selected-${rate}`);
+        return;
+      }
+      if (currentStandardQ) {
+        const txt = currentStandardQ.question || (currentStandardQ.sentences[0] ? currentStandardQ.sentences[0].en : '');
+        if (txt) {
+          setSelectedItemId(`${currentStandardQ.id}-prompt`);
+          setSelectedSpeechText(txt);
+          speakText(txt, rate, `selected-${rate}`);
+          return;
         }
-
-        setTimerState({
-          phase: 'response',
-          timeLeft: responseTime,
-          totalDuration: responseTime,
-          progressPercent: 0,
-          isRunning: true,
-        });
-      } else if (timerState.phase === 'response') {
-        setTimerState((prev) => ({
-          ...prev,
-          phase: 'finished',
-          isRunning: false,
-          progressPercent: 100,
-        }));
       }
     }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [timerState.isRunning, timerState.timeLeft, timerState.phase, activeQuestion, currentPart]);
+    if (selectedSpeechText) {
+      speakText(selectedSpeechText, rate, `selected-${rate}`);
+    }
+  };
 
+  // 2. 칸 선택 핸들러
+  const handleSelectSpeech = (id: string, text: string) => {
+    setSelectedItemId(id);
+    setSelectedSpeechText(text);
+  };
+
+  // 2. 선택된 칸 구분 효과 클래스
+  const getSelectableClass = (id: string) => {
+    const isSelected = selectedItemId === id;
+    return `cursor-pointer transition-all relative rounded-2xl ${
+      isSelected
+        ? 'ring-2 ring-[#0071E3] dark:ring-[#0A84FF] border-[#0071E3] dark:border-[#0A84FF] bg-[#0071E3]/8 dark:bg-[#0A84FF]/20 shadow-md -translate-y-0.5'
+        : 'hover:border-[#0071E3]/40 dark:hover:border-white/20 hover:bg-[#0071E3]/[0.02] dark:hover:bg-white/[0.02]'
+    }`;
+  };
+
+  // 5. Web Audio API를 이용한 단단한 Beep 신호음
+  const playBeep = (freq = 1000, durationMs = 300) => {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      gain.gain.setValueAtTime(0.25, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + durationMs / 1000);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + durationMs / 1000);
+    } catch {
+      // AudioContext unavailable
+    }
+  };
+
+  // 파트별 문항 필터링
+  const activeQuestions = useMemo<StandardQuestion[]>(() => {
+    if (activePart === 'part1') return masterData.part1;
+    if (activePart === 'part2') return masterData.part2;
+    if (activePart === 'part3') {
+      if (part3TypeFilter === 'ALL') return masterData.part3;
+      return masterData.part3.filter(q => q.typeId === part3TypeFilter);
+    }
+    if (activePart === 'part5') return masterData.part5;
+    return [];
+  }, [activePart, part3TypeFilter]);
+
+  const activeP4Sets = useMemo<Part4Set[]>(() => {
+    if (activePart !== 'part4') return [];
+    if (part4TableTypeFilter === 'ALL') return masterData.part4;
+    return masterData.part4.filter(s => s.tableTypeId === part4TableTypeFilter);
+  }, [activePart, part4TableTypeFilter]);
+
+  const currentStandardQ = activeQuestions[selectedIndex] || activeQuestions[0];
+  const currentP4Set = activeP4Sets[selectedIndex] || activeP4Sets[0];
+
+  // 타이머 기준 시간 계산
+  const targetPrepTime = activePart === 'part4' ? (currentP4Set ? currentP4Set.prepTime : 45) : (currentStandardQ ? currentStandardQ.prepTime : 45);
+  const targetRespTime = activePart === 'part4' ? 15 : (currentStandardQ ? currentStandardQ.responseTime : 45);
+
+  // 문제나 파트 전환 시 타이머 리셋 & 기본 발음 항목 자동 선택
   useEffect(() => {
-    let p4Interval: NodeJS.Timeout | null = null;
-    if (isP4ReadingActive && p4ReadingTime > 0) {
-      p4Interval = setInterval(() => {
-        setP4ReadingTime((prev) => prev - 1);
-      }, 1000);
-    } else if (isP4ReadingActive && p4ReadingTime <= 0) {
-      setIsP4ReadingActive(false);
-    }
-    return () => {
-      if (p4Interval) clearInterval(p4Interval);
-    };
-  }, [isP4ReadingActive, p4ReadingTime]);
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    setTimerStatus('idle');
+    setTimeLeft(targetPrepTime);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLSelectElement) return;
-
-      if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        handlePrevQuestion();
-      } else if (e.key === 'ArrowRight') {
-        e.preventDefault();
-        handleNextQuestion();
-      } else if (e.code === 'Space') {
-        e.preventDefault();
-        setIsAnswerVisible((prev) => !prev);
-      } else if (e.key === '1' && activeQuestion) {
-        e.preventDefault();
-        speakText(activeQuestion.question, 1.0);
-      } else if (e.key === '2' && activeQuestion) {
-        e.preventDefault();
-        speakText(activeQuestion.question, 0.75);
-      } else if (e.key === 'Escape') {
-        stopSpeech();
-        setIsCheatSheetOpen(false);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  });
-
-  // [요청 3 반영] 파트 2, 3, 4 모두 정교한 문장 단위 분할 (줄바꿈 또는 마침표/물음표/느낌표 기준)
-  const structuredSentences = useMemo(() => {
-    if (!activeQuestion) return [];
-    
-    // 줄바꿈으로 먼저 나누고, 단일 긴 줄인 경우 문장 부호로 재분할
-    let rawEn = activeQuestion.answer.split('\n').map(s => s.trim()).filter(s => s.length > 0);
-    let rawKo = activeQuestion.answerTranslation.split('\n').map(s => s.trim()).filter(s => s.length > 0);
-
-    if (rawEn.length === 1 && rawEn[0].includes('.')) {
-      const matchEn = rawEn[0].match(/[^.!?]+[.!?]+(\s+|$)/g);
-      if (matchEn && matchEn.length > 1) {
-        rawEn = matchEn.map(s => s.trim());
+    // 기본 발음 항목 선택
+    if (activePart === 'part1' && currentStandardQ) {
+      const full = currentStandardQ.sentences.map(s => s.en).join(' ');
+      setSelectedItemId(`${currentStandardQ.id}-full`);
+      setSelectedSpeechText(full);
+    } else if (activePart === 'part4' && currentP4Set && currentP4Set.questions.length > 0) {
+      const q = currentP4Set.questions[0];
+      setSelectedItemId(`${q.qId}-prompt`);
+      setSelectedSpeechText(q.question);
+    } else if (currentStandardQ) {
+      if (currentStandardQ.question) {
+        setSelectedItemId(`${currentStandardQ.id}-prompt`);
+        setSelectedSpeechText(currentStandardQ.question);
+      } else if (currentStandardQ.sentences.length > 0) {
+        setSelectedItemId(`${currentStandardQ.id}-ms0`);
+        setSelectedSpeechText(currentStandardQ.sentences[0].en);
       }
     }
-    if (rawKo.length === 1 && rawKo[0].includes('.')) {
-      const matchKo = rawKo[0].match(/[^.!?]+[.!?]+(\s+|$)/g);
-      if (matchKo && matchKo.length > 1) {
-        rawKo = matchKo.map(s => s.trim());
-      }
-    }
+  }, [activePart, selectedIndex, targetPrepTime, currentStandardQ, currentP4Set]);
 
-    return rawEn.map((en, idx) => ({
-      index: idx + 1,
-      en,
-      ko: rawKo[idx] || '',
-    }));
-  }, [activeQuestion]);
+  const startCbtTimer = () => {
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    setTimerStatus('prep');
+    setTimeLeft(targetPrepTime);
+
+    let currentSec = targetPrepTime;
+    let mode: 'prep' | 'resp' = 'prep';
+
+    timerIntervalRef.current = setInterval(() => {
+      currentSec -= 1;
+      if (currentSec <= 0) {
+        if (mode === 'prep') {
+          playBeep(1000, 350); // 준비 시간 종료 비프음
+          mode = 'resp';
+          currentSec = targetRespTime;
+          setTimerStatus('resp');
+          setTimeLeft(currentSec);
+        } else {
+          // 답변 시간 종료
+          playBeep(1200, 450);
+          if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+          setTimerStatus('done');
+          setTimeLeft(0);
+        }
+      } else {
+        setTimeLeft(currentSec);
+      }
+    }, 1000);
+  };
+
+  const pauseCbtTimer = () => {
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+  };
+
+  const resetCbtTimer = () => {
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    setTimerStatus('idle');
+    setTimeLeft(targetPrepTime);
+  };
+
+  const handleTabChange = (part: ActivePart) => {
+    stopSpeech();
+    setActivePart(part);
+    setSelectedIndex(0);
+    setIsAnswerOpen(false);
+    setP4AnswerOpenMap({});
+    setP4QuestionVisibleMap({});
+  };
+
+  const toggleMemorized = (id: string) => {
+    setMemorizedIds(prev => {
+      const next = { ...prev };
+      if (next[id]) delete next[id];
+      else next[id] = true;
+      localStorage.setItem('toeic_memorized_187', JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const filteredVocabItems = useMemo(() => {
+    const q = modalSearch.trim().toLowerCase();
+    return magicData.items.filter(item => {
+      if (modalPartFilter !== 'ALL' && String(item.part) !== modalPartFilter) return false;
+      if (q) {
+        return (
+          item.en.toLowerCase().includes(q) ||
+          item.ko.toLowerCase().includes(q) ||
+          item.category.toLowerCase().includes(q) ||
+          item.id.toLowerCase().includes(q) ||
+          item.tip.toLowerCase().includes(q)
+        );
+      }
+      return true;
+    });
+  }, [modalPartFilter, modalSearch]);
+
+  const memorizedCount = Object.keys(memorizedIds).length;
+  const totalItemsCount = activePart === 'part4' ? activeP4Sets.length : activeQuestions.length;
+  const totalP4Questions = useMemo(() => {
+    return masterData.part4.reduce((sum, s) => sum + s.questions.length, 0);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-slate-100 to-slate-200 text-slate-800 antialiased font-sans pb-16">
-      {/* Ambient Blur Orbs */}
-      <div className="fixed -top-24 -left-24 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
-      <div className="fixed top-1/4 -right-24 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
-      <div className="fixed -bottom-24 left-1/3 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
-
-      {/* Main Viewport */}
-      <div className="w-full max-w-5xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 flex flex-col gap-5 sm:gap-6">
-        
-        {/* =======================================================================
-            TOP BOOKMARK TABS (Part 2, Part 3, Part 4)
-            ======================================================================= */}
-        <nav aria-label="토익스피킹 파트 선택" className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
-          <button
-            onClick={() => handlePartSwitch('part2')}
-            className={`relative flex items-center justify-center sm:justify-start gap-2 sm:gap-3 p-3 sm:p-4 rounded-2xl border transition-all duration-300 text-left ${
-              currentPart === 'part2'
-                ? 'bg-white/95 border-emerald-500/60 shadow-lg shadow-emerald-500/10 ring-2 ring-emerald-500/20 translate-y-[-2px]'
-                : 'bg-white/60 hover:bg-white/90 border-slate-200 hover:border-slate-300 shadow-sm opacity-80 hover:opacity-100'
-            }`}
-          >
-            <span className="text-xl sm:text-2xl">🖼️</span>
-            <div className="flex flex-col">
-              <span className={`text-xs sm:text-sm font-bold tracking-tight ${currentPart === 'part2' ? 'text-emerald-700' : 'text-slate-700'}`}>
-                PART 2 책갈피
+    <div className={`min-h-screen transition-colors duration-200 ${isDarkMode ? 'dark bg-[#000000] text-[#F5F5F7]' : 'bg-[#F5F5F7] text-[#1D1D1F]'} font-sans antialiased pb-36`}>
+      {/* iOS 리퀴드 글래스 헤더 */}
+      <header className="sticky top-0 z-40 bg-white/80 dark:bg-[#141416]/85 backdrop-blur-2xl border-b border-black/5 dark:border-white/10 shadow-sm transition-all">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            {/* 3. 다크모드 iOS 슬라이딩 스위치 토글 (상단 맨 왼쪽 ETS CBT MASTER 대신 배치) */}
+            <button
+              type="button"
+              onClick={toggleDarkMode}
+              className={`relative inline-flex h-7 w-14 sm:h-8 sm:w-16 shrink-0 cursor-pointer items-center rounded-full p-1 transition-all duration-300 ease-out focus:outline-none border shadow-inner ${
+                isDarkMode
+                  ? 'bg-[#0A84FF] border-[#0A84FF]/80 shadow-blue-900/30 ring-2 ring-[#0A84FF]/20'
+                  : 'bg-[#E5E5EA] border-black/10 shadow-black/5'
+              }`}
+              title={isDarkMode ? '라이트 모드로 전환' : '다크 모드로 전환'}
+              aria-label="다크 모드 전환"
+            >
+              <span className="absolute inset-0 flex items-center justify-between px-1.5 sm:px-2 text-[10px] sm:text-[11px] select-none pointer-events-none">
+                <span className={`transition-opacity duration-200 ${isDarkMode ? 'opacity-85 text-white' : 'opacity-0'}`}>☀️</span>
+                <span className={`transition-opacity duration-200 ${isDarkMode ? 'opacity-0' : 'opacity-55 text-slate-700'}`}>🌙</span>
               </span>
-              <span className="hidden sm:inline text-xs text-slate-500 truncate">고화질 사진 묘사 (26세트)</span>
-            </div>
-          </button>
-
-          <button
-            onClick={() => handlePartSwitch('part3')}
-            className={`relative flex items-center justify-center sm:justify-start gap-2 sm:gap-3 p-3 sm:p-4 rounded-2xl border transition-all duration-300 text-left ${
-              currentPart === 'part3'
-                ? 'bg-white/95 border-blue-500/60 shadow-lg shadow-blue-500/10 ring-2 ring-blue-500/20 translate-y-[-2px]'
-                : 'bg-white/60 hover:bg-white/90 border-slate-200 hover:border-slate-300 shadow-sm opacity-80 hover:opacity-100'
-            }`}
-          >
-            <span className="text-xl sm:text-2xl">🔖</span>
-            <div className="flex flex-col">
-              <span className={`text-xs sm:text-sm font-bold tracking-tight ${currentPart === 'part3' ? 'text-blue-700' : 'text-slate-700'}`}>
-                PART 3 책갈피
-              </span>
-              <span className="hidden sm:inline text-xs text-slate-500 truncate">일상 질문 답하기 (48문항)</span>
-            </div>
-          </button>
-
-          <button
-            onClick={() => handlePartSwitch('part4')}
-            className={`relative flex items-center justify-center sm:justify-start gap-2 sm:gap-3 p-3 sm:p-4 rounded-2xl border transition-all duration-300 text-left ${
-              currentPart === 'part4'
-                ? 'bg-white/95 border-purple-500/60 shadow-lg shadow-purple-500/10 ring-2 ring-purple-500/20 translate-y-[-2px]'
-                : 'bg-white/60 hover:bg-white/90 border-slate-200 hover:border-slate-300 shadow-sm opacity-80 hover:opacity-100'
-            }`}
-          >
-            <span className="text-xl sm:text-2xl">📑</span>
-            <div className="flex flex-col">
-              <span className={`text-xs sm:text-sm font-bold tracking-tight ${currentPart === 'part4' ? 'text-purple-700' : 'text-slate-700'}`}>
-                PART 4 책갈피
-              </span>
-              <span className="hidden sm:inline text-xs text-slate-500 truncate">표/일정표 보고 답하기 (24문항)</span>
-            </div>
-          </button>
-        </nav>
-
-        {/* =======================================================================
-            APPLE GLASS HEADER
-            ======================================================================= */}
-        <header className="bg-white/80 backdrop-blur-xl border border-white/80 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl shadow-slate-200/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="flex flex-col gap-1.5">
-            <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200/60 text-blue-600 px-3 py-1 rounded-full text-xs font-semibold w-fit">
-              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-              <span>Target: {MOCK_USER_PROFILE.targetScore} · 실전 마스터판 (98문항 전체)</span>
-            </div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2 flex-wrap">
-              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                TOEIC Speaking
-              </span>
-              <span>
-                {currentPart === 'part2' && 'Part 2 실전 트레이너'}
-                {currentPart === 'part3' && 'Part 3 실전 트레이너'}
-                {currentPart === 'part4' && 'Part 4 실전 트레이너'}
-              </span>
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500">
-              {currentPart === 'part2' && '기출 26개 고화질 실사 사진 · 45초 준비 / 30초 답변 · 문장별 개별 발음'}
-              {currentPart === 'part3' && '16개 테마 48개 전 문항 · 한글해석 블라인드 · 문장별 개별 발음'}
-              {currentPart === 'part4' && '8개 세트 24문항 전체 일정표 · 45초 표 읽기 · 문의자 발화상황 연계'}
-            </p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
-            {/* Daniel Voice Capsule */}
-            <div className="bg-white/90 border border-blue-200/80 rounded-2xl px-3.5 py-2 flex items-center justify-between sm:justify-start gap-3 shadow-sm">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">👨‍💼</span>
-                <div className="flex flex-col text-left">
-                  <span className="text-xs font-bold text-slate-800">
-                    전담 음성: <strong className="text-blue-600 font-mono">Daniel</strong>
-                  </span>
-                  <span className="text-[10px] text-slate-500">영국식 표준 발음</span>
-                </div>
-              </div>
-              <button
-                onClick={() => speakText("Hello! I am Daniel, your dedicated British voice coach.", 1.0)}
-                className="text-xs font-semibold bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-600 px-2.5 py-1 rounded-full transition-all border border-blue-200"
-              >
-                ▶️ 샘플
-              </button>
-            </div>
-
-            {/* Modal & Timer Toggles */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  setModalTab(currentPart);
-                  setIsCheatSheetOpen(true);
-                }}
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200/80 transition-all active:scale-95"
-              >
-                <span>🐰</span>
-                <span>만능문장 족보집</span>
-              </button>
-              <button
-                onClick={() => setIsExamMode(!isExamMode)}
-                className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold border transition-all active:scale-95 ${
-                  isExamMode
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                    : 'bg-slate-100 text-slate-500 border-slate-300'
+              <span
+                className={`pointer-events-none flex h-5 w-5 sm:h-6 sm:w-6 transform items-center justify-center rounded-full bg-white shadow-md ring-0 transition duration-300 ease-out text-[11px] sm:text-xs ${
+                  isDarkMode ? 'translate-x-7 sm:translate-x-8 text-[#0A84FF]' : 'translate-x-0 text-amber-500'
                 }`}
               >
-                <span>⏱️</span>
-                <span>타이머: <strong>{isExamMode ? 'ON' : 'OFF'}</strong></span>
-              </button>
-            </div>
+                {isDarkMode ? '🌙' : '☀️'}
+              </span>
+            </button>
+            <h1 className="text-sm sm:text-lg font-bold tracking-tight text-[#1D1D1F] dark:text-[#F5F5F7] truncate">
+              토익스피킹 기출 마스터
+            </h1>
           </div>
-        </header>
 
-        {/* =======================================================================
-            TOOLBAR
-            ======================================================================= */}
-        <nav aria-label="문항 제어 툴바" className="bg-white/80 backdrop-blur-xl border border-white/80 rounded-2xl p-3 sm:p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <label htmlFor="setFilterSelect" className="text-xs sm:text-sm font-bold text-slate-600 whitespace-nowrap">
-              세트 필터:
-            </label>
-            <select
-              id="setFilterSelect"
-              value={selectedSetId}
-              onChange={(e) => {
-                const val = e.target.value === 'all' ? 'all' : Number(e.target.value);
-                setSelectedSetId(val);
-                setCurrentIndex(0);
-                setIsAnswerVisible(false);
-                resetTimer();
-              }}
-              className="flex-1 sm:w-60 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs sm:text-sm font-semibold text-slate-700 outline-none cursor-pointer"
+          <div className="flex items-center gap-2 shrink-0">
+            {/* 4. 오른쪽 상단에 단어장 배치 */}
+            <button
+              type="button"
+              onClick={() => setIsVocabModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20 dark:border-[#0A84FF]/30 hover:bg-[#0071E3]/20 transition-all hover:scale-105 shadow-sm whitespace-nowrap"
             >
-              <option value="all">전체 세트 (총 {questions.length}문항)</option>
-              {availableSetIds.map((sid) => (
-                <option key={sid} value={sid}>
-                  Set {sid} 문항
-                </option>
-              ))}
-            </select>
-
-            {isUsingFallback && (
-              <span className="text-[11px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full border border-amber-300 whitespace-nowrap">
-                오프라인 마스터 모드
-              </span>
-            )}
+              <span>📖</span>
+              <span className="hidden sm:inline">시계토끼 만능문장 187</span>
+              <span className="inline sm:hidden">만능문장</span>
+            </button>
           </div>
+        </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-center">
-            {/* Counter & Progress */}
-            <div className="flex flex-col items-center gap-1 min-w-[90px]">
-              <span className="text-xs sm:text-sm font-bold font-mono text-slate-700">
-                {questions.length > 0 ? currentIndex + 1 : 0} <span className="text-slate-400">/</span> {questions.length}
-              </span>
-              <div className="w-24 sm:w-28 h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-300"
-                  style={{
-                    width: questions.length > 0 ? `${((currentIndex + 1) / questions.length) * 100}%` : '0%',
+        {/* 세그먼트 컨트롤 탭 (Part 1~5) */}
+        <div className="max-w-6xl mx-auto px-2 sm:px-4 pb-2.5 sm:pb-3">
+          <div className="flex p-1 bg-black/5 dark:bg-white/10 rounded-full border border-black/5 dark:border-white/10 gap-1 overflow-x-auto no-scrollbar">
+            {[
+              { id: 'part1' as ActivePart, fullLabel: 'Part 1 지문 읽기', shortLabel: 'Part 1', count: String(masterData.part1.length) },
+              { id: 'part2' as ActivePart, fullLabel: 'Part 2 사진 묘사', shortLabel: 'Part 2', count: String(masterData.part2.length) },
+              { id: 'part3' as ActivePart, fullLabel: 'Part 3 질문 응답', shortLabel: 'Part 3', count: String(masterData.part3.length) },
+              { id: 'part4' as ActivePart, fullLabel: 'Part 4 표 정보 안내', shortLabel: 'Part 4', count: `${masterData.part4.length}세트 (${totalP4Questions})` },
+              { id: 'part5' as ActivePart, fullLabel: 'Part 5 의견 제시', shortLabel: 'Part 5', count: String(masterData.part5.length) }
+            ].map(tab => {
+              const isActive = activePart === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => handleTabChange(tab.id)}
+                  className={`flex-1 min-w-[72px] sm:min-w-[120px] py-1.5 sm:py-2 px-2 sm:px-3 rounded-full text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 transition-all whitespace-nowrap ${
+                    isActive
+                      ? 'bg-white dark:bg-white/20 text-[#1D1D1F] dark:text-white shadow-sm font-bold'
+                      : 'text-[#6E6E73] dark:text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white'
+                  }`}
+                >
+                  <span className="hidden sm:inline">{tab.fullLabel}</span>
+                  <span className="inline sm:hidden">{tab.shortLabel}</span>
+                  <span
+                    className={`text-[10px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 rounded-full ${
+                      isActive
+                        ? 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/30 text-[#0071E3] dark:text-[#0A84FF]'
+                        : 'bg-black/5 dark:bg-white/10 text-[#86868B] dark:text-[#8E8E93]'
+                    }`}
+                  >
+                    {tab.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </header>
+
+      {/* 메인 콘텐츠 영역 */}
+      <main className="max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
+        {/* Part 3 유형 필터 칩 */}
+        {activePart === 'part3' && (
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-6 p-1.5 sm:p-2 bg-white/70 dark:bg-[#1C1C1E]/75 backdrop-blur-md border border-black/5 dark:border-white/10 rounded-full shadow-xs overflow-x-auto no-scrollbar">
+            <span className="text-xs font-bold text-[#6E6E73] dark:text-[#8E8E93] px-2.5 shrink-0 select-none">
+              유형
+            </span>
+            {masterData.part3Types.map(t => {
+              const isSelected = part3TypeFilter === t.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => {
+                    stopSpeech();
+                    setPart3TypeFilter(t.id);
+                    setSelectedIndex(0);
+                    setIsAnswerOpen(false);
                   }}
-                />
-              </div>
-            </div>
-
-            {/* Navigation Buttons */}
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={handlePrevQuestion}
-                disabled={currentIndex === 0 || isLoading}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-95 shadow-sm"
-              >
-                <span>←</span>
-                <span className="hidden sm:inline">이전</span>
-              </button>
-              <button
-                onClick={handleNextQuestion}
-                disabled={currentIndex >= questions.length - 1 || isLoading}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-95 shadow-md shadow-blue-500/20"
-              >
-                <span className="hidden sm:inline">다음</span>
-                <span>→</span>
-              </button>
-            </div>
+                  className={`px-3 sm:px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-semibold border transition-all whitespace-nowrap shrink-0 ${
+                    isSelected
+                      ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] dark:border-[#0A84FF] font-bold shadow-md shadow-blue-500/25 -translate-y-0.5'
+                      : 'bg-white/90 dark:bg-[#2C2C2E] text-[#1D1D1F] dark:text-[#E5E5EA] border-black/10 dark:border-white/15 hover:border-[#0071E3]/40 hover:text-[#0071E3] dark:hover:text-white shadow-xs'
+                  }`}
+                >
+                  {t.name}
+                </button>
+              );
+            })}
           </div>
-        </nav>
+        )}
 
-        {/* =======================================================================
-            MAIN CARD VIEWPORT
-            ======================================================================= */}
-        {isLoading ? (
-          /* Skeleton */
-          <main aria-busy="true" className="bg-white/85 backdrop-blur-2xl border border-white/90 rounded-3xl p-6 sm:p-10 shadow-2xl animate-pulse flex flex-col gap-6">
-            <div className="h-6 w-36 bg-slate-200 rounded-full" />
-            <div className="w-full aspect-[16/9] max-h-[360px] bg-slate-200/80 rounded-2xl flex items-center justify-center text-slate-400 font-bold">
-              📸 고화질 시험 사진 로딩 중...
-            </div>
-            <div className="h-20 bg-slate-100 rounded-2xl" />
-          </main>
-        ) : apiError ? (
-          /* Error State with Fallback */
-          <main className="bg-white/90 backdrop-blur-2xl border border-rose-200 rounded-3xl p-8 sm:p-12 shadow-xl flex flex-col items-center text-center gap-4 animate-fadeIn">
-            <div className="w-16 h-16 rounded-3xl bg-rose-100 text-rose-600 flex items-center justify-center text-3xl">
-              ⚠️
-            </div>
-            <h3 className="text-xl font-extrabold text-slate-900">서버 통신 오류</h3>
-            <p className="text-xs sm:text-sm text-slate-600 max-w-md leading-relaxed">{apiError.message}</p>
-            <div className="flex gap-3 mt-2">
-              <button
-                onClick={() => fetchQuestionsFromApi(currentPart, selectedSetId)}
-                className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-md active:scale-95"
-              >
-                🔄 재연결 시도
-              </button>
-              <button
-                onClick={handleEnableFallbackMock}
-                className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-slate-800 hover:bg-slate-900 text-white shadow-md active:scale-95"
-              >
-                📦 98문항 전체 오프라인 모드
-              </button>
-            </div>
-          </main>
-        ) : !activeQuestion ? (
-          <main className="bg-white/90 rounded-3xl p-12 text-center border border-slate-200 shadow-sm">
-            <p className="font-bold text-slate-700">등록된 문제가 없습니다.</p>
-          </main>
-        ) : (
-          <main className="bg-white/85 backdrop-blur-2xl border border-white/90 rounded-2xl sm:rounded-3xl p-4 sm:p-7 lg:p-9 shadow-2xl shadow-slate-300/40 flex flex-col gap-6">
-            
-            {/* Top Meta Pill Header */}
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-100">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className={`text-[11px] sm:text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider ${
-                  currentPart === 'part2' ? 'bg-emerald-100 text-emerald-800' :
-                  currentPart === 'part3' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
-                }`}>
-                  {currentPart.toUpperCase()}
-                </span>
-                <span className="text-[11px] sm:text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">
-                  Set {activeQuestion.setId}
-                </span>
-                <span className="text-[11px] sm:text-xs font-bold font-mono px-2.5 py-1 rounded-full bg-slate-800 text-white">
-                  {activeQuestion.qNumber}
-                </span>
-                <span className="text-[11px] sm:text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  답변 {activeQuestion.responseTime}초
-                </span>
-              </div>
-              <div className="text-xs font-semibold text-slate-500">
-                {'keyPattern' in activeQuestion && (
-                  <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-0.5 rounded-full">
-                    💡 {(activeQuestion as Part3QuestionResponse).keyPattern}
-                  </span>
-                )}
-              </div>
-            </div>
+        {/* Part 4 표 속성별 필터 칩 */}
+        {activePart === 'part4' && (
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-6 p-1.5 sm:p-2 bg-white/70 dark:bg-[#1C1C1E]/75 backdrop-blur-md border border-black/5 dark:border-white/10 rounded-full shadow-xs overflow-x-auto no-scrollbar">
+            <span className="text-xs font-bold text-[#6E6E73] dark:text-[#8E8E93] px-2.5 shrink-0 select-none">
+              표 속성
+            </span>
+            {masterData.part4TableTypes.map(t => {
+              const isSelected = part4TableTypeFilter === t.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => {
+                    stopSpeech();
+                    setPart4TableTypeFilter(t.id);
+                    setSelectedIndex(0);
+                    setP4AnswerOpenMap({});
+                    setP4QuestionVisibleMap({});
+                  }}
+                  className={`px-3 sm:px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-semibold border transition-all whitespace-nowrap shrink-0 ${
+                    isSelected
+                      ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] dark:border-[#0A84FF] font-bold shadow-md shadow-blue-500/25 -translate-y-0.5'
+                      : 'bg-white/90 dark:bg-[#2C2C2E] text-[#1D1D1F] dark:text-[#E5E5EA] border-black/10 dark:border-white/15 hover:border-[#0071E3]/40 hover:text-[#0071E3] dark:hover:text-white shadow-xs'
+                  }`}
+                >
+                  {t.name}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
-            {/* ===================================================================
-                [요청 1 반영] PART 2 전용: 고화질 실사 시험 사진 뷰어 프레임
-                =================================================================== */}
-            {activeQuestion.part === 'part2' && 'photoScene' in activeQuestion && (
-              <section aria-label="Part 2 사진 뷰어" className="flex flex-col gap-3">
-                <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-3.5 flex items-start gap-3">
-                  <span className="text-xs font-extrabold bg-emerald-600 text-white px-2 py-0.5 rounded-md">
-                    DIRECTIONS
+        {/* Part 1 지문 읽기 뷰 */}
+        {activePart === 'part1' && currentStandardQ && (
+          <article className="bg-white/80 dark:bg-[#1C1C1E]/85 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-sm">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-start justify-between gap-3 sm:gap-4 pb-4 sm:pb-5 mb-5 sm:mb-6 border-b border-black/5 dark:border-white/10">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20">
+                    {currentStandardQ.category}
                   </span>
-                  <p className="text-xs sm:text-sm text-emerald-900 leading-relaxed">
-                    In this part, you will describe the picture on your screen in as much detail as you can. You will have <strong>45 seconds</strong> to prepare, then <strong>30 seconds</strong> to speak. (Questions 3-4)
-                  </p>
+                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-[#6E6E73] dark:text-[#8E8E93]">
+                    준비 45초 · 답변 45초
+                  </span>
                 </div>
+                <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-[#1D1D1F] dark:text-white truncate">
+                  {currentStandardQ.qNum} — {currentStandardQ.topic}
+                </h2>
+              </div>
 
-                <div className="border border-slate-200 rounded-2xl overflow-hidden bg-slate-900/5 shadow-inner flex flex-col">
-                  <div className="bg-slate-100 px-4 py-2 border-b border-slate-200 flex items-center justify-between text-xs">
-                    <span className="font-bold text-slate-700">📸 EXAM PHOTO SCENE</span>
-                    <span className="text-slate-500 font-medium font-mono text-[11px] bg-white px-2 py-0.5 rounded-full border border-slate-200">
-                      {(activeQuestion as Part2QuestionResponse).photoScene?.locationEn}
+              <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0 w-full sm:w-auto">
+                <button
+                  type="button"
+                  disabled={selectedIndex === 0}
+                  onClick={() => {
+                    stopSpeech();
+                    setSelectedIndex(i => Math.max(0, i - 1));
+                  }}
+                  className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-full text-xs font-semibold border border-black/10 dark:border-white/15 bg-white/90 dark:bg-[#2C2C2E] hover:bg-white disabled:opacity-30 transition-all shadow-sm text-center"
+                >
+                  ← 이전
+                </button>
+                <button
+                  type="button"
+                  disabled={selectedIndex >= activeQuestions.length - 1}
+                  onClick={() => {
+                    stopSpeech();
+                    setSelectedIndex(i => Math.min(activeQuestions.length - 1, i + 1));
+                  }}
+                  className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-full text-xs font-semibold border border-black/10 dark:border-white/15 bg-white/90 dark:bg-[#2C2C2E] hover:bg-white disabled:opacity-30 transition-all shadow-sm text-center"
+                >
+                  다음 →
+                </button>
+              </div>
+            </div>
+
+            {/* 4. 전체 지문 제일 위 노출 (클릭 시 발음 선택) */}
+            {(() => {
+              const fullPassage = currentStandardQ.sentences.map(s => s.en).join(' ');
+              const fullId = `${currentStandardQ.id}-full`;
+              return (
+                <div
+                  onClick={() => handleSelectSpeech(fullId, fullPassage)}
+                  className={`bg-white/95 dark:bg-[#26262A] border border-black/5 dark:border-white/10 rounded-2xl p-6 mb-7 shadow-sm ${getSelectableClass(fullId)}`}
+                >
+                  <div className="flex items-center justify-between gap-3 mb-3">
+                    <span className="text-xs font-bold text-[#6E6E73] dark:text-[#8E8E93] tracking-wide uppercase">
+                      전체 지문 (Full Passage) · 클릭하여 선택
                     </span>
                   </div>
-                  <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full max-h-[460px] overflow-hidden bg-slate-900/10 flex items-center justify-center">
-                    <img
-                      src={(activeQuestion as Part2QuestionResponse).imageUrl}
-                      alt="Part 2 Realistic Exam Scene"
-                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.02]"
-                      loading="lazy"
-                    />
-                    <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md text-white text-[10px] sm:text-xs px-2.5 py-1 rounded-md font-mono">
-                      TOEIC Speaking Realistic Photo (Q3~Q4)
+                  <p className="text-lg sm:text-xl font-medium text-[#1D1D1F] dark:text-white leading-relaxed">
+                    {fullPassage}
+                  </p>
+                </div>
+              );
+            })()}
+
+            {/* 문장별 끊어 읽기 (클릭 시 발음 선택) */}
+            <div>
+              <h3 className="text-base font-bold text-[#1D1D1F] dark:text-white mb-3">
+                문장별 끊어 읽기 (클릭하여 선택 후 하단에서 재생)
+              </h3>
+              <div className="space-y-3">
+                {currentStandardQ.sentences.map((s, sIdx) => {
+                  const sId = `${currentStandardQ.id}-s${sIdx}`;
+                  return (
+                    <div
+                      key={sIdx}
+                      onClick={() => handleSelectSpeech(sId, s.en)}
+                      className={`p-4 rounded-2xl bg-white/70 dark:bg-[#26262A] border border-black/5 dark:border-white/10 flex flex-col sm:flex-row sm:items-start justify-between gap-3 ${getSelectableClass(sId)}`}
+                    >
+                      <div className="space-y-1">
+                        <span className="inline-block text-[11px] font-bold px-2 py-0.5 rounded bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF]">
+                          문장 {sIdx + 1}
+                        </span>
+                        <p className="text-base font-semibold text-[#1D1D1F] dark:text-white">{s.en}</p>
+                        {s.chunking && (
+                          <p className="text-xs font-mono text-[#0056B3] dark:text-[#409CFF] bg-[#0071E3]/5 dark:bg-[#0A84FF]/10 px-2.5 py-1 rounded-md inline-block">
+                            {s.chunking}
+                          </p>
+                        )}
+                        <p className="text-sm text-[#6E6E73] dark:text-[#8E8E93]">{s.ko}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 핵심 발음 어휘 (클릭 시 발음 선택) */}
+            <div className="mt-7">
+              <h3 className="text-base font-bold text-[#1D1D1F] dark:text-white mb-3">
+                핵심 발음 어휘 (클릭하여 선택)
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {currentStandardQ.vocabulary.map((v, vIdx) => {
+                  const vId = `${currentStandardQ.id}-v${vIdx}`;
+                  return (
+                    <div
+                      key={vIdx}
+                      onClick={() => handleSelectSpeech(vId, v.word)}
+                      className={`p-3 rounded-xl bg-white/70 dark:bg-[#26262A] border border-black/5 dark:border-white/10 flex items-center justify-between gap-2 ${getSelectableClass(vId)}`}
+                    >
+                      <div>
+                        <div>
+                          <span className="text-sm font-bold text-[#1D1D1F] dark:text-white">{v.word}</span>
+                          <span className="text-xs font-mono text-[#0071E3] dark:text-[#0A84FF] ml-1.5">{v.ipa}</span>
+                        </div>
+                        <p className="text-xs text-[#6E6E73] dark:text-[#8E8E93] mt-0.5">
+                          [{v.pos}] {v.meaning}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {currentStandardQ.readingTips && (
+              <div className="mt-6 p-4 rounded-2xl bg-[#34C759]/10 border border-[#34C759]/20 text-sm text-[#166534] dark:text-[#4ADE80]">
+                <strong>💡 Part 1 발음 팁:</strong> {currentStandardQ.readingTips}
+              </div>
+            )}
+
+            {/* CBT 실전 디지털 타이머 */}
+            <div className="mt-8 pt-6 border-t border-black/10 dark:border-white/10">
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#1D1D1F] dark:bg-[#242426] text-white shadow-lg flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 text-center sm:text-left">
+                <div className="flex items-center gap-3 justify-center sm:justify-start">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/10 flex items-center justify-center font-mono font-bold text-base sm:text-lg text-[#0071E3] dark:text-[#0A84FF] shrink-0">
+                    ⏱
+                  </div>
+                  <div>
+                    <div className="text-[11px] sm:text-xs font-bold text-[#86868B] tracking-wider uppercase">
+                      CBT 실전 모의 타이머
+                    </div>
+                    <div className="text-xs sm:text-sm font-medium">
+                      {timerStatus === 'idle' && '준비 45초 ➔ 삐(Beep) ➔ 답변 45초 자동 카운트'}
+                      {timerStatus === 'prep' && '🟡 [준비 시간] 지문을 소리 내어 읽으며 준비하세요'}
+                      {timerStatus === 'resp' && '🟢 [답변 시간] 실제 시험처럼 또박또박 답변하세요!'}
+                      {timerStatus === 'done' && '✅ 답변 시간이 종료되었습니다!'}
                     </div>
                   </div>
+                </div>
 
-                  {/* 1:1 사진 상황 해설 및 핵심 묘사 키포인트 태그 */}
-                  {(activeQuestion as Part2QuestionResponse).photoDescriptionKr && (
-                    <div className="bg-white p-3.5 sm:p-4 border-t border-slate-200 flex flex-col gap-2.5">
-                      <div className="flex items-start gap-2 text-xs sm:text-sm text-slate-700 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">
-                        <span className="text-base shrink-0">🔍</span>
-                        <div>
-                          <strong className="text-slate-900 font-bold block mb-0.5">사진 1:1 상황 팩트 해설:</strong>
-                          <p className="text-slate-600 font-medium">{(activeQuestion as Part2QuestionResponse).photoDescriptionKr}</p>
+                <div className="flex items-center justify-center sm:justify-end gap-2.5 sm:gap-3">
+                  <span className="font-mono text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0071E3] dark:text-[#0A84FF] bg-white/5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-xl border border-white/10">
+                    {String(Math.floor(timeLeft / 60)).padStart(2, '0')}:
+                    {String(timeLeft % 60).padStart(2, '0')}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    {timerStatus === 'idle' ? (
+                      <button
+                        type="button"
+                        onClick={startCbtTimer}
+                        className="px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold bg-[#0071E3] dark:bg-[#0A84FF] hover:bg-[#0077ED] text-white shadow-md transition-all whitespace-nowrap"
+                      >
+                        ▶ 시험 시작
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={pauseCbtTimer}
+                          className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-white transition-all whitespace-nowrap"
+                        >
+                          ⏸ 일시정지
+                        </button>
+                        <button
+                          type="button"
+                          onClick={resetCbtTimer}
+                          className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-[#FF453A] transition-all whitespace-nowrap"
+                        >
+                          ↺ 초기화
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+        )}
+
+        {/* Part 4 표 세트 뷰 */}
+        {activePart === 'part4' && currentP4Set && (
+          <article className="bg-white/80 dark:bg-[#1C1C1E]/85 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-sm">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-start justify-between gap-3 sm:gap-4 pb-4 sm:pb-5 mb-5 sm:mb-6 border-b border-black/5 dark:border-white/10">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20">
+                    {currentP4Set.tableTypeBadge}
+                  </span>
+                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-[#6E6E73] dark:text-[#8E8E93]">
+                    표 읽기 45초 · 연계 문제 {currentP4Set.questions.length}문항
+                  </span>
+                </div>
+                <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-[#1D1D1F] dark:text-white truncate">
+                  {currentP4Set.setNum} — {currentP4Set.topic}
+                </h2>
+              </div>
+
+              <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0 w-full sm:w-auto">
+                <button
+                  type="button"
+                  disabled={selectedIndex === 0}
+                  onClick={() => {
+                    stopSpeech();
+                    setSelectedIndex(i => Math.max(0, i - 1));
+                    setP4AnswerOpenMap({});
+                    setP4QuestionVisibleMap({});
+                  }}
+                  className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-full text-xs font-semibold border border-black/10 dark:border-white/15 bg-white/90 dark:bg-[#2C2C2E] hover:bg-white disabled:opacity-30 transition-all shadow-sm text-center"
+                >
+                  ← 이전 표
+                </button>
+                <button
+                  type="button"
+                  disabled={selectedIndex >= activeP4Sets.length - 1}
+                  onClick={() => {
+                    stopSpeech();
+                    setSelectedIndex(i => Math.min(activeP4Sets.length - 1, i + 1));
+                    setP4AnswerOpenMap({});
+                    setP4QuestionVisibleMap({});
+                  }}
+                  className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-full text-xs font-semibold border border-black/10 dark:border-white/15 bg-white/90 dark:bg-[#2C2C2E] hover:bg-white disabled:opacity-30 transition-all shadow-sm text-center"
+                >
+                  다음 표 →
+                </button>
+              </div>
+            </div>
+
+            {/* 표(Schedule Table) */}
+            <div className="border border-black/10 dark:border-white/10 rounded-2xl overflow-hidden bg-white dark:bg-[#1C1C1E] mb-7 shadow-sm">
+              <div className="bg-[#1D1D1F] dark:bg-[#2C2C2E] text-white py-3.5 px-4 text-center font-bold text-base tracking-wide">
+                {currentP4Set.scheduleTable.headerTitle}
+              </div>
+              <div className="bg-[#F8F8F9] dark:bg-[#242426] px-4 py-2.5 border-b border-black/5 dark:border-white/10 flex flex-wrap justify-center gap-3 sm:gap-4 text-xs text-[#6E6E73] dark:text-[#8E8E93]">
+                {currentP4Set.scheduleTable.metaInfo.map((m, mIdx) => (
+                  <span key={mIdx}>
+                    <strong className="text-[#1D1D1F] dark:text-white">{m.label}:</strong> {m.value}
+                  </span>
+                ))}
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[500px] text-xs sm:text-sm border-collapse">
+                  <thead>
+                    <tr className="bg-[#F2F2F4] dark:bg-[#2C2C2E] text-[#1D1D1F] dark:text-white text-left">
+                      <th className="p-3 border-b border-black/5 dark:border-white/10">Time / Date</th>
+                      <th className="p-3 border-b border-black/5 dark:border-white/10">Session / Person</th>
+                      <th className="p-3 border-b border-black/5 dark:border-white/10">Topic / Experience</th>
+                      <th className="p-3 border-b border-black/5 dark:border-white/10">Location / Mode</th>
+                      <th className="p-3 border-b border-black/5 dark:border-white/10">Note / Speaker</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentP4Set.scheduleTable.rows.map((r, rIdx) => (
+                      <tr key={rIdx} className="border-b border-black/5 dark:border-white/10 hover:bg-black/[0.01] dark:hover:bg-white/[0.02]">
+                        <td className="p-3 font-bold">{r.date}</td>
+                        <td className="p-3">{r.time}</td>
+                        <td className="p-3 font-semibold">{r.event}</td>
+                        <td className="p-3">{r.location}</td>
+                        <td className="p-3 text-[#6E6E73] dark:text-[#8E8E93]">{r.note}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* 표 연계 문제 목록 */}
+            <div>
+              <h3 className="text-base font-bold text-[#1D1D1F] dark:text-white mb-4">
+                표 연계 문제 (Questions {currentP4Set.questions.length}문항 순차 응답)
+              </h3>
+              <div className="space-y-6">
+                {currentP4Set.questions.map(q => {
+                  const isAnsOpen = !!p4AnswerOpenMap[q.qId];
+                  const isQVisible = !!p4QuestionVisibleMap[q.qId];
+                  const fullSentences = q.sentences.map(s => s.en).join(' ');
+                  const qPromptId = `${q.qId}-prompt`;
+                  const allAnsId = `${q.qId}-all`;
+
+                  return (
+                    <div
+                      key={q.qId}
+                      className="p-5 sm:p-6 rounded-2xl bg-white/90 dark:bg-[#26262A] border border-black/5 dark:border-white/10 shadow-sm space-y-4"
+                    >
+                      {/* LC 질문 영역 */}
+                      <div className="p-4 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/10">
+                        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#1D1D1F] dark:bg-white text-white dark:text-[#1D1D1F]">
+                              {q.qNum}
+                            </span>
+                            <span className="text-xs font-semibold text-[#86868B] dark:text-[#A1A1A6]">
+                              🎧 실제 시험처럼 질문을 귀로 먼저 듣고 연습하세요
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {/* 질문 선택 버튼 */}
+                            <button
+                              type="button"
+                              onClick={() => handleSelectSpeech(qPromptId, q.question)}
+                              className={`px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-xs font-bold border transition-all ${
+                                selectedItemId === qPromptId
+                                  ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] shadow-sm'
+                                  : 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/20 hover:bg-[#0071E3]/20'
+                              }`}
+                            >
+                              질문듣기
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setP4QuestionVisibleMap(prev => ({
+                                  ...prev,
+                                  [q.qId]: !prev[q.qId]
+                                }))
+                              }
+                              className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all ${
+                                isQVisible
+                                  ? 'bg-black/5 dark:bg-white/10 text-[#1D1D1F] dark:text-white border-black/15'
+                                  : 'bg-white dark:bg-[#2C2C2E] text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/30 hover:bg-[#0071E3]/5'
+                              }`}
+                            >
+                              {isQVisible ? '질문 지문 접기 ▲' : '질문 지문 보기 ▼'}
+                            </button>
+                          </div>
                         </div>
+
+                        {/* 질문 지문 및 한국어 해석 영역 (클릭 시 선택) */}
+                        {isQVisible && (
+                          <div
+                            onClick={() => handleSelectSpeech(qPromptId, q.question)}
+                            className={`mt-3 p-3.5 rounded-xl bg-white dark:bg-[#1C1C1E] border border-black/5 dark:border-white/10 space-y-1.5 animate-in fade-in duration-200 ${getSelectableClass(qPromptId)}`}
+                          >
+                            <p className="text-base font-bold text-[#1D1D1F] dark:text-white">{q.question}</p>
+                            <p className="text-xs sm:text-sm text-[#0071E3] dark:text-[#0A84FF] font-medium">
+                              <strong>해석:</strong> {q.questionKo}
+                            </p>
+                          </div>
+                        )}
                       </div>
 
-                      {(activeQuestion as Part2QuestionResponse).photoScene?.tags && (activeQuestion as Part2QuestionResponse).photoScene.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 pt-1">
-                          {(activeQuestion as Part2QuestionResponse).photoScene.tags.map((t, ti) => (
-                            <span key={ti} className="text-[11px] sm:text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-lg font-medium">
-                              ✓ {t}
+                      {/* 모범답안 토글 버튼 */}
+                      <div className="flex items-center justify-between pt-1 border-t border-black/5 dark:border-white/10">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setP4AnswerOpenMap(prev => ({ ...prev, [q.qId]: !prev[q.qId] }));
+                          }}
+                          className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                            isAnsOpen
+                              ? 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/30'
+                              : 'bg-white dark:bg-[#2C2C2E] text-[#1D1D1F] dark:text-white border-black/10 dark:border-white/15 hover:border-black/20'
+                          }`}
+                        >
+                          {isAnsOpen ? '모범답안 접기 ▲' : '모범답안 보기 ▼'}
+                        </button>
+                      </div>
+
+                      {/* 모범답안 펼침 영역 */}
+                      {isAnsOpen && (
+                        <div className="mt-4 pt-4 border-t border-black/5 dark:border-white/10 space-y-4">
+                          <div className="flex items-center justify-between gap-3 pb-2 border-b border-black/5 dark:border-white/10">
+                            <span className="text-xs font-bold text-[#1D1D1F] dark:text-white">
+                              문장별 모범답안 (클릭하여 선택)
                             </span>
-                          ))}
+                            <button
+                              type="button"
+                              onClick={() => handleSelectSpeech(allAnsId, fullSentences)}
+                              className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all ${
+                                selectedItemId === allAnsId
+                                  ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3]'
+                                  : 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/20 hover:bg-[#0071E3]/20'
+                              }`}
+                            >
+                              전체 모범답안 선택
+                            </button>
+                          </div>
+
+                          {/* 문장별 모범답안 (클릭 시 선택) */}
+                          <div className="space-y-2.5">
+                            {q.sentences.map((s, sIdx) => {
+                              const sId = `${q.qId}-ms${sIdx}`;
+                              return (
+                                <div
+                                  key={sIdx}
+                                  onClick={() => handleSelectSpeech(sId, s.en)}
+                                  className={`p-3.5 rounded-xl bg-white/80 dark:bg-[#1C1C1E] border border-black/5 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${getSelectableClass(sId)}`}
+                                >
+                                  <div>
+                                    {s.step && (
+                                      <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] inline-block mb-1">
+                                        {s.step}
+                                      </span>
+                                    )}
+                                    <p className="text-sm sm:text-base font-semibold text-[#1D1D1F] dark:text-white">
+                                      {s.en}
+                                    </p>
+                                    <p className="text-xs sm:text-sm text-[#6E6E73] dark:text-[#8E8E93]">{s.ko}</p>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* 만능문장 */}
+                          {q.magicSentences && q.magicSentences.length > 0 && (
+                            <div className="space-y-2">
+                              {q.magicSentences.map((m, mIdx) => {
+                                const mId = `${q.qId}-mg${mIdx}`;
+                                return (
+                                  <div
+                                    key={mIdx}
+                                    onClick={() => handleSelectSpeech(mId, m.en)}
+                                    className={`p-3 rounded-xl bg-[#FF9500]/10 border border-[#FF9500]/20 flex items-center justify-between gap-3 ${getSelectableClass(mId)}`}
+                                  >
+                                    <div>
+                                      <p className="text-xs sm:text-sm font-bold text-[#92400E] dark:text-[#FBBF24]">
+                                        {m.en}
+                                      </p>
+                                      <p className="text-xs text-[#B45309] dark:text-[#FCD34D]">{m.ko}</p>
+                                      {m.tip && (
+                                        <p className="text-[11px] text-[#D97706] mt-0.5">
+                                          💡 {m.tip}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          {/* 어휘 */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {q.vocabulary.map((v, vIdx) => {
+                              const vId = `${q.qId}-vv${vIdx}`;
+                              return (
+                                <div
+                                  key={vIdx}
+                                  onClick={() => handleSelectSpeech(vId, v.word)}
+                                  className={`p-2.5 rounded-lg bg-white/70 dark:bg-[#1C1C1E] border border-black/5 dark:border-white/10 flex items-center justify-between gap-2 ${getSelectableClass(vId)}`}
+                                >
+                                  <div>
+                                    <span className="text-xs font-bold text-[#1D1D1F] dark:text-white">{v.word}</span>
+                                    <span className="text-[11px] font-mono text-[#0071E3] dark:text-[#0A84FF] ml-1">
+                                      {v.ipa}
+                                    </span>
+                                    <p className="text-[11px] text-[#6E6E73] dark:text-[#8E8E93]">
+                                      [{v.pos}] {v.meaning}
+                                    </p>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {q.explanation && (
+                            <div className="p-3 rounded-xl bg-[#34C759]/10 border border-[#34C759]/20 text-xs sm:text-sm text-[#166534] dark:text-[#4ADE80]">
+                              <strong>💡 답변 팁:</strong> {q.explanation}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
-                  )}
-                </div>
-              </section>
-            )}
+                  );
+                })}
+              </div>
+            </div>
 
-            {/* ===================================================================
-                [요청 2 반영] PART 4 전용: 동적 컬럼 표 & 누락 없는 전체 일정표 + Caller Context
-                =================================================================== */}
-            {activeQuestion.part === 'part4' && 'scheduleTable' in activeQuestion && (
-              <section aria-label="Part 4 일정표" className="flex flex-col gap-4">
-                <div className="bg-purple-50/80 border border-purple-200 rounded-2xl p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <div className="flex items-start gap-2">
-                    <span className="text-xs font-extrabold bg-purple-600 text-white px-2 py-0.5 rounded-md">
-                      DIRECTIONS
-                    </span>
-                    <span className="text-xs sm:text-sm text-purple-900">
-                      Questions 8-10 are based on the schedule below. (45s to read)
-                    </span>
+            {/* CBT 실전 모의 타이머 */}
+            <div className="mt-8 pt-6 border-t border-black/10 dark:border-white/10">
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#1D1D1F] dark:bg-[#242426] text-white shadow-lg flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 text-center sm:text-left">
+                <div className="flex items-center gap-3 justify-center sm:justify-start">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/10 flex items-center justify-center font-mono font-bold text-base sm:text-lg text-[#0071E3] dark:text-[#0A84FF] shrink-0">
+                    ⏱
                   </div>
-                  <button
-                    onClick={() => {
-                      setP4ReadingTime(45);
-                      setIsP4ReadingActive(!isP4ReadingActive);
-                    }}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
-                      isP4ReadingActive
-                        ? 'bg-rose-500 text-white border-rose-600 animate-pulse'
-                        : 'bg-white text-purple-700 border-purple-300 hover:bg-purple-100'
-                    }`}
-                  >
-                    <span>⏱️</span>
-                    <span>{isP4ReadingActive ? `표 읽기 남음: ${p4ReadingTime}초` : '45초 표 읽기 실전 타이머'}</span>
-                  </button>
-                </div>
-
-                {/* Schedule Table (동적 컬럼 렌더링으로 모든 세트의 누락 방지) */}
-                <div className="border border-slate-200/90 rounded-2xl overflow-hidden bg-white shadow-sm">
-                  <div className="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-4">
-                    <span className="text-[10px] font-extrabold tracking-widest text-blue-400 uppercase">
-                      REFERENCE DOCUMENT
-                    </span>
-                    <h3 className="text-base sm:text-lg font-bold mt-0.5">
-                      {(activeQuestion as Part4QuestionResponse).scheduleTable?.headerTitle || (activeQuestion as any).setTitle}
-                    </h3>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {(activeQuestion as Part4QuestionResponse).scheduleTable?.metaInfo?.map((meta, i) => (
-                        <span key={i} className="text-xs bg-white/10 px-2 py-0.5 rounded-md">
-                          <strong>{meta.label}:</strong> {meta.value}
-                        </span>
-                      ))}
+                  <div>
+                    <div className="text-[11px] sm:text-xs font-bold text-[#86868B] tracking-wider uppercase">
+                      CBT 실전 모의 타이머
+                    </div>
+                    <div className="text-xs sm:text-sm font-medium">
+                      {timerStatus === 'idle' && '표 분석 45초 ➔ 삐(Beep) ➔ 답변 15초 카운트'}
+                      {timerStatus === 'prep' && '🟡 [표 분석] 표의 일정을 주의 깊게 스캔하세요'}
+                      {timerStatus === 'resp' && '🟢 [답변 시간] 질문에 맞춰 침착하게 답변하세요!'}
+                      {timerStatus === 'done' && '✅ 답변 시간이 종료되었습니다!'}
                     </div>
                   </div>
-
-                  {/* 동적 컬럼 테이블 */}
-                  <div className="overflow-x-auto">
-                    {(() => {
-                      const rows = (activeQuestion as Part4QuestionResponse).scheduleTable?.rows || [];
-                      const colKeys = rows.length > 0 ? Object.keys(rows[0]).filter(k => k !== 'isCancelled') : ['time', 'event', 'location'];
-                      return (
-                        <table className="w-full text-left text-xs sm:text-sm border-collapse">
-                          <thead>
-                            <tr className="bg-slate-100 text-slate-600 uppercase font-bold text-[11px] border-b border-slate-200">
-                              {colKeys.map((k) => (
-                                <th key={k} className="p-3 capitalize">{k}</th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-100">
-                            {rows.map((row: any, rIdx: number) => {
-                              const isCancelled = Boolean(row.isCancelled || (row.activity && String(row.activity).includes('CANCEL')) || (row.status && String(row.status).includes('CANCEL')));
-                              return (
-                                <tr
-                                  key={rIdx}
-                                  className={`hover:bg-slate-50 transition-colors ${
-                                    isCancelled ? 'line-through text-slate-400 bg-rose-50/30' : 'text-slate-800'
-                                  }`}
-                                >
-                                  {colKeys.map((k) => (
-                                    <td key={k} className={`p-3 ${k === 'time' ? 'font-mono' : k === 'event' || k === 'topic' || k === 'program' ? 'font-bold text-blue-900' : ''}`}>
-                                      {String(row[k] || '')}
-                                    </td>
-                                  ))}
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      );
-                    })()}
-                  </div>
-
-                  {/* Caller Context Box (전화 문의자 상황) */}
-                  {(activeQuestion as Part4QuestionResponse).context && (
-                    <div className="bg-amber-50/70 border-t border-amber-200/80 p-3.5 flex items-start gap-3">
-                      <span className="text-lg">📞</span>
-                      <div className="flex flex-col text-xs sm:text-sm">
-                        <span className="font-bold text-amber-900">전화 문의자 / 발화 상황:</span>
-                        <p className="text-amber-800 italic mt-0.5 font-medium">{(activeQuestion as Part4QuestionResponse).context}</p>
-                      </div>
-                    </div>
-                  )}
                 </div>
-              </section>
+
+                <div className="flex items-center justify-center sm:justify-end gap-2.5 sm:gap-3">
+                  <span className="font-mono text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0071E3] dark:text-[#0A84FF] bg-white/5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-xl border border-white/10">
+                    {String(Math.floor(timeLeft / 60)).padStart(2, '0')}:
+                    {String(timeLeft % 60).padStart(2, '0')}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    {timerStatus === 'idle' ? (
+                      <button
+                        type="button"
+                        onClick={startCbtTimer}
+                        className="px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold bg-[#0071E3] dark:bg-[#0A84FF] hover:bg-[#0077ED] text-white shadow-md transition-all whitespace-nowrap"
+                      >
+                        ▶ 시험 시작
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={pauseCbtTimer}
+                          className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-white transition-all whitespace-nowrap"
+                        >
+                          ⏸ 일시정지
+                        </button>
+                        <button
+                          type="button"
+                          onClick={resetCbtTimer}
+                          className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-[#FF453A] transition-all whitespace-nowrap"
+                        >
+                          ↺ 초기화
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+        )}
+
+        {/* Part 2, Part 3, Part 5 표준 문제 뷰 */}
+        {activePart !== 'part1' && activePart !== 'part4' && currentStandardQ && (
+          <article className="bg-white/80 dark:bg-[#1C1C1E]/85 backdrop-blur-2xl border border-white/80 dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-sm">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-start justify-between gap-3 sm:gap-4 pb-4 sm:pb-5 mb-5 sm:mb-6 border-b border-black/5 dark:border-white/10">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20">
+                    {currentStandardQ.typeBadge || currentStandardQ.category}
+                  </span>
+                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-[#6E6E73] dark:text-[#8E8E93]">
+                    준비 {currentStandardQ.prepTime}초 · 답변 {currentStandardQ.responseTime}초
+                  </span>
+                </div>
+                <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-[#1D1D1F] dark:text-white truncate">
+                  {currentStandardQ.qNum} — {currentStandardQ.topic}
+                </h2>
+              </div>
+
+              <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0 w-full sm:w-auto">
+                <button
+                  type="button"
+                  disabled={selectedIndex === 0}
+                  onClick={() => {
+                    stopSpeech();
+                    setSelectedIndex(i => Math.max(0, i - 1));
+                    setIsAnswerOpen(false);
+                  }}
+                  className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-full text-xs font-semibold border border-black/10 dark:border-white/15 bg-white/90 dark:bg-[#2C2C2E] hover:bg-white disabled:opacity-30 transition-all shadow-sm text-center"
+                >
+                  ← 이전
+                </button>
+                <button
+                  type="button"
+                  disabled={selectedIndex >= activeQuestions.length - 1}
+                  onClick={() => {
+                    stopSpeech();
+                    setSelectedIndex(i => Math.min(activeQuestions.length - 1, i + 1));
+                    setIsAnswerOpen(false);
+                  }}
+                  className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-full text-xs font-semibold border border-black/10 dark:border-white/15 bg-white/90 dark:bg-[#2C2C2E] hover:bg-white disabled:opacity-30 transition-all shadow-sm text-center"
+                >
+                  다음 →
+                </button>
+              </div>
+            </div>
+
+            {/* Part 2 사진 (레터박스 없이 꽉 차게) */}
+            {currentStandardQ.part === 2 && currentStandardQ.imageBase64 && (
+              <div className="w-full rounded-2xl overflow-hidden mb-6 border border-black/10 dark:border-white/10 bg-black/5 shadow-md flex items-center justify-center max-h-[320px] sm:max-h-[540px]">
+                <img
+                  src={currentStandardQ.imageBase64}
+                  alt={currentStandardQ.topic}
+                  className="w-full h-auto max-h-[320px] sm:max-h-[540px] object-cover sm:object-contain rounded-2xl"
+                />
+              </div>
             )}
 
-            {/* 영어 질문 지문 섹션 */}
-            <section aria-label="시험 질문 영역" className="flex flex-col gap-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-black tracking-wider text-blue-600 uppercase">
-                    QUESTION
-                  </span>
-                  <span className="text-[11px] text-slate-400">
-                    ※ 실제 시험 환경: 한글 해석은 숨겨지며, 모범답안 토글 시 표시됩니다.
-                  </span>
-                </div>
-                
-                {/* TTS Controls */}
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => speakText(activeQuestion.question, 1.0)}
-                    className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-600 border border-slate-200 shadow-sm transition-all active:scale-95"
-                  >
-                    <span>🔊 Daniel 1.0x</span>
-                  </button>
-                  <button
-                    onClick={() => speakText(activeQuestion.question, 0.75)}
-                    className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full bg-white hover:bg-amber-50 text-slate-700 hover:text-amber-600 border border-slate-200 shadow-sm transition-all active:scale-95"
-                  >
-                    <span>🐢 느리게 0.75x</span>
-                  </button>
-                  <button
-                    onClick={stopSpeech}
-                    className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-all active:scale-95"
-                  >
-                    <span>⏹️</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* 영문 질문 텍스트 */}
-              <div className="bg-slate-50 border-l-4 border-blue-600 rounded-2xl p-4 sm:p-6 text-slate-900 shadow-inner">
-                <p className="text-base sm:text-lg lg:text-xl font-semibold leading-relaxed whitespace-pre-line tracking-tight font-sans">
-                  {activeQuestion.question}
-                </p>
-              </div>
-            </section>
-
-            {/* 실전 준비 / 답변 타이머 바 */}
-            {isExamMode && (
-              <section aria-label="실전 시험 타이머" className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <span className={`text-xs font-extrabold uppercase px-2.5 py-0.5 rounded-full ${
-                    timerState.phase === 'prep' ? 'bg-amber-100 text-amber-800' :
-                    timerState.phase === 'response' ? 'bg-emerald-100 text-emerald-800' :
-                    timerState.phase === 'finished' ? 'bg-slate-200 text-slate-600' :
-                    'bg-slate-100 text-slate-600'
-                  }`}>
-                    {timerState.phase === 'prep' && '⏳ 준비 시간 (Preparation)'}
-                    {timerState.phase === 'response' && '🎙️ 답변 시간 (Speaking)'}
-                    {timerState.phase === 'finished' && '🏁 답변 완료'}
-                    {timerState.phase === 'idle' && '대기 중 (준비시간: ' + activeQuestion.prepTime + '초)'}
-                  </span>
-                  <div className="flex items-baseline gap-1 font-mono">
-                    <span className="text-2xl sm:text-3xl font-extrabold text-blue-600">
-                      {timerState.timeLeft}
+            {/* 질문 프롬프트 (클릭 시 선택) */}
+            {currentStandardQ.question && (() => {
+              const promptId = `${currentStandardQ.id}-prompt`;
+              return (
+                <div
+                  onClick={() => handleSelectSpeech(promptId, currentStandardQ.question || '')}
+                  className={`p-5 rounded-2xl bg-white/90 dark:bg-[#26262A] border border-black/5 dark:border-white/10 mb-6 shadow-sm ${getSelectableClass(promptId)}`}
+                >
+                  <div className="flex items-center justify-between gap-3 mb-2">
+                    <span className="text-xs font-bold text-[#6E6E73] dark:text-[#8E8E93] tracking-wide uppercase">
+                      QUESTION PROMPT · 클릭하여 선택
                     </span>
-                    <span className="text-xs text-slate-400 font-bold">초</span>
                   </div>
+                  <p className="text-base sm:text-lg font-bold text-[#1D1D1F] dark:text-white">
+                    {currentStandardQ.question}
+                  </p>
                 </div>
+              );
+            })()}
 
-                <div className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full transition-all duration-200 ${
-                      timerState.phase === 'response' ? 'bg-emerald-500' : 'bg-amber-500'
-                    }`}
-                    style={{ width: `${timerState.progressPercent}%` }}
-                  />
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={startExamTimer}
-                    disabled={timerState.isRunning}
-                    className="flex-1 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-98 flex items-center justify-center gap-1.5"
-                  >
-                    <span>▶️</span>
-                    <span>실전 카운트다운 시작</span>
-                  </button>
-                  {timerState.phase !== 'idle' && (
-                    <button
-                      onClick={resetTimer}
-                      className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all"
-                    >
-                      리셋
-                    </button>
-                  )}
-                </div>
-              </section>
-            )}
-
-            {/* 모범답안 토글 버튼 (Space 단축키 연동) */}
-            <div className="flex justify-center py-1">
+            {/* 모범답안 토글 버튼 */}
+            <div className="flex items-center justify-between pt-1">
               <button
-                onClick={() => setIsAnswerVisible(!isAnswerVisible)}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl text-xs sm:text-sm font-extrabold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.01] active:scale-98 transition-all"
-                aria-expanded={isAnswerVisible}
+                type="button"
+                onClick={() => setIsAnswerOpen(prev => !prev)}
+                className={`px-4 py-2 rounded-full text-xs sm:text-sm font-semibold border transition-all ${
+                  isAnswerOpen
+                    ? 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/30'
+                    : 'bg-white dark:bg-[#2C2C2E] text-[#1D1D1F] dark:text-white border-black/10 dark:border-white/15 hover:border-black/20'
+                }`}
               >
-                <span>{isAnswerVisible ? '🙈' : '👁️'}</span>
-                <span>{isAnswerVisible ? '모범답안 & 문제해석 접기' : '모범답안 & 한국어 상세해설 보기'}</span>
-                <span className="ml-2 text-[10px] font-mono bg-white/20 px-2 py-0.5 rounded-md">
-                  Space
-                </span>
+                {isAnswerOpen ? '모범답안 접기 ▲' : '모범답안 보기 ▼'}
               </button>
             </div>
 
-            {/* 모범답안 상세 해설 영역 */}
-            {isAnswerVisible && (
-              <section aria-label="모범답안 및 해설" className="flex flex-col gap-5 pt-4 border-t border-slate-200 animate-fadeIn">
-                
-                {/* 질문 번역 & 발화 상황 번역 */}
-                <div className="bg-blue-50/80 border border-blue-200/80 rounded-2xl p-4 flex flex-col gap-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-blue-900">💡 질문 한국어 상세 해설:</span>
-                    <span className="text-[11px] text-blue-600 font-medium">모범답안과 매칭하여 학습하세요</span>
+            {/* 모범답안 펼침 영역 */}
+            {isAnswerOpen && (() => {
+              const fullModelAns = currentStandardQ.sentences.map(s => s.en).join(' ');
+              const fullModelId = `${currentStandardQ.id}-all`;
+              return (
+                <div className="mt-5 pt-5 border-t border-black/5 dark:border-white/10 space-y-6">
+                  {currentStandardQ.questionKo && (
+                    <div className="p-3.5 rounded-xl bg-black/5 dark:bg-white/5 border-l-4 border-[#0071E3] dark:border-[#0A84FF] text-sm text-[#48484A] dark:text-[#A1A1A6]">
+                      <strong>질문 해석:</strong> {currentStandardQ.questionKo}
+                    </div>
+                  )}
+
+                  {/* 문장별 모범답안 */}
+                  <div>
+                    <div className="flex items-center justify-between gap-3 mb-3 pb-2 border-b border-black/5 dark:border-white/10">
+                      <h3 className="text-base font-bold text-[#1D1D1F] dark:text-white">
+                        문장별 모범답안 (클릭하여 선택 후 하단에서 재생)
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={() => handleSelectSpeech(fullModelId, fullModelAns)}
+                        className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all ${
+                          selectedItemId === fullModelId
+                            ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3]'
+                            : 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/20 hover:bg-[#0071E3]/20'
+                        }`}
+                      >
+                        전체 모범답안 선택
+                      </button>
+                    </div>
+
+                    <div className="space-y-2.5">
+                      {currentStandardQ.sentences.map((s, sIdx) => {
+                        const sId = `${currentStandardQ.id}-ms${sIdx}`;
+                        return (
+                          <div
+                            key={sIdx}
+                            onClick={() => handleSelectSpeech(sId, s.en)}
+                            className={`p-4 rounded-2xl bg-white/70 dark:bg-[#26262A] border border-black/5 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${getSelectableClass(sId)}`}
+                          >
+                            <div>
+                              {s.step && (
+                                <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] inline-block mb-1">
+                                  {s.step}
+                                </span>
+                              )}
+                              <p className="text-base font-semibold text-[#1D1D1F] dark:text-white">{s.en}</p>
+                              <p className="text-sm text-[#6E6E73] dark:text-[#8E8E93] mt-0.5">{s.ko}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <p className="text-xs sm:text-sm text-blue-950 font-medium whitespace-pre-line leading-relaxed">
-                    {activeQuestion.questionTranslation}
-                  </p>
-                  {(activeQuestion as Part4QuestionResponse).context_kr && (
-                    <div className="mt-2 pt-2 border-t border-blue-200 text-xs text-blue-800">
-                      <strong>📞 전화 문의자 발화상황 번역:</strong> {(activeQuestion as Part4QuestionResponse).context_kr}
+
+                  {/* 쓰인 만능문장 */}
+                  {currentStandardQ.magicSentences && currentStandardQ.magicSentences.length > 0 && (
+                    <div>
+                      <h3 className="text-base font-bold text-[#1D1D1F] dark:text-white mb-3">
+                        적용된 만능문장 표현 (클릭하여 선택)
+                      </h3>
+                      <div className="space-y-2">
+                        {currentStandardQ.magicSentences.map((m, mIdx) => {
+                          const mId = `${currentStandardQ.id}-mg${mIdx}`;
+                          return (
+                            <div
+                              key={mIdx}
+                              onClick={() => handleSelectSpeech(mId, m.en)}
+                              className={`p-3.5 rounded-2xl bg-[#FF9500]/10 border border-[#FF9500]/20 flex items-center justify-between gap-3 ${getSelectableClass(mId)}`}
+                            >
+                              <div>
+                                <p className="text-sm font-bold text-[#92400E] dark:text-[#FBBF24]">{m.en}</p>
+                                <p className="text-xs text-[#B45309] dark:text-[#FCD34D]">{m.ko}</p>
+                                {m.tip && (
+                                  <p className="text-xs text-[#D97706] mt-1">💡 {m.tip}</p>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 핵심 어휘 */}
+                  <div>
+                    <h3 className="text-base font-bold text-[#1D1D1F] dark:text-white mb-3">
+                      핵심 어휘 (클릭하여 선택)
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {currentStandardQ.vocabulary.map((v, vIdx) => {
+                        const vId = `${currentStandardQ.id}-vv${vIdx}`;
+                        return (
+                          <div
+                            key={vIdx}
+                            onClick={() => handleSelectSpeech(vId, v.word)}
+                            className={`p-3 rounded-xl bg-white/70 dark:bg-[#26262A] border border-black/5 dark:border-white/10 flex items-center justify-between gap-2 ${getSelectableClass(vId)}`}
+                          >
+                            <div>
+                              <span className="text-sm font-bold text-[#1D1D1F] dark:text-white">{v.word}</span>
+                              <span className="text-xs font-mono text-[#0071E3] dark:text-[#0A84FF] ml-1.5">{v.ipa}</span>
+                              <p className="text-xs text-[#6E6E73] dark:text-[#8E8E93] mt-0.5">
+                                [{v.pos}] {v.meaning}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {currentStandardQ.explanation && (
+                    <div className="p-4 rounded-2xl bg-[#34C759]/10 border border-[#34C759]/20 text-sm text-[#166534] dark:text-[#4ADE80]">
+                      <strong>💡 고득점 해설 전략:</strong> {currentStandardQ.explanation}
                     </div>
                   )}
                 </div>
+              );
+            })()}
 
-                {/* 답안 헤더 */}
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-black tracking-wider text-emerald-700 uppercase">
-                      MODEL ANSWER
-                    </span>
-                    <span className="text-[11px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
-                      120~140점 (IM3~IH) 완벽 커버
-                    </span>
+            {/* CBT 실전 디지털 타이머 */}
+            <div className="mt-8 pt-6 border-t border-black/10 dark:border-white/10">
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#1D1D1F] dark:bg-[#242426] text-white shadow-lg flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 text-center sm:text-left">
+                <div className="flex items-center gap-3 justify-center sm:justify-start">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/10 flex items-center justify-center font-mono font-bold text-base sm:text-lg text-[#0071E3] dark:text-[#0A84FF] shrink-0">
+                    ⏱
                   </div>
+                  <div>
+                    <div className="text-[11px] sm:text-xs font-bold text-[#86868B] tracking-wider uppercase">
+                      CBT 실전 모의 타이머
+                    </div>
+                    <div className="text-xs sm:text-sm font-medium">
+                      {timerStatus === 'idle' &&
+                        `준비 ${targetPrepTime}초 ➔ 삐(Beep) ➔ 답변 ${targetRespTime}초 자동 카운트`}
+                      {timerStatus === 'prep' && '🟡 [준비 시간] 키워드와 문장 구조를 머릿속으로 정리하세요'}
+                      {timerStatus === 'resp' && '🟢 [답변 시간] 자신감 있는 톤으로 답변하세요!'}
+                      {timerStatus === 'done' && '✅ 답변 시간이 종료되었습니다!'}
+                    </div>
+                  </div>
+                </div>
 
+                <div className="flex items-center justify-center sm:justify-end gap-2.5 sm:gap-3">
+                  <span className="font-mono text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0071E3] dark:text-[#0A84FF] bg-white/5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-xl border border-white/10">
+                    {String(Math.floor(timeLeft / 60)).padStart(2, '0')}:
+                    {String(timeLeft % 60).padStart(2, '0')}
+                  </span>
                   <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => speakText(activeQuestion.answer, 1.0)}
-                      className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-700 border border-emerald-300 transition-all active:scale-95 shadow-sm"
-                    >
-                      <span>🔊 전체 1.0x</span>
-                    </button>
-                    <button
-                      onClick={() => speakText(activeQuestion.answer, 0.75)}
-                      className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-700 border border-amber-300 transition-all active:scale-95 shadow-sm"
-                    >
-                      <span>🐢 느리게 0.75x</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* =================================================================
-                    [요청 3 반영] 문장별 분할 뷰어 (파트 2, 3, 4 모두 개별 발음 버튼 제공)
-                    ================================================================= */}
-                <div className="flex flex-col gap-2.5">
-                  {structuredSentences.map((sent) => (
-                    <div
-                      key={sent.index}
-                      className="bg-slate-50/90 hover:bg-blue-50/40 border border-slate-200/80 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition-colors"
-                    >
-                      <div className="flex flex-col gap-1 flex-1">
-                        {currentPart === 'part2' && (
-                          <div className="mb-0.5">
-                            <span className="text-[10px] sm:text-[11px] font-extrabold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 inline-block">
-                              {sent.index === 0 && '🐰 1단계: 장소 도입 (This is a picture taken in...)'}
-                              {sent.index === 1 && '👤 2단계: 중심 인물/피사체 동작 (In the center/foreground...)'}
-                              {sent.index === 2 && '🔍 3단계: 세부 사물/주변 인물 (Next to / On the table...)'}
-                              {sent.index === 3 && (structuredSentences.length > 4 ? '🏙️ 3단계: 배경/환경 (In the background...)' : '✨ 4단계: 마무리 및 총평 (Overall, it seems...')}
-                              {sent.index >= 4 && '✨ 4단계: 마무리 및 총평 (Overall, it seems...)'}
-                            </span>
-                          </div>
-                        )}
-                        <span className="text-xs sm:text-sm font-semibold text-slate-900 leading-relaxed font-sans">
-                          {sent.en}
-                        </span>
-                        <span className="text-xs text-slate-500 font-medium">
-                          {sent.ko}
-                        </span>
-                      </div>
+                    {timerStatus === 'idle' ? (
                       <button
-                        onClick={() => {
-                          setSpeakingSentenceIndex(sent.index);
-                          speakText(sent.en, 1.0, () => setSpeakingSentenceIndex(null));
-                        }}
-                        className={`inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full border transition-all shrink-0 ${
-                          speakingSentenceIndex === sent.index
-                            ? 'bg-blue-600 text-white border-blue-600 animate-pulse'
-                            : 'bg-white text-slate-700 border-slate-200 hover:border-blue-400 hover:text-blue-600 shadow-sm active:scale-95'
-                        }`}
-                        title="이 문장만 개별 발음 듣기"
+                        type="button"
+                        onClick={startCbtTimer}
+                        className="px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold bg-[#0071E3] dark:bg-[#0A84FF] hover:bg-[#0077ED] text-white shadow-md transition-all whitespace-nowrap"
                       >
-                        <span>🔊</span>
-                        <span>문장듣기</span>
+                        ▶ 시험 시작
                       </button>
-                    </div>
-                  ))}
-                </div>
-
-                {/* [요청 3 반영: 시계토끼 핵심문장 보라색 카드는 해설에서 제거하고 상단 만능문장 족보집 모달 안에 모두 통합] */}
-
-                {/* 어휘 & 발음기호 */}
-                {activeQuestion.vocabulary && activeQuestion.vocabulary.length > 0 && (
-                  <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col gap-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">📖</span>
-                      <span className="text-xs sm:text-sm font-bold text-slate-800">
-                        핵심 어휘 및 IPA 발음기호 (단어 클릭 시 원어민 음성 재생)
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                      {activeQuestion.vocabulary.map((vocab, vIdx) => (
-                        <div
-                          key={vIdx}
-                          onClick={() => speakText(vocab.word, 0.9)}
-                          className="group bg-slate-50 hover:bg-blue-50/60 border border-slate-200/80 hover:border-blue-300 rounded-xl p-2.5 flex items-center justify-between cursor-pointer transition-all"
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={pauseCbtTimer}
+                          className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-white transition-all whitespace-nowrap"
                         >
-                          <div className="flex flex-col">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-blue-600">
-                                {vocab.word}
-                              </span>
-                              <span className="text-[10px] text-slate-400 font-mono">
-                                {vocab.ipa}
-                              </span>
-                            </div>
-                            <span className="text-[11px] text-slate-500 mt-0.5">
-                              {vocab.meaning}
-                            </span>
-                          </div>
-                          <span className="text-slate-400 group-hover:text-blue-600 text-xs transition-colors">
-                            🔊
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 문법 포인트 */}
-                {activeQuestion.grammarPoints && activeQuestion.grammarPoints.length > 0 && (
-                  <div className="bg-amber-50/60 border border-amber-200/70 rounded-2xl p-4 flex flex-col gap-2.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">💡</span>
-                      <span className="text-xs sm:text-sm font-bold text-amber-900">
-                        핵심 문법 및 감점 방지 구문 분석 (Grammar Points)
-                      </span>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      {activeQuestion.grammarPoints.map((gp, gIdx) => (
-                        <div key={gIdx} className="bg-white/80 rounded-xl p-3 border border-amber-200/50 flex flex-col gap-1">
-                          <span className="text-xs font-bold text-amber-900">{gp.title}</span>
-                          <p className="text-xs text-slate-700 leading-relaxed">{gp.explanation}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 120-140점 전략 팁 */}
-                <div className="bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-4 flex items-start gap-3">
-                  <span className="text-xl">🎯</span>
-                  <div className="flex flex-col text-xs sm:text-sm">
-                    <span className="font-extrabold text-emerald-900">120~140점(IM3~IH) 확보 핵심 전략:</span>
-                    <p className="text-emerald-900 mt-1 leading-relaxed font-medium">{activeQuestion.scoreTip}</p>
+                          ⏸ 일시정지
+                        </button>
+                        <button
+                          type="button"
+                          onClick={resetCbtTimer}
+                          className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-[#FF453A] transition-all whitespace-nowrap"
+                        >
+                          ↺ 초기화
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
-
-              </section>
-            )}
-
-          </main>
-        )}
-
-        {/* =======================================================================
-            FOOTER (단축키 가이드)
-            ======================================================================= */}
-        <footer className="bg-white/60 backdrop-blur-md border border-white/60 rounded-2xl p-4 flex flex-col items-center gap-3 text-center text-xs text-slate-500">
-          <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
-            <span className="inline-flex items-center gap-1 bg-white border border-slate-200 px-2 py-0.5 rounded-md font-mono text-[11px]">
-              <kbd className="font-bold">←</kbd> 이전
-            </span>
-            <span className="inline-flex items-center gap-1 bg-white border border-slate-200 px-2 py-0.5 rounded-md font-mono text-[11px]">
-              <kbd className="font-bold">→</kbd> 다음
-            </span>
-            <span className="inline-flex items-center gap-1 bg-white border border-slate-200 px-2 py-0.5 rounded-md font-mono text-[11px]">
-              <kbd className="font-bold">Space</kbd> 답안 토글
-            </span>
-            <span className="inline-flex items-center gap-1 bg-white border border-slate-200 px-2 py-0.5 rounded-md font-mono text-[11px]">
-              <kbd className="font-bold">1</kbd> 1.0x
-            </span>
-            <span className="inline-flex items-center gap-1 bg-white border border-slate-200 px-2 py-0.5 rounded-md font-mono text-[11px]">
-              <kbd className="font-bold">2</kbd> 0.75x
-            </span>
-            <span className="inline-flex items-center gap-1 bg-white border border-slate-200 px-2 py-0.5 rounded-md font-mono text-[11px]">
-              <kbd className="font-bold">Esc</kbd> 정지/닫기
-            </span>
-          </div>
-          <p className="font-medium text-slate-600">
-            {MOCK_USER_PROFILE.dDayText} · 침묵 없이 만능문장으로 140점(IH) 달성하세요! 🏆
-          </p>
-        </footer>
-
-      </div>
-
-      {/* =========================================================================
-          [요청 3 반영] MODAL: 시계토끼 만능문장 종합 족보집 (모든 파트 핵심 공식 총집합)
-          ========================================================================= */}
-      {isCheatSheetOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-3.5 sm:p-6 animate-fadeIn">
-          <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200">
-            <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">🐰</span>
-                <h3 className="text-base sm:text-lg font-extrabold text-slate-800">
-                  시계토끼 만능문장 종합 족보집 (모든 파트 공식 집대성)
-                </h3>
               </div>
+            </div>
+          </article>
+        )}
+      </main>
+
+      {/* 1 & 3. 하단 중앙 플로팅 바 (문항목록 | 이전 | 번호 | 다음 | 정지 | 1.0x | 0.75x 순서) */}
+      <aside className="fixed bottom-[calc(22px+env(safe-area-inset-bottom,16px))] sm:bottom-9 left-1/2 -translate-x-1/2 z-40 bg-white/90 dark:bg-[#1C1C1E]/95 backdrop-blur-2xl border border-white/90 dark:border-white/15 shadow-2xl rounded-full px-2.5 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between sm:justify-center gap-1.5 sm:gap-2.5 w-[calc(100%-20px)] max-w-lg sm:w-auto">
+        <button
+          type="button"
+          onClick={() => setIsDrawerOpen(true)}
+          className="px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs font-bold text-[#1D1D1F] dark:text-[#F5F5F7] bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 transition-all flex items-center gap-1 shadow-xs shrink-0"
+        >
+          <span>☰</span>
+          <span className="hidden sm:inline"> 문항 목록</span>
+          <span className="inline sm:hidden"> 목록</span>
+        </button>
+
+        <div className="h-4 w-px bg-black/10 dark:bg-white/15 shrink-0"></div>
+
+        <button
+          type="button"
+          disabled={selectedIndex === 0}
+          onClick={() => {
+            stopSpeech();
+            setSelectedIndex(i => Math.max(0, i - 1));
+            setIsAnswerOpen(false);
+            setP4AnswerOpenMap({});
+            setP4QuestionVisibleMap({});
+          }}
+          className="px-2 sm:px-3 py-1.5 rounded-full text-xs font-bold text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-30 transition-all shrink-0"
+        >
+          <span className="hidden sm:inline">← 이전</span>
+          <span className="inline sm:hidden">←</span>
+        </button>
+
+        <span className="text-[11px] sm:text-xs font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] px-0.5 sm:px-1 font-mono shrink-0">
+          <strong>{selectedIndex + 1}</strong> / {totalItemsCount}
+        </span>
+
+        <button
+          type="button"
+          disabled={selectedIndex >= totalItemsCount - 1}
+          onClick={() => {
+            stopSpeech();
+            setSelectedIndex(i => Math.min(totalItemsCount - 1, i + 1));
+            setIsAnswerOpen(false);
+            setP4AnswerOpenMap({});
+            setP4QuestionVisibleMap({});
+          }}
+          className="px-2 sm:px-3 py-1.5 rounded-full text-xs font-bold text-[#0071E3] dark:text-[#0A84FF] hover:bg-[#0071E3]/10 disabled:opacity-30 transition-all shrink-0"
+        >
+          <span className="hidden sm:inline">다음 →</span>
+          <span className="inline sm:hidden">→</span>
+        </button>
+
+        <div className="h-4 w-px bg-black/10 dark:bg-white/15 shrink-0"></div>
+
+        {/* 1. 정지 버튼 */}
+        <button
+          type="button"
+          onClick={stopSpeech}
+          className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-bold border transition-all shrink-0 ${
+            playingKey
+              ? 'bg-[#FF3B30] text-white border-[#FF3B30] shadow-md animate-pulse'
+              : 'bg-black/5 dark:bg-white/10 text-[#86868B] border-black/10 dark:border-white/15 hover:bg-black/10 hover:text-[#1D1D1F] dark:hover:text-white'
+          }`}
+          title="음성 정지"
+        >
+          <span>⏹</span>
+          <span className="hidden sm:inline"> 정지</span>
+        </button>
+
+        {/* 1. 배속 토글 버튼 (1.0x, 0.75x) */}
+        <button
+          type="button"
+          onClick={() => playSelectedRate(1.0)}
+          className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-bold border transition-all shrink-0 ${
+            playingKey === 'selected-1'
+              ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] shadow-md shadow-blue-500/30'
+              : 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/20 hover:bg-[#0071E3]/20'
+          }`}
+          title="원어민 Daniel 1.0x 발음"
+        >
+          1.0x
+        </button>
+        <button
+          type="button"
+          onClick={() => playSelectedRate(0.75)}
+          className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-bold border transition-all shrink-0 ${
+            playingKey === 'selected-0.75'
+              ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] shadow-md shadow-blue-500/30'
+              : 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/20 hover:bg-[#0071E3]/20'
+          }`}
+          title="원어민 Daniel 0.75x 느린 발음"
+        >
+          0.75x
+        </button>
+      </aside>
+
+      {/* 문항 목록 리퀴드 글래스 사이드 드로어 */}
+      {isDrawerOpen && (
+        <div className="fixed inset-0 z-50 flex">
+          <div
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity"
+            onClick={() => setIsDrawerOpen(false)}
+          ></div>
+          <aside className="relative w-80 max-w-[85vw] bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-2xl border-r border-white/80 dark:border-white/10 shadow-2xl flex flex-col z-10 animate-in slide-in-from-left duration-200">
+            <div className="p-5 border-b border-black/5 dark:border-white/10 flex items-center justify-between">
+              <span className="text-base font-bold text-[#1D1D1F] dark:text-white">
+                {activePart.toUpperCase()} 문항 목록 ({totalItemsCount})
+              </span>
               <button
-                onClick={() => setIsCheatSheetOpen(false)}
-                className="w-8 h-8 rounded-full bg-slate-200/70 hover:bg-slate-300 text-slate-600 flex items-center justify-center font-bold text-sm transition-colors"
-                aria-label="닫기"
+                type="button"
+                onClick={() => setIsDrawerOpen(false)}
+                className="w-7 h-7 rounded-full bg-black/5 dark:bg-white/10 text-[#6E6E73] dark:text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white font-bold flex items-center justify-center text-sm"
               >
                 ✕
               </button>
             </div>
-
-            <div className="flex border-b border-slate-200 bg-white">
-              <button
-                onClick={() => setModalTab('part2')}
-                className={`flex-1 py-3 text-xs sm:text-sm font-bold border-b-2 transition-colors ${
-                  modalTab === 'part2'
-                    ? 'border-emerald-600 text-emerald-700 bg-emerald-50/50'
-                    : 'border-transparent text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                🖼️ PART 2 4단계 묘사 공식
-              </button>
-              <button
-                onClick={() => setModalTab('part3')}
-                className={`flex-1 py-3 text-xs sm:text-sm font-bold border-b-2 transition-colors ${
-                  modalTab === 'part3'
-                    ? 'border-blue-600 text-blue-700 bg-blue-50/50'
-                    : 'border-transparent text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                🔖 PART 3 만능문장 7대 공식
-              </button>
-              <button
-                onClick={() => setModalTab('part4')}
-                className={`flex-1 py-3 text-xs sm:text-sm font-bold border-b-2 transition-colors ${
-                  modalTab === 'part4'
-                    ? 'border-purple-600 text-purple-700 bg-purple-50/50'
-                    : 'border-transparent text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                📑 PART 4 Q8~Q10 응답 족보
-              </button>
+            <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
+              {activePart === 'part4'
+                ? activeP4Sets.map((s, idx) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => {
+                        stopSpeech();
+                        setSelectedIndex(idx);
+                        setP4AnswerOpenMap({});
+                        setP4QuestionVisibleMap({});
+                        setIsDrawerOpen(false);
+                      }}
+                      className={`w-full text-left p-3 rounded-xl border transition-all ${
+                        idx === selectedIndex
+                          ? 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 border-[#0071E3] dark:border-[#0A84FF] shadow-sm'
+                          : 'bg-white/60 dark:bg-[#2C2C2E]/60 border-black/5 dark:border-white/10 hover:bg-white dark:hover:bg-[#2C2C2E]'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <strong className="text-xs text-[#1D1D1F] dark:text-white">{s.setNum}</strong>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF]">
+                          {s.tableTypeBadge}
+                        </span>
+                      </div>
+                      <p className="text-xs text-[#6E6E73] dark:text-[#8E8E93] line-clamp-2">{s.topic}</p>
+                    </button>
+                  ))
+                : activeQuestions.map((q, idx) => (
+                    <button
+                      key={q.id}
+                      type="button"
+                      onClick={() => {
+                        stopSpeech();
+                        setSelectedIndex(idx);
+                        setIsAnswerOpen(false);
+                        setIsDrawerOpen(false);
+                      }}
+                      className={`w-full text-left p-3 rounded-xl border transition-all ${
+                        idx === selectedIndex
+                          ? 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 border-[#0071E3] dark:border-[#0A84FF] shadow-sm'
+                          : 'bg-white/60 dark:bg-[#2C2C2E]/60 border-black/5 dark:border-white/10 hover:bg-white dark:hover:bg-[#2C2C2E]'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <strong className="text-xs text-[#1D1D1F] dark:text-white">{q.qNum}</strong>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF]">
+                          {q.typeBadge || q.category}
+                        </span>
+                      </div>
+                      <p className="text-xs text-[#6E6E73] dark:text-[#8E8E93] line-clamp-2">{q.topic}</p>
+                    </button>
+                  ))}
             </div>
+          </aside>
+        </div>
+      )}
 
-            <div className="p-4 sm:p-6 overflow-y-auto flex flex-col gap-3.5">
-              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 text-xs text-blue-900 leading-relaxed">
-                💡 <strong>시험장 팁:</strong> 어떤 돌발 질문이 나와도 당황하지 말고 질문을 주어로 받아친 후 아래 만능문장 1~2개를 붙이면 120~140점이 완성됩니다.
+      {/* 시계토끼 만능문장 187 리퀴드 글래스 모달 */}
+      {isVocabModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-md transition-opacity"
+            onClick={() => setIsVocabModalOpen(false)}
+          ></div>
+          <div className="relative w-full max-w-4xl h-[92vh] sm:h-[85vh] bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-3xl border border-white/80 dark:border-white/15 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden z-10 animate-in zoom-in-95 duration-200">
+            <div className="p-3.5 sm:p-5 border-b border-black/5 dark:border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-base sm:text-lg font-bold text-[#1D1D1F] dark:text-white">
+                    🐰 시계토끼 만능문장 187 단어장
+                  </h2>
+                  <p className="text-[11px] sm:text-xs text-[#6E6E73] dark:text-[#8E8E93]">
+                    Part 2~5 구성 · 원어민 Daniel · 암기: <strong>{memorizedCount}</strong> / {magicData.items.length}개
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsVocabModalOpen(false)}
+                  className="sm:hidden w-8 h-8 rounded-full bg-black/5 dark:bg-white/10 text-[#6E6E73] dark:text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white font-bold flex items-center justify-center text-sm"
+                >
+                  ✕
+                </button>
               </div>
 
-              {MOCK_CHEAT_SHEETS[modalTab].map((formula) => (
-                <div
-                  key={formula.id}
-                  className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 flex flex-col gap-1.5"
+              <div className="flex items-center gap-2">
+                <input
+                  type="search"
+                  value={modalSearch}
+                  onChange={e => setModalSearch(e.target.value)}
+                  placeholder="영어 표현, 한국어 뜻 검색..."
+                  className="px-3.5 py-1.5 rounded-full border border-black/10 dark:border-white/15 text-xs bg-white dark:bg-[#2C2C2E] text-[#1D1D1F] dark:text-white w-full sm:min-w-[200px] outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setIsVocabModalOpen(false)}
+                  className="hidden sm:flex w-7 h-7 rounded-full bg-black/5 dark:bg-white/10 text-[#6E6E73] dark:text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white font-bold items-center justify-center text-sm"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-blue-600">{formula.topic}</span>
-                    <span className="text-[10px] font-mono font-bold bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">
-                      {formula.numberTag}
-                    </span>
-                  </div>
-                  <p className="text-xs sm:text-sm font-bold text-slate-900 font-mono mt-0.5">
-                    {formula.formulaEn}
-                  </p>
-                  <p className="text-xs text-slate-600 font-medium">{formula.formulaKo}</p>
-                  {formula.extraTip && (
-                    <span className="text-[11px] text-slate-400 mt-1">
-                      📌 {formula.extraTip}
-                    </span>
-                  )}
-                </div>
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* 단어장 파트 필터 (Part 1 제외) */}
+            <div className="px-3 sm:px-5 py-2 sm:py-2.5 border-b border-black/5 dark:border-white/10 flex flex-wrap gap-1.5 overflow-x-auto no-scrollbar">
+              {[
+                { id: 'ALL', label: `전체 (${magicData.items.length})` },
+                { id: '2', label: 'Part 2 사진 (49)' },
+                { id: '3', label: 'Part 3 질문 (47)' },
+                { id: '4', label: 'Part 4 표 (38)' },
+                { id: '5', label: 'Part 5 의견 (53)' }
+              ].map(f => (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => setModalPartFilter(f.id)}
+                  className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold border transition-all whitespace-nowrap ${
+                    modalPartFilter === f.id
+                      ? 'bg-[#1D1D1F] dark:bg-white text-white dark:text-[#1D1D1F] border-[#1D1D1F] dark:border-white'
+                      : 'bg-white/70 dark:bg-[#2C2C2E] text-[#6E6E73] dark:text-[#8E8E93] border-black/10 dark:border-white/10 hover:border-black/20'
+                  }`}
+                >
+                  {f.label}
+                </button>
               ))}
             </div>
 
-            <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
-              <button
-                onClick={() => setIsCheatSheetOpen(false)}
-                className="px-5 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white transition-all"
-              >
-                닫기 (Esc)
-              </button>
+            <div className="flex-1 overflow-y-auto p-3 sm:p-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-3">
+                {filteredVocabItems.map(item => {
+                  const isMem = !!memorizedIds[item.id];
+                  return (
+                    <div
+                      key={item.id}
+                      className={`p-4 rounded-2xl border flex flex-col justify-between gap-2.5 transition-all ${
+                        isMem
+                          ? 'bg-[#34C759]/10 border-[#34C759]/30'
+                          : 'bg-white/80 dark:bg-[#242426] border-black/5 dark:border-white/10'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#1D1D1F] dark:bg-white text-white dark:text-[#1D1D1F]">
+                              Part {item.part}
+                            </span>
+                            <span className="text-xs font-bold text-[#0071E3] dark:text-[#0A84FF]">{item.id}</span>
+                            <span className="text-xs font-medium text-[#86868B] dark:text-[#A1A1A6]">
+                              {item.category}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => toggleMemorized(item.id)}
+                            className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border transition-all ${
+                              isMem
+                                ? 'bg-[#34C759] text-white border-[#34C759]'
+                                : 'bg-white dark:bg-[#2C2C2E] text-[#6E6E73] dark:text-[#8E8E93] border-black/10 dark:border-white/15'
+                            }`}
+                          >
+                            {isMem ? '✓ 암기완료' : '암기 체크'}
+                          </button>
+                        </div>
+                        <p className="text-base font-bold text-[#1D1D1F] dark:text-white leading-snug">{item.en}</p>
+                        <p className="text-xs sm:text-sm text-[#6E6E73] dark:text-[#8E8E93] mt-1">{item.ko}</p>
+                        {item.tip && (
+                          <p className="text-xs text-[#FF9500] font-medium mt-1.5">
+                            💡 {item.tip}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex justify-end pt-2 border-t border-black/5 dark:border-white/10 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => speakText(item.en, 1.0, `v-${item.id}-1`)}
+                          className="px-2.5 py-1 rounded-full text-xs font-semibold bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20 hover:bg-[#0071E3]/20"
+                        >
+                          1.0x
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => speakText(item.en, 0.75, `v-${item.id}-075`)}
+                          className="px-2.5 py-1 rounded-full text-xs font-semibold bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20 hover:bg-[#0071E3]/20"
+                        >
+                          0.75x
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
