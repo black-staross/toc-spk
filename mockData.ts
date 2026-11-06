@@ -11,7 +11,7 @@
  * ==============================================================================
  */
 
-import masterRawData from './data.json';
+import masterRawData from './data/toeic_parts_master.json';
 import {
   ToeicQuestionDetailResponse,
   Part2QuestionResponse,
