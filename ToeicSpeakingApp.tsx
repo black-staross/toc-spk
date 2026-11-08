@@ -449,12 +449,6 @@ export const ToeicSpeakingApp: React.FC = () => {
     }
   };
 
-  // 카테고리에서 파트 접두사(예: 'Part 3 ', '파트3 ') 완벽 제거
-  const cleanCategory = (cat: string) => {
-    if (!cat) return '';
-    return cat.replace(/^(Part|파트)\s*\d+\s*/i, '').trim();
-  };
-
   // 1 & 2. 하단 플로팅 바에서 현재 선택된 텍스트 재생
   const playSelectedRate = (rate: number) => {
     if (!selectedSpeechText) {
@@ -1169,21 +1163,13 @@ export const ToeicSpeakingApp: React.FC = () => {
                       key={q.qId}
                       className="p-5 sm:p-6 rounded-2xl bg-white/90 dark:bg-[#26262A] border border-black/5 dark:border-white/10 shadow-sm space-y-4"
                     >
-                      {/* LC 질문 헤더 & 컨트롤 */}
-                      <div className="p-4 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/10">
-                        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#1D1D1F] dark:bg-white text-white dark:text-[#1D1D1F]">
+                      {/* LC 질문 헤더 & 컨트롤 (문항번호 옆에 답변 문구 삭제 및 질문듣기/질문보기 버튼 나란히 배치) */}
+                      <div className="p-3.5 sm:p-4 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/10">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#1D1D1F] dark:bg-white text-white dark:text-[#1D1D1F] shrink-0">
                               Q{qIdx + 1}
                             </span>
-                            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20">
-                              {qIdx >= 2 ? '답변 30초' : '답변 15초'}
-                            </span>
-                            <span className="text-xs font-semibold text-[#86868B] dark:text-[#A1A1A6]">
-                              {q.topic}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
                             {/* 질문듣기 버튼 */}
                             <button
                               type="button"
@@ -1230,7 +1216,16 @@ export const ToeicSpeakingApp: React.FC = () => {
                         )}
                       </div>
 
-                      {/* 모범답안 토글 버튼 */}
+                      {/* 1. 파트 4 문제 타이머 (모범답안 위에 배치) */}
+                      <div className="pt-1">
+                        <CbtSubTimer
+                          prepTime={3}
+                          responseTime={qIdx >= 2 ? 30 : 15}
+                          label={qIdx >= 2 ? '답변 30초' : '답변 15초'}
+                        />
+                      </div>
+
+                      {/* 1. 타이머 밑에 모범답안 보기 버튼 배치 */}
                       <div className="flex items-center justify-between pt-1 border-t border-black/5 dark:border-white/10">
                         <button
                           type="button"
@@ -1354,15 +1349,6 @@ export const ToeicSpeakingApp: React.FC = () => {
                           )}
                         </div>
                       )}
-
-                      {/* 각 문제 카드 하단 타이머 (1,2번 15초 / 3,4번 30초) */}
-                      <div className="pt-2">
-                        <CbtSubTimer
-                          prepTime={3}
-                          responseTime={qIdx >= 2 ? 30 : 15}
-                          label={qIdx >= 2 ? '답변 30초' : '답변 15초'}
-                        />
-                      </div>
                     </div>
                   );
                 })}
@@ -1990,60 +1976,51 @@ export const ToeicSpeakingApp: React.FC = () => {
                               : 'bg-white/90 dark:bg-[#242426] border-black/5 dark:border-white/10'
                           }`}
                         >
-                          {/* 1. 상단 바: 좌측 ID/카테고리 + 우측 배속버튼 및 저장 (모바일 문장 겹침 0% 원천 차단) */}
-                          <div className="flex items-center justify-between gap-2.5 w-full">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="text-xs font-mono font-extrabold text-[#0071E3] dark:text-[#0A84FF]">{item.id}</span>
-                              <span className="text-[11px] font-medium text-[#6E6E73] dark:text-[#A1A1A6] bg-black/[0.04] dark:bg-white/[0.08] px-2 py-0.5 rounded-md">
-                                {cleanCategory(item.category)}
-                              </span>
-                            </div>
-
-                            <div className="inline-flex items-center gap-1.5 shrink-0">
-                              <div className="inline-flex items-center gap-1">
-                                <button
-                                  type="button"
-                                  onClick={() => speakMagicItem(item.id, 1.0)}
-                                  className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20 hover:bg-[#0071E3]/20"
-                                  title="1.0배속 발음 듣기"
-                                >
-                                  <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M15.54 8.46a5 5 0 0 1 0 7.07" /></svg>
-                                  <span>1.0x</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => speakMagicItem(item.id, 0.75)}
-                                  className="px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-black/5 dark:bg-white/10 text-[#6E6E73] dark:text-[#8E8E93] hover:bg-black/10 dark:hover:bg-white/15"
-                                  title="0.75배속 느리게 듣기"
-                                >
-                                  0.75x
-                                </button>
-                              </div>
-
+                          {/* 1. 상단 바: 우측 배속버튼 및 저장 (문항정보 삭제) */}
+                          <div className="flex items-center justify-end gap-1.5 w-full">
+                            <div className="inline-flex items-center gap-1">
                               <button
                                 type="button"
-                                onClick={() => toggleBookmark(item.id, 'magic')}
-                                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all ${
-                                  isSaved
-                                    ? 'bg-[#0071E3]/15 dark:bg-[#0A84FF]/25 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/30 scale-105'
-                                    : 'bg-black/5 dark:bg-white/10 text-[#86868B] dark:text-[#8E8E93] hover:text-[#0071E3] dark:hover:text-[#0A84FF]'
-                                }`}
-                                title={isSaved ? '저장 해제' : '저장'}
-                                aria-label="저장"
+                                onClick={() => speakMagicItem(item.id, 1.0)}
+                                className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20 hover:bg-[#0071E3]/20"
+                                title="1.0배속 발음 듣기"
                               >
-                                <svg
-                                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
-                                  viewBox="0 0 24 24"
-                                  fill={isSaved ? 'currentColor' : 'none'}
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                >
-                                  <path d="M19 21l-7-4.5L5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                                </svg>
+                                <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M15.54 8.46a5 5 0 0 1 0 7.07" /></svg>
+                                <span>1.0x</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => speakMagicItem(item.id, 0.75)}
+                                className="px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-black/5 dark:bg-white/10 text-[#6E6E73] dark:text-[#8E8E93] hover:bg-black/10 dark:hover:bg-white/15"
+                                title="0.75배속 느리게 듣기"
+                              >
+                                0.75x
                               </button>
                             </div>
+
+                            <button
+                              type="button"
+                              onClick={() => toggleBookmark(item.id, 'magic')}
+                              className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all ${
+                                isSaved
+                                  ? 'bg-[#0071E3]/15 dark:bg-[#0A84FF]/25 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/30 scale-105'
+                                  : 'bg-black/5 dark:bg-white/10 text-[#86868B] dark:text-[#8E8E93] hover:text-[#0071E3] dark:hover:text-[#0A84FF]'
+                              }`}
+                              title={isSaved ? '저장 해제' : '저장'}
+                              aria-label="저장"
+                            >
+                              <svg
+                                className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                                viewBox="0 0 24 24"
+                                fill={isSaved ? 'currentColor' : 'none'}
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path d="M19 21l-7-4.5L5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                              </svg>
+                            </button>
                           </div>
 
                           {/* 2. 본문 문장: 가로폭 100% 온전히 활용 (모바일 겹침 원천 제거) */}
@@ -2087,60 +2064,51 @@ export const ToeicSpeakingApp: React.FC = () => {
                               : 'bg-white/90 dark:bg-[#242426] border-black/5 dark:border-white/10'
                           }`}
                         >
-                          {/* 1. 상단 바: 좌측 ID/카테고리 + 우측 배속버튼 및 저장 (파트 표기 완전 삭제 및 겹침 0%) */}
-                          <div className="flex items-center justify-between gap-2.5 w-full">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="text-xs font-mono font-extrabold text-[#0071E3] dark:text-[#0A84FF]">{item.id}</span>
-                              <span className="text-[11px] font-medium text-[#6E6E73] dark:text-[#A1A1A6] bg-black/[0.04] dark:bg-white/[0.08] px-2 py-0.5 rounded-md">
-                                {cleanCategory(item.category)}
-                              </span>
-                            </div>
-
-                            <div className="inline-flex items-center gap-1.5 shrink-0">
-                              <div className="inline-flex items-center gap-1">
-                                <button
-                                  type="button"
-                                  onClick={() => speakVocabItem(item.id, 1.0)}
-                                  className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20 hover:bg-[#0071E3]/20"
-                                  title="1.0배속 발음 듣기"
-                                >
-                                  <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M15.54 8.46a5 5 0 0 1 0 7.07" /></svg>
-                                  <span>1.0x</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => speakVocabItem(item.id, 0.75)}
-                                  className="px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-black/5 dark:bg-white/10 text-[#6E6E73] dark:text-[#8E8E93]"
-                                  title="0.75배속 느리게 듣기"
-                                >
-                                  0.75x
-                                </button>
-                              </div>
-
+                          {/* 1. 상단 바: 우측 배속버튼 및 저장 (문항정보 삭제) */}
+                          <div className="flex items-center justify-end gap-1.5 w-full">
+                            <div className="inline-flex items-center gap-1">
                               <button
                                 type="button"
-                                onClick={() => toggleBookmark(item.id, 'vocab')}
-                                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all ${
-                                  isSaved
-                                    ? 'bg-[#0071E3]/15 dark:bg-[#0A84FF]/25 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/30 scale-105'
-                                    : 'bg-black/5 dark:bg-white/10 text-[#86868B] dark:text-[#8E8E93] hover:text-[#0071E3] dark:hover:text-[#0A84FF]'
-                                }`}
-                                title={isSaved ? '저장 해제' : '저장'}
-                                aria-label="저장"
+                                onClick={() => speakVocabItem(item.id, 1.0)}
+                                className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20 hover:bg-[#0071E3]/20"
+                                title="1.0배속 발음 듣기"
                               >
-                                <svg
-                                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
-                                  viewBox="0 0 24 24"
-                                  fill={isSaved ? 'currentColor' : 'none'}
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                >
-                                  <path d="M19 21l-7-4.5L5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                                </svg>
+                                <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M15.54 8.46a5 5 0 0 1 0 7.07" /></svg>
+                                <span>1.0x</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => speakVocabItem(item.id, 0.75)}
+                                className="px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-black/5 dark:bg-white/10 text-[#6E6E73] dark:text-[#8E8E93]"
+                                title="0.75배속 느리게 듣기"
+                              >
+                                0.75x
                               </button>
                             </div>
+
+                            <button
+                              type="button"
+                              onClick={() => toggleBookmark(item.id, 'vocab')}
+                              className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all ${
+                                isSaved
+                                  ? 'bg-[#0071E3]/15 dark:bg-[#0A84FF]/25 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/30 scale-105'
+                                  : 'bg-black/5 dark:bg-white/10 text-[#86868B] dark:text-[#8E8E93] hover:text-[#0071E3] dark:hover:text-[#0A84FF]'
+                              }`}
+                              title={isSaved ? '저장 해제' : '저장'}
+                              aria-label="저장"
+                            >
+                              <svg
+                                className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                                viewBox="0 0 24 24"
+                                fill={isSaved ? 'currentColor' : 'none'}
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path d="M19 21l-7-4.5L5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                              </svg>
+                            </button>
                           </div>
 
                           {/* 2. 표제어 + 발음기호 + 품사 (전체 너비 여유롭게 활용) */}

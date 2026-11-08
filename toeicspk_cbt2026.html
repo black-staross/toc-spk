@@ -4361,16 +4361,10 @@
 
                 return `
                   <div class="p4-lc-question-card" style="border-radius: 18px; padding: 18px 16px; background: rgba(255, 255, 255, 0.95); margin-bottom: 6px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);">
-                    <!-- 4. 파트 4 상단: 질문 번호/답변시간 배지 + 질문듣기/질문보기 토글 -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                      <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                        <span class="tag-pill tag-part" style="font-size: 11.5px; padding: 3px 9px;">Q${qIdx + 1}</span>
-                        <span class="tag-pill" style="font-size: 11px; padding: 3px 8px; background: rgba(0, 113, 227, 0.08); color: var(--apple-blue); border: 1px solid var(--apple-blue-border); font-weight: 700;">
-                          ${qIdx >= 2 ? '답변 30초' : '답변 15초'}
-                        </span>
-                        <span style="font-size: 13px; font-weight: 600; color: var(--apple-text-secondary);">${escapeHtml(q.topic)}</span>
-                      </div>
+                    <!-- 2. 파트 4 상단: 문항번호 옆에 답변 문구 삭제 및 질문듣기/질문보기 나란히 배치 -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
                       <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="tag-pill tag-part" style="font-size: 12px; font-weight: 800; padding: 4px 10px;">Q${qIdx + 1}</span>
                         <button type="button" class="speech-selectable ${state.selectedItemId === q.qId + '-prompt' ? 'selected' : ''}"
                                 data-speech-id="${q.qId}-prompt" data-speech-text="${escapeHtml(q.question)}"
                                 onclick="selectSpeechItem('${q.qId}-prompt', this.getAttribute('data-speech-text'), true)"
@@ -4399,8 +4393,13 @@
                       </div>
                     </div>
 
-                    <!-- 모범답안 토글 버튼 (밖에는 버튼만 위치) -->
-                    <div style="display: flex; align-items: center; margin-top: 16px;">
+                    <!-- 1. 파트 4 문제 타이머 (모범답안 보기 위에 배치) -->
+                    <div style="margin-top: 14px;">
+                      ${renderCbtTimerCard(3, qIdx >= 2 ? 30 : 15, 'p4-q-' + q.qId, qIdx >= 2 ? '답변 30초' : '답변 15초')}
+                    </div>
+
+                    <!-- 1. 타이머 밑에 모범답안 토글 버튼 배치 -->
+                    <div style="display: flex; align-items: center; margin-top: 14px;">
                       <button type="button" id="p4-btn-${q.qId}" class="btn-toggle-answer ${isAnsOpen ? 'opened' : ''}"
                         onclick="toggleP4QuestionAnswer('${q.qId}')">
                         <span>${isAnsOpen ? '모범답안 접기 ▲' : '모범답안 보기 ▼'}</span>
@@ -4487,11 +4486,6 @@
                           <div class="explanation-body">${escapeHtml(q.explanation)}</div>
                         </div>
                       ` : ''}
-                    </div>
-
-                    <!-- 3. 각 문제 카드 하단 타이머 (1,2번째 문제 15초 / 3,4번째 문제 30초) -->
-                    <div style="margin-top: 14px;">
-                      ${renderCbtTimerCard(3, qIdx >= 2 ? 30 : 15, 'p4-q-' + q.qId, qIdx >= 2 ? '답변 30초' : '답변 15초')}
                     </div>
                   </div>
                 `;
@@ -4673,12 +4667,8 @@
           const isSaved = !!state.bookmarkedMagicIds[item.id];
           return `
             <div class="vocab-item-card ${isSaved ? 'saved' : ''}">
-              <!-- 1. 상단 바: 좌측 ID/카테고리 + 우측 배속버튼 및 저장 (모바일 문장 겹침 0% 원천 차단) -->
-              <div class="vocab-card-top-bar">
-                <div class="vocab-card-meta-row">
-                  <span class="vocab-card-id">${item.id}</span>
-                  <span class="vocab-category-chip">${escapeHtml(cleanCategory(item.category))}</span>
-                </div>
+              <!-- 1. 상단 바: 우측 배속버튼 및 저장 (문항정보 삭제) -->
+              <div class="vocab-card-top-bar" style="justify-content: flex-end;">
                 <div class="vocab-card-actions">
                   <div class="vocab-audio-mini-group">
                     <button type="button" class="btn-audio-mini" onclick="speakMagicItem('${item.id}', 1.0)" title="1.0배속 발음 듣기">
@@ -4753,12 +4743,8 @@
           const isSaved = !!state.bookmarkedVocabIds[item.id];
           return `
             <div class="vocab-word-card ${isSaved ? 'saved' : ''}">
-              <!-- 1. 상단 바: 좌측 ID/카테고리 + 우측 배속버튼 및 저장 (파트 표기 완전 삭제 및 겹침 0%) -->
-              <div class="vocab-card-top-bar">
-                <div class="vocab-card-meta-row">
-                  <span class="vocab-card-id">${item.id}</span>
-                  <span class="vocab-category-chip">${escapeHtml(cleanCategory(item.category))}</span>
-                </div>
+              <!-- 1. 상단 바: 우측 배속버튼 및 저장 (문항정보 삭제) -->
+              <div class="vocab-card-top-bar" style="justify-content: flex-end;">
                 <div class="vocab-card-actions">
                   <div class="vocab-audio-mini-group">
                     <button type="button" class="btn-audio-mini" onclick="speakVocabItem('${item.id}', 1.0)" title="1.0배속 발음 듣기">
