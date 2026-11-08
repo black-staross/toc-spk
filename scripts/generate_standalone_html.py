@@ -1897,13 +1897,13 @@ def main():
       transform: scale(1);
     }
 
-    /* 만능문장 & 빈출 단어장 모달 헤더 리팩토링 */
+    /* 6. 만능문장 & 단어장 모달 헤더 (상단 문구 삭제 & 알약 토글 가운데 정렬) */
     .vocab-modal-header {
-      padding: 16px 22px 14px;
+      padding: 14px 16px 12px;
       border-bottom: 1px solid var(--apple-border-subtle);
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       background: rgba(255, 255, 255, 0.7);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
@@ -1911,47 +1911,13 @@ def main():
     body.dark .vocab-modal-header {
       background: rgba(28, 28, 30, 0.75);
     }
-    .vocab-modal-title-row {
+    .vocab-modal-top-bar {
+      position: relative;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-    .vocab-modal-title-wrap {
-      display: flex;
-      align-items: baseline;
-      gap: 8px;
-      min-width: 0;
-    }
-    .vocab-modal-title {
-      font-size: 18px;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      color: var(--apple-text);
-      line-height: 1.25;
-      white-space: nowrap;
-    }
-    .vocab-modal-saved-badge {
-      font-size: 11.5px;
-      font-weight: 700;
-      color: var(--apple-blue);
-      background: var(--apple-blue-bg);
-      border: 1px solid var(--apple-blue-border);
-      padding: 2px 8px;
-      border-radius: var(--radius-pill);
-      white-space: nowrap;
-    }
-    body.dark .vocab-modal-saved-badge {
-      color: #0A84FF;
-      background: rgba(10, 132, 255, 0.15);
-      border-color: rgba(10, 132, 255, 0.3);
-    }
-
-    .vocab-modal-header-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-shrink: 0;
+      justify-content: center;
+      width: 100%;
+      min-height: 40px;
     }
 
     /* 4. X 버튼 왼쪽에 배치되는 알약 형태 모드 전환 탭 (만능문장 187 vs 빈출 단어장 120) */
@@ -2084,13 +2050,85 @@ def main():
 
     /* 만능문장 & 단어장 모달 파트 세그먼트 탭 */
     .modal-segmented-bar {
-      padding: 10px 22px;
+      padding: 8px 14px;
       border-bottom: 1px solid var(--apple-border-subtle);
       background: rgba(255, 255, 255, 0.45);
     }
     body.dark .modal-segmented-bar {
       background: rgba(28, 28, 30, 0.45);
       border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    /* 7. 북마크 아이콘 버튼 + 파트 탭 분리 툴바 */
+    .modal-filter-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+    }
+    .btn-modal-bookmark-filter {
+      height: 36px;
+      min-width: 44px;
+      padding: 0 10px;
+      border-radius: var(--radius-pill);
+      background: rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--apple-border-subtle);
+      color: var(--apple-text-secondary);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      flex-shrink: 0;
+      user-select: none;
+    }
+    .btn-modal-bookmark-filter svg {
+      width: 16px;
+      height: 16px;
+      transition: all 0.2s ease;
+    }
+    .btn-modal-bookmark-filter .bookmark-badge-num {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: var(--radius-pill);
+      background: rgba(0, 0, 0, 0.08);
+    }
+    .btn-modal-bookmark-filter:hover {
+      background: rgba(0, 0, 0, 0.08);
+      color: var(--apple-text);
+    }
+    .btn-modal-bookmark-filter.active {
+      background: var(--apple-blue);
+      color: #FFFFFF;
+      border-color: var(--apple-blue);
+      box-shadow: 0 2px 8px rgba(0, 113, 227, 0.35);
+    }
+    .btn-modal-bookmark-filter.active svg {
+      fill: currentColor;
+    }
+    .btn-modal-bookmark-filter.active .bookmark-badge-num {
+      background: rgba(255, 255, 255, 0.25);
+      color: #FFFFFF;
+    }
+    body.dark .btn-modal-bookmark-filter {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.12);
+      color: #A1A1A6;
+    }
+    body.dark .btn-modal-bookmark-filter.active {
+      background: #0A84FF;
+      color: #FFFFFF;
+      border-color: #0A84FF;
+    }
+
+    .modal-filter-divider {
+      width: 1px;
+      height: 20px;
+      background: var(--apple-border-subtle);
+      flex-shrink: 0;
+      margin: 0 2px;
     }
     .modal-segmented-control {
       display: flex;
@@ -3273,33 +3311,24 @@ def main():
   <div class="vocab-modal-backdrop" id="vocabModalBackdrop" onclick="handleModalBackdropClick(event)">
     <div class="vocab-modal-window" onclick="event.stopPropagation()">
       <div class="vocab-modal-header">
-        <div class="vocab-modal-title-row">
-          <div class="vocab-modal-title-wrap">
-            <h2 class="vocab-modal-title" id="modalMainTitle">만능문장 & 단어장</h2>
-            <span class="vocab-modal-saved-badge">저장됨 <strong id="modalSavedCount">0</strong></span>
-          </div>
-
-          <div class="vocab-modal-header-actions">
-            <!-- 4. X 버튼 왼쪽에 배치된 알약 형태 모드 전환 토글 -->
-            <div class="modal-mode-pill-toggle" id="modalMainModeBar" role="tablist">
-              <button type="button" class="mode-pill-btn active" id="btnModeMagic" onclick="setModalMainMode('magic')">
-                <span class="btn-text-full">만능문장 187</span>
-                <span class="btn-text-short">문장</span>
-              </button>
-              <button type="button" class="mode-pill-btn" id="btnModeVocab" onclick="setModalMainMode('vocab')">
-                <span class="btn-text-full">빈출 단어장 120</span>
-                <span class="btn-text-short">단어</span>
-              </button>
-            </div>
-
-            <!-- 1. iOS 정통 리퀴드 글래스 닫기(X) 버튼 -->
-            <button type="button" class="btn-ios-liquid-close" onclick="toggleVocabModal()" aria-label="닫기">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="17" y1="7" x2="7" y2="17"></line>
-                <line x1="7" y1="7" x2="17" y2="17"></line>
-              </svg>
+        <!-- 6. 상단 문구 삭제 & 알약 토글만 가운데 정렬 -->
+        <div class="vocab-modal-top-bar">
+          <div class="modal-mode-pill-toggle" id="modalMainModeBar" role="tablist">
+            <button type="button" class="mode-pill-btn active" id="btnModeMagic" onclick="setModalMainMode('magic')">
+              <span>만능문장 187</span>
+            </button>
+            <button type="button" class="mode-pill-btn" id="btnModeVocab" onclick="setModalMainMode('vocab')">
+              <span>빈출 단어장 120</span>
             </button>
           </div>
+
+          <!-- iOS 리퀴드 글래스 닫기(X) 버튼 -->
+          <button type="button" class="btn-ios-liquid-close" onclick="toggleVocabModal()" aria-label="닫기" style="position: absolute; right: 0;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="17" y1="7" x2="7" y2="17"></line>
+              <line x1="7" y1="7" x2="17" y2="17"></line>
+            </svg>
+          </button>
         </div>
 
         <div class="vocab-modal-search-row">
@@ -3312,8 +3341,20 @@ def main():
           </div>
         </div>
       </div>
+
+      <!-- 7. 파트 선택 세그먼트 바 (좌측에 북마크 버튼 분리 & 파트 탭에서 전체/저장됨 제거) -->
       <div class="modal-segmented-bar">
-        <div class="modal-segmented-control" id="modalPartFilterContainer" role="tablist"></div>
+        <div class="modal-filter-toolbar">
+          <button type="button" class="btn-modal-bookmark-filter" id="btnModalBookmarkFilter"
+                  onclick="toggleModalSavedFilter()" title="저장된 항목 보기" aria-label="저장된 항목 보기">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span class="bookmark-badge-num" id="modalBookmarkCountBadge">0</span>
+          </button>
+          <div class="modal-filter-divider"></div>
+          <div class="modal-segmented-control" id="modalPartFilterContainer" role="tablist"></div>
+        </div>
       </div>
       <div class="vocab-modal-body">
         <div class="vocab-grid-cards" id="modalVocabGrid"></div>
@@ -3342,7 +3383,7 @@ def main():
       p4QTextOpenMap: {}, // 파트 4 질문 지문 숨김/열림 맵
       isVocabModalOpen: false,
       modalMainMode: 'magic', // 'magic' | 'vocab'
-      modalPartFilter: 'ALL', // 'ALL' | 'SAVED' | '1' | '2' | '3' | '4' | '5'
+      modalPartFilter: '2', // 7. 'ALL'/'SAVED' 제외 후 기본 선택 Part 2
       modalSearchQuery: '',
       bookmarkedMagicIds: initMagicSaved,
       bookmarkedVocabIds: initVocabSaved,
@@ -3584,132 +3625,187 @@ def main():
       }
     }
 
-    function resetTimer(prepSec = null, respSec = null) {
-      if (state.timerInterval) {
-        clearInterval(state.timerInterval);
-        state.timerInterval = null;
+    // =========================================================================
+    // 5. CBT 실시간 카운트다운 타이머 & Beep 사운드 (다중 타이머 인스턴스 지원)
+    // =========================================================================
+    function playBeepSound(freq = 880, duration = 0.25) {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+      } catch (e) {
+        console.warn('AudioContext not allowed without user interaction', e);
       }
-      if (prepSec !== null) state.timerPrepLimit = prepSec;
-      if (respSec !== null) state.timerResponseLimit = respSec;
-
-      state.timerStage = 'standby';
-      state.timerTotalSeconds = state.timerPrepLimit;
-      state.timerRemainingSeconds = state.timerPrepLimit;
-      updateTimerUI();
     }
 
-    function toggleTimer() {
-      if (state.timerInterval) {
+    const timerRegistry = {
+      activeId: null,
+      interval: null,
+      stage: 'standby', // 'standby' | 'prep' | 'response' | 'ended'
+      remaining: 0,
+      prepSec: 45,
+      respSec: 15
+    };
+
+    function resetCbtTimer(timerId, prepSec, respSec) {
+      if (timerRegistry.activeId === timerId && timerRegistry.interval) {
+        clearInterval(timerRegistry.interval);
+        timerRegistry.interval = null;
+      }
+      timerRegistry.activeId = timerId;
+      timerRegistry.stage = 'standby';
+      timerRegistry.prepSec = prepSec;
+      timerRegistry.respSec = respSec;
+      timerRegistry.remaining = prepSec;
+      updateCbtTimerUI(timerId);
+    }
+
+    function toggleCbtTimer(timerId, prepSec, respSec) {
+      // 다른 타이머가 동작 중이었다면 중지 및 리셋
+      if (timerRegistry.activeId && timerRegistry.activeId !== timerId && timerRegistry.interval) {
+        const prevId = timerRegistry.activeId;
+        clearInterval(timerRegistry.interval);
+        timerRegistry.interval = null;
+        updateCbtTimerUI(prevId);
+      }
+
+      if (timerRegistry.activeId === timerId && timerRegistry.interval) {
         // 일시정지
-        clearInterval(state.timerInterval);
-        state.timerInterval = null;
-        updateTimerUI();
+        clearInterval(timerRegistry.interval);
+        timerRegistry.interval = null;
+        updateCbtTimerUI(timerId);
         return;
       }
 
-      if (state.timerStage === 'standby' || state.timerStage === 'ended') {
-        state.timerStage = 'prep';
-        state.timerTotalSeconds = state.timerPrepLimit;
-        state.timerRemainingSeconds = state.timerPrepLimit;
+      timerRegistry.activeId = timerId;
+      timerRegistry.prepSec = prepSec;
+      timerRegistry.respSec = respSec;
+
+      if (timerRegistry.stage === 'standby' || timerRegistry.stage === 'ended') {
+        if (prepSec > 0) {
+          timerRegistry.stage = 'prep';
+          timerRegistry.remaining = prepSec;
+        } else {
+          timerRegistry.stage = 'response';
+          timerRegistry.remaining = respSec;
+        }
       }
 
-      state.timerInterval = setInterval(() => {
-        if (state.timerRemainingSeconds > 0) {
-          state.timerRemainingSeconds--;
-          updateTimerUI();
+      timerRegistry.interval = setInterval(() => {
+        if (timerRegistry.remaining > 0) {
+          timerRegistry.remaining--;
+          updateCbtTimerUI(timerId);
         } else {
-          // 스테이지 전환
-          if (state.timerStage === 'prep') {
+          if (timerRegistry.stage === 'prep') {
             playBeepSound(1000, 0.4); // 삐- 신호음
-            state.timerStage = 'response';
-            state.timerTotalSeconds = state.timerResponseLimit;
-            state.timerRemainingSeconds = state.timerResponseLimit;
-            updateTimerUI();
-          } else if (state.timerStage === 'response') {
+            if (timerRegistry.respSec > 0) {
+              timerRegistry.stage = 'response';
+              timerRegistry.remaining = timerRegistry.respSec;
+              updateCbtTimerUI(timerId);
+            } else {
+              // 준비시간만 있는 타이머(예: 표 읽기 45초)
+              playBeepSound(587, 0.6); // 종료음
+              timerRegistry.stage = 'ended';
+              clearInterval(timerRegistry.interval);
+              timerRegistry.interval = null;
+              updateCbtTimerUI(timerId);
+            }
+          } else if (timerRegistry.stage === 'response') {
             playBeepSound(587, 0.6); // 종료음
-            state.timerStage = 'ended';
-            clearInterval(state.timerInterval);
-            state.timerInterval = null;
-            updateTimerUI();
+            timerRegistry.stage = 'ended';
+            clearInterval(timerRegistry.interval);
+            timerRegistry.interval = null;
+            updateCbtTimerUI(timerId);
           }
         }
       }, 1000);
 
-      updateTimerUI();
+      updateCbtTimerUI(timerId);
     }
 
-    function updateTimerUI() {
-      const badge = document.getElementById('timerStageBadge');
-      const clock = document.getElementById('timerDigitalClock');
-      const btn = document.getElementById('btnTimerStart');
-      const info = document.getElementById('timerInfoCaption');
-      if (!badge || !clock || !btn || !info) return;
+    function updateCbtTimerUI(timerId) {
+      const badge = document.getElementById(`timerStageBadge-${timerId}`);
+      const clock = document.getElementById(`timerDigitalClock-${timerId}`);
+      const btn = document.getElementById(`btnTimerStart-${timerId}`);
+      if (!badge || !clock || !btn) return;
 
-      const m = Math.floor(state.timerRemainingSeconds / 60);
-      const s = state.timerRemainingSeconds % 60;
+      const isCurrent = timerRegistry.activeId === timerId;
+      const stage = isCurrent ? timerRegistry.stage : 'standby';
+      const isRunning = isCurrent && !!timerRegistry.interval;
+      const remaining = isCurrent ? timerRegistry.remaining : parseInt(clock.getAttribute('data-init-sec') || '45');
+
+      const m = Math.floor(remaining / 60);
+      const s = remaining % 60;
       clock.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 
-      if (state.timerStage === 'prep') {
+      if (stage === 'prep') {
         badge.className = 'timer-stage-badge prep';
         badge.innerHTML = '<span class="voice-dot" style="background:#0071E3;"></span> 준비 시간';
-        btn.innerHTML = state.timerInterval ? '⏸' : '▶';
-        btn.title = state.timerInterval ? '일시정지' : '계속';
-        btn.setAttribute('aria-label', state.timerInterval ? '일시정지' : '계속');
-        info.innerHTML = `준비 시간 ${state.timerRemainingSeconds}초 남음 ➔ 종료 시 비프음 후 답변 시간(${state.timerResponseLimit}초) 자동 전환`;
-      } else if (state.timerStage === 'response') {
+        btn.innerHTML = isRunning ? '⏸' : '▶';
+        btn.title = isRunning ? '일시정지' : '계속';
+      } else if (stage === 'response') {
         badge.className = 'timer-stage-badge response';
         badge.innerHTML = '<span class="voice-dot" style="background:#FF3B30;"></span> 답변 시간';
-        btn.innerHTML = state.timerInterval ? '⏸' : '▶';
-        btn.title = state.timerInterval ? '일시정지' : '계속';
-        btn.setAttribute('aria-label', state.timerInterval ? '일시정지' : '계속');
-        info.innerHTML = `🎙️ 답변 시간 진행 중! (${state.timerRemainingSeconds}초 남음)`;
-      } else if (state.timerStage === 'ended') {
+        btn.innerHTML = isRunning ? '⏸' : '▶';
+        btn.title = isRunning ? '일시정지' : '계속';
+      } else if (stage === 'ended') {
         badge.className = 'timer-stage-badge standby';
-        badge.textContent = '답변 종료';
+        badge.textContent = timerRegistry.respSec === 0 ? '표 읽기 종료' : '답변 종료';
         btn.innerHTML = '↺';
         btn.title = '다시 시작';
-        btn.setAttribute('aria-label', '다시 시작');
-        info.innerHTML = '시험 시간이 종료되었습니다. 초기화 후 다시 연습해 보세요.';
       } else {
         badge.className = 'timer-stage-badge standby';
-        badge.textContent = '타이머 대기 중';
+        const defaultLabel = clock.getAttribute('data-init-badge') || (timerRegistry.respSec === 0 ? '표 읽기 대기 중' : '타이머 대기 중');
+        badge.textContent = defaultLabel;
         btn.innerHTML = '▶';
         btn.title = '시작';
-        btn.setAttribute('aria-label', '시작');
-        info.innerHTML = `준비 ${state.timerPrepLimit}초 ➔ 삐(Beep) ➔ 답변 ${state.timerResponseLimit}초`;
       }
     }
 
-    /* 2 & 3 & 4. 게이지 바 제거 및 아이콘 전용 심플 CBT 타이머 */
-    function renderCbtTimerCard(prepSec, respSec) {
+    // 하위 호환 함수
+    function toggleTimer() {
+      toggleCbtTimer('main', state.timerPrepLimit || 45, state.timerResponseLimit || 45);
+    }
+    function resetTimer(prep, resp) {
+      resetCbtTimer('main', prep, resp);
+    }
+
+    /* 2 & 3. 안내문구 및 게이지 바가 제거된 깔끔한 CBT 타이머 컴포넌트 */
+    function renderCbtTimerCard(prepSec, respSec, timerId = 'main', defaultBadge = '타이머 대기 중') {
       return `
-        <div class="cbt-timer-card">
+        <div class="cbt-timer-card" data-timer-id="${timerId}">
           <div class="timer-top-line">
-            <div class="timer-stage-badge standby" id="timerStageBadge">타이머 대기 중</div>
-            <div class="timer-digital-display" id="timerDigitalClock">00:${String(prepSec).padStart(2, '0')}</div>
+            <div class="timer-stage-badge standby" id="timerStageBadge-${timerId}">${defaultBadge}</div>
+            <div class="timer-digital-display" id="timerDigitalClock-${timerId}" data-init-sec="${prepSec}" data-init-badge="${defaultBadge}">00:${String(prepSec).padStart(2, '0')}</div>
             <div class="timer-btn-actions">
-              <button type="button" class="btn-timer-ctrl" id="btnTimerStart" onclick="toggleTimer()" title="시작" aria-label="타이머 시작/일시정지">▶</button>
-              <button type="button" class="btn-timer-ctrl" onclick="resetTimer(${prepSec}, ${respSec})" title="초기화" aria-label="타이머 초기화">↺</button>
+              <button type="button" class="btn-timer-ctrl" id="btnTimerStart-${timerId}" onclick="toggleCbtTimer('${timerId}', ${prepSec}, ${respSec})" title="시작" aria-label="타이머 시작/일시정지">▶</button>
+              <button type="button" class="btn-timer-ctrl" onclick="resetCbtTimer('${timerId}', ${prepSec}, ${respSec})" title="초기화" aria-label="타이머 초기화">↺</button>
             </div>
-          </div>
-          <div class="timer-info-caption" id="timerInfoCaption">
-            준비 ${prepSec}초 ➔ 삐(Beep) ➔ 답변 ${respSec}초
           </div>
         </div>
       `;
     }
 
     // =========================================================================
-    // 상단 세그먼트 컨트롤 탭 & 하단 네비게이션
+    // 1. 상단 세그먼트 컨트롤 탭 (문항 개수 숫자 뱃지 전면 삭제)
     // =========================================================================
     function renderSegmentedTabs() {
-      const totalP4Q = MASTER_DATA.part4.reduce((acc, s) => acc + (s.questions ? s.questions.length : 0), 0);
       const tabs = [
-        { id: 'part1', label: 'Part 1', count: MASTER_DATA.part1.length },
-        { id: 'part2', label: 'Part 2', count: MASTER_DATA.part2.length },
-        { id: 'part3', label: 'Part 3', count: MASTER_DATA.part3.length },
-        { id: 'part4', label: 'Part 4', count: totalP4Q },
-        { id: 'part5', label: 'Part 5', count: MASTER_DATA.part5.length }
+        { id: 'part1', label: 'Part 1' },
+        { id: 'part2', label: 'Part 2' },
+        { id: 'part3', label: 'Part 3' },
+        { id: 'part4', label: 'Part 4' },
+        { id: 'part5', label: 'Part 5' }
       ];
 
       const c = document.getElementById('partTabContainer');
@@ -3717,7 +3813,6 @@ def main():
         <button type="button" class="segment-btn ${state.activePart === t.id ? 'active' : ''}"
           onclick="switchPart('${t.id}')">
           <span class="segment-label">${t.label}</span>
-          <span class="segment-count">${t.count}</span>
         </button>
       `).join('');
     }
@@ -4218,7 +4313,7 @@ def main():
             <div class="header-text-group">
               <div class="card-meta-tags">
                 <span class="tag-pill tag-category">${escapeHtml(setObj.tableTypeBadge)}</span>
-                <span class="tag-pill tag-time">표 읽기 45초 · 연계 문제 ${setObj.questions.length}문항</span>
+                <span class="tag-pill tag-time">표 읽기 45초</span>
               </div>
               <h2 class="card-title">${escapeHtml(setObj.setNum)} — ${escapeHtml(setObj.topic)}</h2>
             </div>
@@ -4258,32 +4353,26 @@ def main():
             </div>
           </div>
 
-          <!-- 5. 표 읽기 45초 타이머 -->
-          ${renderCbtTimerCard(setObj.prepTime || 45, 15)}
+          <!-- 3. 일정표 밑: 준비 시간 45초 전용 타이머 세팅 -->
+          ${renderCbtTimerCard(45, 0, 'p4-table', '표 읽기 45초')}
 
-          <!-- 7. 같은 표의 문제들을 엮어서 순차적으로 나열 -->
-          <div style="margin-top: 32px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-              <h3 style="font-size: 17px; font-weight: 700; color: var(--apple-text);">
-                표 연계 문제 (Questions ${setObj.questions.length}문항)
-              </h3>
-              <span style="font-size: 12px; color: var(--apple-text-secondary);">
-                🎧 실제 시험처럼 질문을 귀로 먼저 듣고 연습하세요
-              </span>
-            </div>
-
-            <div style="display: flex; flex-direction: column; gap: 20px;">
+          <!-- 4 & 5. 표 연계/실제시험처럼 문구 삭제 및 문제 카드 4개 정돈 -->
+          <div style="margin-top: 24px;">
+            <div style="display: flex; flex-direction: column; gap: 16px;">
               ${setObj.questions.map((q, qIdx) => {
                 const isAnsOpen = !!state.p4AnswerOpenMap[q.qId];
                 const isQTextOpen = !!state.p4QTextOpenMap[q.qId];
                 const fullSentences = (q.sentences || []).map(s => s.en).join(' ');
 
                 return `
-                  <div class="p4-lc-question-card">
-                    <!-- 4. 파트 4 상단: 질문 선택 버튼 + 질문 지문 보기 토글 버튼 -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                      <div style="display: flex; align-items: center; gap: 8px;">
-                        <span class="tag-pill tag-part" style="font-size: 11px;">${escapeHtml(q.qNum)}</span>
+                  <div class="p4-lc-question-card" style="border-radius: 18px; padding: 18px 16px; background: rgba(255, 255, 255, 0.95); margin-bottom: 6px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);">
+                    <!-- 4. 파트 4 상단: 질문 번호/답변시간 배지 + 질문듣기/질문보기 토글 -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                      <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                        <span class="tag-pill tag-part" style="font-size: 11.5px; padding: 3px 9px;">${escapeHtml(q.qNum)}</span>
+                        <span class="tag-pill" style="font-size: 11px; padding: 3px 8px; background: rgba(0, 113, 227, 0.08); color: var(--apple-blue); border: 1px solid var(--apple-blue-border); font-weight: 700;">
+                          ${qIdx >= 2 ? '답변 30초' : '답변 15초'}
+                        </span>
                         <span style="font-size: 13px; font-weight: 600; color: var(--apple-text-secondary);">${escapeHtml(q.topic)}</span>
                       </div>
                       <div style="display: flex; align-items: center; gap: 8px;">
@@ -4404,6 +4493,11 @@ def main():
                         </div>
                       ` : ''}
                     </div>
+
+                    <!-- 3. 각 문제 카드 하단 타이머 (1,2번째 문제 15초 / 3,4번째 문제 30초) -->
+                    <div style="margin-top: 14px;">
+                      ${renderCbtTimerCard(3, qIdx >= 2 ? 30 : 15, 'p4-q-' + q.qId, qIdx >= 2 ? '답변 30초' : '답변 15초')}
+                    </div>
                   </div>
                 `;
               }).join('')}
@@ -4439,8 +4533,20 @@ def main():
     function setModalMainMode(mode) {
       if (state.modalMainMode === mode) return;
       state.modalMainMode = mode;
-      state.modalPartFilter = 'ALL';
+      if (state.modalPartFilter !== 'SAVED') {
+        state.modalPartFilter = mode === 'magic' ? '2' : '1';
+      }
       updateModalModeButtonsUI();
+      renderModalPartFilters();
+      renderModalVocabList();
+    }
+
+    function toggleModalSavedFilter() {
+      if (state.modalPartFilter === 'SAVED') {
+        state.modalPartFilter = state.modalMainMode === 'magic' ? '2' : '1';
+      } else {
+        state.modalPartFilter = 'SAVED';
+      }
       renderModalPartFilters();
       renderModalVocabList();
     }
@@ -4452,16 +4558,27 @@ def main():
       if (btnVocab) btnVocab.classList.toggle('active', state.modalMainMode === 'vocab');
     }
 
+    /* 7. 파트 선택 세그먼트 탭: 전체와 저장됨 삭제 & 좌측 북마크 버튼 분리 */
     function renderModalPartFilters() {
       const isMagic = state.modalMainMode === 'magic';
       const magicSavedCount = Object.keys(state.bookmarkedMagicIds).length;
       const vocabSavedCount = Object.keys(state.bookmarkedVocabIds).length;
+      const curSavedCount = isMagic ? magicSavedCount : vocabSavedCount;
 
+      // 좌측 북마크 버튼 상태 & 뱃지 숫자 갱신
+      const bookmarkBtn = document.getElementById('btnModalBookmarkFilter');
+      const countBadge = document.getElementById('modalBookmarkCountBadge');
+      if (bookmarkBtn) {
+        bookmarkBtn.classList.toggle('active', state.modalPartFilter === 'SAVED');
+      }
+      if (countBadge) {
+        countBadge.textContent = curSavedCount;
+      }
+
+      // 파트 선택 탭 (전체와 저장됨 삭제, 파트 탭만 순수하게 배치)
       let filters = [];
       if (isMagic) {
         filters = [
-          { id: 'ALL', name: '전체', count: MAGIC_DATA.items.length },
-          { id: 'SAVED', name: '저장됨', count: magicSavedCount },
           { id: '2', name: 'Part 2', count: 49 },
           { id: '3', name: 'Part 3', count: 47 },
           { id: '4', name: 'Part 4', count: 38 },
@@ -4469,8 +4586,6 @@ def main():
         ];
       } else {
         filters = [
-          { id: 'ALL', name: '전체', count: VOCAB_DATA.items.length },
-          { id: 'SAVED', name: '저장됨', count: vocabSavedCount },
           { id: '1', name: 'Part 1', count: 24 },
           { id: '2', name: 'Part 2', count: 24 },
           { id: '3', name: 'Part 3', count: 24 },
@@ -4480,13 +4595,15 @@ def main():
       }
 
       const c = document.getElementById('modalPartFilterContainer');
-      c.innerHTML = filters.map(f => `
-        <button type="button" role="tab" class="modal-segment-btn ${state.modalPartFilter === f.id ? 'active' : ''}"
-          onclick="setModalPartFilter('${f.id}')">
-          <span>${f.name}</span>
-          <span class="modal-segment-count">${f.count}</span>
-        </button>
-      `).join('');
+      if (c) {
+        c.innerHTML = filters.map(f => `
+          <button type="button" role="tab" class="modal-segment-btn ${state.modalPartFilter === f.id ? 'active' : ''}"
+            onclick="setModalPartFilter('${f.id}')">
+            <span>${f.name}</span>
+            <span class="modal-segment-count">${f.count}</span>
+          </button>
+        `).join('');
+      }
     }
 
     function setModalPartFilter(filterId) {
@@ -4527,7 +4644,8 @@ def main():
 
       if (isMagic) {
         const savedCount = Object.keys(state.bookmarkedMagicIds).length;
-        document.getElementById('modalSavedCount').textContent = savedCount;
+        const bEl = document.getElementById('modalBookmarkCountBadge');
+        if (bEl) bEl.textContent = savedCount;
 
         const filtered = MAGIC_DATA.items.filter(item => {
           if (state.modalPartFilter === 'SAVED') {
@@ -4602,7 +4720,8 @@ def main():
       } else {
         // 단어장 모드
         const savedCount = Object.keys(state.bookmarkedVocabIds).length;
-        document.getElementById('modalSavedCount').textContent = savedCount;
+        const bEl = document.getElementById('modalBookmarkCountBadge');
+        if (bEl) bEl.textContent = savedCount;
 
         const filtered = VOCAB_DATA.items.filter(item => {
           if (state.modalPartFilter === 'SAVED') {

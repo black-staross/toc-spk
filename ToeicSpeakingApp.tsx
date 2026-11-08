@@ -134,6 +134,156 @@ type ActivePart = 'part1' | 'part2' | 'part3' | 'part4' | 'part5';
 type TimerStatus = 'idle' | 'prep' | 'resp' | 'done';
 type ModalMainMode = 'magic' | 'vocab';
 
+const playBeepAudio = (freq = 1000, durationMs = 300) => {
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + durationMs / 1000);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + durationMs / 1000);
+  } catch (e) {
+    console.warn('Beep audio not supported or blocked:', e);
+  }
+};
+
+const CbtSubTimer: React.FC<{
+  prepTime: number;
+  responseTime: number;
+  label?: string;
+}> = ({ prepTime, responseTime, label }) => {
+  const [status, setStatus] = useState<'idle' | 'prep' | 'resp' | 'done'>('idle');
+  const [timeLeft, setTimeLeft] = useState<number>(prepTime > 0 ? prepTime : responseTime);
+  const timerRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    setStatus('idle');
+    setTimeLeft(prepTime > 0 ? prepTime : responseTime);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [prepTime, responseTime]);
+
+  const handleStart = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    const initialMode: 'prep' | 'resp' = prepTime > 0 ? 'prep' : 'resp';
+    const initialSec = prepTime > 0 ? prepTime : responseTime;
+    setStatus(initialMode);
+    setTimeLeft(initialSec);
+
+    let sec = initialSec;
+    let mode = initialMode;
+
+    timerRef.current = setInterval(() => {
+      sec -= 1;
+      if (sec <= 0) {
+        if (mode === 'prep' && responseTime > 0) {
+          playBeepAudio(1000, 350);
+          mode = 'resp';
+          sec = responseTime;
+          setStatus('resp');
+          setTimeLeft(sec);
+        } else {
+          playBeepAudio(1200, 450);
+          if (timerRef.current) clearInterval(timerRef.current);
+          setStatus('done');
+          setTimeLeft(0);
+        }
+      } else {
+        setTimeLeft(sec);
+      }
+    }, 1000);
+  };
+
+  const handlePause = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  const handleReset = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    setStatus('idle');
+    setTimeLeft(prepTime > 0 ? prepTime : responseTime);
+  };
+
+  return (
+    <div className="p-3 sm:p-3.5 rounded-xl bg-[#1D1D1F] dark:bg-[#242426] text-white shadow-md flex items-center justify-between gap-3">
+      <div className="flex items-center gap-2">
+        <span
+          className={`text-[11px] sm:text-xs font-bold px-2.5 py-1 rounded-full ${
+            status === 'prep'
+              ? 'bg-[#FF9500] text-black'
+              : status === 'resp'
+              ? 'bg-[#34C759] text-black'
+              : status === 'done'
+              ? 'bg-[#FF3B30] text-white'
+              : 'bg-white/15 text-white/90'
+          }`}
+        >
+          {status === 'prep'
+            ? '준비 시간'
+            : status === 'resp'
+            ? '답변 시간'
+            : status === 'done'
+            ? '종료'
+            : label || '실전 타이머'}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-2 sm:gap-2.5">
+        <span className="font-mono text-lg sm:text-xl font-extrabold tracking-tight text-[#0071E3] dark:text-[#0A84FF] bg-white/5 px-2.5 py-0.5 rounded-lg border border-white/10">
+          {String(Math.floor(timeLeft / 60)).padStart(2, '0')}:
+          {String(timeLeft % 60).padStart(2, '0')}
+        </span>
+        <div className="flex items-center gap-1">
+          {status === 'idle' ? (
+            <button
+              type="button"
+              onClick={handleStart}
+              title="시작"
+              aria-label="시작"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full inline-flex items-center justify-center text-xs font-bold bg-[#0071E3] dark:bg-[#0A84FF] hover:bg-[#0077ED] text-white shadow-sm transition-all"
+            >
+              ▶
+            </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={handlePause}
+                title="일시정지"
+                aria-label="일시정지"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full inline-flex items-center justify-center text-xs font-bold bg-white/10 hover:bg-white/20 text-white transition-all"
+              >
+                ⏸
+              </button>
+              <button
+                type="button"
+                onClick={handleReset}
+                title="초기화"
+                aria-label="초기화"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full inline-flex items-center justify-center text-xs font-bold bg-white/10 hover:bg-white/20 text-[#FF453A] transition-all"
+              >
+                ↺
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const ToeicSpeakingApp: React.FC = () => {
   const [activePart, setActivePart] = useState<ActivePart>('part1');
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
@@ -153,7 +303,7 @@ export const ToeicSpeakingApp: React.FC = () => {
   // 만능문장 187 & 빈출 단어장 모달 상태
   const [isVocabModalOpen, setIsVocabModalOpen] = useState<boolean>(false);
   const [modalMainMode, setModalMainMode] = useState<ModalMainMode>('magic');
-  const [modalPartFilter, setModalPartFilter] = useState<string>('ALL');
+  const [modalPartFilter, setModalPartFilter] = useState<string>('2');
   const [modalSearch, setModalSearch] = useState<string>('');
 
   const [bookmarkedMagicIds, setBookmarkedMagicIds] = useState<Record<string, boolean>>(() => {
@@ -639,22 +789,13 @@ export const ToeicSpeakingApp: React.FC = () => {
                   key={tab.id}
                   type="button"
                   onClick={() => handleTabChange(tab.id)}
-                  className={`flex-1 min-w-[64px] sm:min-w-[90px] py-1.5 sm:py-2 px-2 sm:px-3 rounded-full text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 transition-all whitespace-nowrap ${
+                  className={`flex-1 min-w-[58px] sm:min-w-[80px] py-1.5 sm:py-2 px-2 sm:px-3 rounded-full text-xs sm:text-sm font-semibold flex items-center justify-center transition-all whitespace-nowrap ${
                     isActive
                       ? 'bg-white dark:bg-white/20 text-[#1D1D1F] dark:text-white shadow-sm font-bold'
                       : 'text-[#6E6E73] dark:text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white'
                   }`}
                 >
                   <span>{tab.label}</span>
-                  <span
-                    className={`text-[10px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 rounded-full ${
-                      isActive
-                        ? 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/30 text-[#0071E3] dark:text-[#0A84FF]'
-                        : 'bg-black/5 dark:bg-white/10 text-[#86868B] dark:text-[#8E8E93]'
-                    }`}
-                  >
-                    {tab.count}
-                  </span>
                 </button>
               );
             })}
@@ -839,14 +980,11 @@ export const ToeicSpeakingApp: React.FC = () => {
                     ⏱
                   </div>
                   <div>
-                    <div className="text-[11px] sm:text-xs font-bold text-[#86868B] tracking-wider uppercase">
-                      CBT 실전 모의 타이머
-                    </div>
-                    <div className="text-xs sm:text-sm font-medium">
-                      {timerStatus === 'idle' && '준비 45초 ➔ 삐(Beep) ➔ 답변 45초 자동 카운트'}
-                      {timerStatus === 'prep' && '🟡 [준비 시간] 지문을 소리 내어 읽으며 준비하세요'}
-                      {timerStatus === 'resp' && '🟢 [답변 시간] 실제 시험처럼 또박또박 답변하세요!'}
-                      {timerStatus === 'done' && '✅ 답변 시간이 종료되었습니다!'}
+                    <div className="text-xs sm:text-sm font-bold text-white tracking-tight">
+                      {timerStatus === 'prep' && '준비 시간'}
+                      {timerStatus === 'resp' && '답변 시간'}
+                      {timerStatus === 'done' && '종료'}
+                      {timerStatus === 'idle' && '실전 타이머'}
                     </div>
                   </div>
                 </div>
@@ -906,7 +1044,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                     {currentP4Set.tableTypeBadge}
                   </span>
                   <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-[#6E6E73] dark:text-[#8E8E93]">
-                    표 읽기 45초 · 연계 문제 {currentP4Set.questions.length}문항
+                    표 읽기 45초
                   </span>
                 </div>
                 <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-[#1D1D1F] dark:text-white truncate">
@@ -916,7 +1054,7 @@ export const ToeicSpeakingApp: React.FC = () => {
             </div>
 
             {/* 표(Schedule Table) */}
-            <div className="border border-black/10 dark:border-white/10 rounded-2xl overflow-hidden bg-white dark:bg-[#1C1C1E] mb-7 shadow-sm">
+            <div className="border border-black/10 dark:border-white/10 rounded-2xl overflow-hidden bg-white dark:bg-[#1C1C1E] mb-5 shadow-sm">
               <div className="bg-[#1D1D1F] dark:bg-[#2C2C2E] text-white py-3.5 px-4 text-center font-bold text-base tracking-wide">
                 {currentP4Set.scheduleTable.headerTitle}
               </div>
@@ -953,13 +1091,15 @@ export const ToeicSpeakingApp: React.FC = () => {
               </div>
             </div>
 
-            {/* 표 연계 문제 목록 */}
+            {/* 일정표 밑: 준비 시간 45초 타이머 세팅 */}
+            <div className="mb-6">
+              <CbtSubTimer prepTime={45} responseTime={0} label="표 읽기 45초" />
+            </div>
+
+            {/* 문제 카드 목록 (표 연계 문구 및 안내사항 삭제) */}
             <div>
-              <h3 className="text-base font-bold text-[#1D1D1F] dark:text-white mb-4">
-                표 연계 문제 (Questions {currentP4Set.questions.length}문항 순차 응답)
-              </h3>
               <div className="space-y-6">
-                {currentP4Set.questions.map(q => {
+                {currentP4Set.questions.map((q, qIdx) => {
                   const isAnsOpen = !!p4AnswerOpenMap[q.qId];
                   const isQVisible = !!p4QuestionVisibleMap[q.qId];
                   const fullSentences = q.sentences.map(s => s.en).join(' ');
@@ -971,15 +1111,18 @@ export const ToeicSpeakingApp: React.FC = () => {
                       key={q.qId}
                       className="p-5 sm:p-6 rounded-2xl bg-white/90 dark:bg-[#26262A] border border-black/5 dark:border-white/10 shadow-sm space-y-4"
                     >
-                      {/* LC 질문 영역 */}
+                      {/* LC 질문 헤더 & 컨트롤 */}
                       <div className="p-4 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/10">
                         <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#1D1D1F] dark:bg-white text-white dark:text-[#1D1D1F]">
                               {q.qNum}
                             </span>
+                            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20">
+                              {qIdx >= 2 ? '답변 30초' : '답변 15초'}
+                            </span>
                             <span className="text-xs font-semibold text-[#86868B] dark:text-[#A1A1A6]">
-                              🎧 실제 시험처럼 질문을 귀로 먼저 듣고 연습하세요
+                              {q.topic}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
@@ -995,7 +1138,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                             >
                               질문듣기
                             </button>
-                            {/* 질문 보기 토글 버튼 (크기 통일) */}
+                            {/* 질문 보기 토글 버튼 */}
                             <button
                               type="button"
                               onClick={() =>
@@ -1153,72 +1296,18 @@ export const ToeicSpeakingApp: React.FC = () => {
                           )}
                         </div>
                       )}
+
+                      {/* 각 문제 카드 하단 타이머 (1,2번 15초 / 3,4번 30초) */}
+                      <div className="pt-2">
+                        <CbtSubTimer
+                          prepTime={3}
+                          responseTime={qIdx >= 2 ? 30 : 15}
+                          label={qIdx >= 2 ? '답변 30초' : '답변 15초'}
+                        />
+                      </div>
                     </div>
                   );
                 })}
-              </div>
-            </div>
-
-            {/* CBT 실전 모의 타이머 */}
-            <div className="mt-8 pt-6 border-t border-black/10 dark:border-white/10">
-              <div className="p-4 sm:p-5 rounded-2xl bg-[#1D1D1F] dark:bg-[#242426] text-white shadow-lg flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 text-center sm:text-left">
-                <div className="flex items-center gap-3 justify-center sm:justify-start">
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/10 flex items-center justify-center font-mono font-bold text-base sm:text-lg text-[#0071E3] dark:text-[#0A84FF] shrink-0">
-                    ⏱
-                  </div>
-                  <div>
-                    <div className="text-[11px] sm:text-xs font-bold text-[#86868B] tracking-wider uppercase">
-                      CBT 실전 모의 타이머
-                    </div>
-                    <div className="text-xs sm:text-sm font-medium">
-                      {timerStatus === 'idle' && '표 분석 45초 ➔ 삐(Beep) ➔ 답변 15초 카운트'}
-                      {timerStatus === 'prep' && '🟡 [표 분석] 표의 일정을 주의 깊게 스캔하세요'}
-                      {timerStatus === 'resp' && '🟢 [답변 시간] 질문에 맞춰 침착하게 답변하세요!'}
-                      {timerStatus === 'done' && '✅ 답변 시간이 종료되었습니다!'}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-center sm:justify-end gap-2.5 sm:gap-3">
-                  <span className="font-mono text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0071E3] dark:text-[#0A84FF] bg-white/5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-xl border border-white/10">
-                    {String(Math.floor(timeLeft / 60)).padStart(2, '0')}:
-                    {String(timeLeft % 60).padStart(2, '0')}
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    {timerStatus === 'idle' ? (
-                      <button
-                        type="button"
-                        onClick={startCbtTimer}
-                        title="시작"
-                        aria-label="시작"
-                        className="w-9 h-9 rounded-full inline-flex items-center justify-center text-sm font-bold bg-[#0071E3] dark:bg-[#0A84FF] hover:bg-[#0077ED] text-white shadow-md transition-all shrink-0"
-                      >
-                        ▶
-                      </button>
-                    ) : (
-                      <>
-                        <button
-                          type="button"
-                          onClick={pauseCbtTimer}
-                          title="일시정지"
-                          aria-label="일시정지"
-                          className="w-9 h-9 rounded-full inline-flex items-center justify-center text-sm font-bold bg-white/10 hover:bg-white/20 text-white transition-all shrink-0"
-                        >
-                          ⏸
-                        </button>
-                        <button
-                          type="button"
-                          onClick={resetCbtTimer}
-                          title="초기화"
-                          aria-label="초기화"
-                          className="w-9 h-9 rounded-full inline-flex items-center justify-center text-sm font-bold bg-white/10 hover:bg-white/20 text-[#FF453A] transition-all shrink-0"
-                        >
-                          ↺
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
               </div>
             </div>
           </article>
@@ -1419,15 +1508,11 @@ export const ToeicSpeakingApp: React.FC = () => {
                     ⏱
                   </div>
                   <div>
-                    <div className="text-[11px] sm:text-xs font-bold text-[#86868B] tracking-wider uppercase">
-                      CBT 실전 모의 타이머
-                    </div>
-                    <div className="text-xs sm:text-sm font-medium">
-                      {timerStatus === 'idle' &&
-                        `준비 ${targetPrepTime}초 ➔ 삐(Beep) ➔ 답변 ${targetRespTime}초 자동 카운트`}
-                      {timerStatus === 'prep' && '🟡 [준비 시간] 키워드와 문장 구조를 머릿속으로 정리하세요'}
-                      {timerStatus === 'resp' && '🟢 [답변 시간] 자신감 있는 톤으로 답변하세요!'}
-                      {timerStatus === 'done' && '✅ 답변 시간이 종료되었습니다!'}
+                    <div className="text-xs sm:text-sm font-bold text-white tracking-tight">
+                      {timerStatus === 'prep' && '준비 시간'}
+                      {timerStatus === 'resp' && '답변 시간'}
+                      {timerStatus === 'done' && '종료'}
+                      {timerStatus === 'idle' && '실전 타이머'}
                     </div>
                   </div>
                 </div>
@@ -1674,67 +1759,54 @@ export const ToeicSpeakingApp: React.FC = () => {
             onClick={() => setIsVocabModalOpen(false)}
           ></div>
           <div className="relative w-full max-w-[480px] h-[92vh] sm:h-[88vh] bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-3xl border border-white/80 dark:border-white/15 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden z-10 animate-in zoom-in-95 duration-200">
-            {/* 1. 모달 헤더 (타이틀 행 + 알약 모드 토글 + iOS 리퀴드 글래스 X + 전체 너비 검색창) */}
+            {/* 1. 모달 헤더 (알약 모드 토글 중앙 정렬 + iOS 리퀴드 글래스 X + 전체 너비 검색창) */}
             <div className="p-3.5 sm:p-5 border-b border-black/5 dark:border-white/10 flex flex-col gap-3 bg-white/70 dark:bg-[#1C1C1E]/70 backdrop-blur-2xl">
-              {/* 1단: 타이틀 행 */}
-              <div className="flex items-center justify-between gap-2.5">
-                <div className="flex items-baseline gap-2 min-w-0">
-                  <h2 className="text-base sm:text-lg font-bold text-[#1D1D1F] dark:text-white truncate">
-                    만능문장 & 단어장
-                  </h2>
-                  <span className="text-[11px] sm:text-xs font-bold text-[#0071E3] dark:text-[#0A84FF] bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 px-2 py-0.5 rounded-full border border-[#0071E3]/20 dark:border-[#0A84FF]/30 whitespace-nowrap">
-                    저장됨 {modalMainMode === 'magic' ? savedMagicCount : savedVocabCount}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
-                  {/* 4. X 버튼 왼쪽에 배치된 알약 형태 모드 전환 탭 */}
-                  <div className="inline-flex p-1 bg-black/5 dark:bg-white/10 rounded-full border border-black/5 dark:border-white/10 gap-1 backdrop-blur-md">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setModalMainMode('magic');
-                        setModalPartFilter('ALL');
-                      }}
-                      className={`py-1 sm:py-1.5 px-2.5 sm:px-3.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap ${
-                        modalMainMode === 'magic'
-                          ? 'bg-white dark:bg-[#0A84FF] text-[#0071E3] dark:text-white shadow-xs font-bold'
-                          : 'text-[#6E6E73] dark:text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white'
-                      }`}
-                    >
-                      <span className="hidden sm:inline">만능문장 187</span>
-                      <span className="inline sm:hidden">문장 187</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setModalMainMode('vocab');
-                        setModalPartFilter('ALL');
-                      }}
-                      className={`py-1 sm:py-1.5 px-2.5 sm:px-3.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap ${
-                        modalMainMode === 'vocab'
-                          ? 'bg-white dark:bg-[#0A84FF] text-[#0071E3] dark:text-white shadow-xs font-bold'
-                          : 'text-[#6E6E73] dark:text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white'
-                      }`}
-                    >
-                      <span className="hidden sm:inline">빈출 단어장 120</span>
-                      <span className="inline sm:hidden">단어 120</span>
-                    </button>
-                  </div>
-
-                  {/* 1. iOS 정통 리퀴드 글래스 닫기(X) 버튼 */}
+              {/* 1단: 가운데 정렬된 알약 토글 + 우측 리퀴드 글래스 X 닫기 버튼 */}
+              <div className="relative flex items-center justify-center w-full min-h-[40px]">
+                {/* 6. 중앙 정렬 알약 모드 토글 */}
+                <div className="inline-flex p-1 bg-black/5 dark:bg-white/10 rounded-full border border-black/5 dark:border-white/10 gap-1 backdrop-blur-md">
                   <button
                     type="button"
-                    onClick={() => setIsVocabModalOpen(false)}
-                    className="w-9 h-9 rounded-full bg-[rgba(118,118,128,0.14)] dark:bg-[rgba(118,118,128,0.28)] backdrop-blur-xl border border-white/60 dark:border-white/15 text-[#3C3C43] dark:text-[#EBEBF5] hover:bg-[rgba(118,118,128,0.24)] dark:hover:bg-[rgba(118,118,128,0.42)] flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-sm shrink-0"
-                    aria-label="닫기"
+                    onClick={() => {
+                      setModalMainMode('magic');
+                      setModalPartFilter('2');
+                    }}
+                    className={`py-1 sm:py-1.5 px-3 sm:px-4 rounded-full text-xs font-semibold transition-all whitespace-nowrap ${
+                      modalMainMode === 'magic'
+                        ? 'bg-white dark:bg-[#0A84FF] text-[#0071E3] dark:text-white shadow-xs font-bold'
+                        : 'text-[#6E6E73] dark:text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white'
+                    }`}
                   >
-                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="17" y1="7" x2="7" y2="17" />
-                      <line x1="7" y1="7" x2="17" y2="17" />
-                    </svg>
+                    <span>만능문장 187</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setModalMainMode('vocab');
+                      setModalPartFilter('1');
+                    }}
+                    className={`py-1 sm:py-1.5 px-3 sm:px-4 rounded-full text-xs font-semibold transition-all whitespace-nowrap ${
+                      modalMainMode === 'vocab'
+                        ? 'bg-white dark:bg-[#0A84FF] text-[#0071E3] dark:text-white shadow-xs font-bold'
+                        : 'text-[#6E6E73] dark:text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white'
+                    }`}
+                  >
+                    <span>빈출 단어장 120</span>
                   </button>
                 </div>
+
+                {/* 우측 고정 리퀴드 글래스 닫기(X) 버튼 */}
+                <button
+                  type="button"
+                  onClick={() => setIsVocabModalOpen(false)}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[rgba(118,118,128,0.14)] dark:bg-[rgba(118,118,128,0.28)] backdrop-blur-xl border border-white/60 dark:border-white/15 text-[#3C3C43] dark:text-[#EBEBF5] hover:bg-[rgba(118,118,128,0.24)] dark:hover:bg-[rgba(118,118,128,0.42)] flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-sm"
+                  aria-label="닫기"
+                >
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="17" y1="7" x2="7" y2="17" />
+                    <line x1="7" y1="7" x2="17" y2="17" />
+                  </svg>
+                </button>
               </div>
 
               {/* 2단: 전체 너비 검색창 */}
@@ -1753,54 +1825,96 @@ export const ToeicSpeakingApp: React.FC = () => {
               </div>
             </div>
 
-            {/* 파트 필터 세그먼트 컨트롤 탭 */}
+            {/* 7. 파트 필터 세그먼트 컨트롤 탭: 좌측 북마크 버튼 분리 + 전체/저장됨 탭 제거 */}
             <div className="px-3 sm:px-5 py-2.5 sm:py-3 border-b border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02]">
-              <div className="flex p-1 bg-black/5 dark:bg-white/10 rounded-full border border-black/5 dark:border-white/10 gap-1 overflow-x-auto no-scrollbar">
-                {(modalMainMode === 'magic'
-                  ? [
-                      { id: 'ALL', name: '전체', count: magicData.items.length },
-                      { id: 'SAVED', name: '저장됨', count: savedMagicCount },
-                      { id: '2', name: 'Part 2', count: 49 },
-                      { id: '3', name: 'Part 3', count: 47 },
-                      { id: '4', name: 'Part 4', count: 38 },
-                      { id: '5', name: 'Part 5', count: 53 }
-                    ]
-                  : [
-                      { id: 'ALL', name: '전체', count: vocabData.items.length },
-                      { id: 'SAVED', name: '저장됨', count: savedVocabCount },
-                      { id: '1', name: 'Part 1', count: 24 },
-                      { id: '2', name: 'Part 2', count: 24 },
-                      { id: '3', name: 'Part 3', count: 24 },
-                      { id: '4', name: 'Part 4', count: 24 },
-                      { id: '5', name: 'Part 5', count: 24 }
-                    ]
-                ).map(f => {
-                  const isActive = modalPartFilter === f.id;
-                  return (
-                    <button
-                      key={f.id}
-                      type="button"
-                      role="tab"
-                      onClick={() => setModalPartFilter(f.id)}
-                      className={`flex-1 min-w-max py-1.5 px-3 rounded-full text-xs font-semibold flex items-center justify-center gap-1.5 transition-all whitespace-nowrap ${
-                        isActive
-                          ? 'bg-white dark:bg-[#0A84FF] text-[#0071E3] dark:text-white shadow-sm font-bold'
-                          : 'text-[#6E6E73] dark:text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white'
-                      }`}
-                    >
-                      <span>{f.name}</span>
-                      <span
-                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+              <div className="flex items-center gap-2">
+                {/* 7. 좌측 북마크 전용 버튼 */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (modalPartFilter === 'SAVED') {
+                      setModalPartFilter(modalMainMode === 'magic' ? '2' : '1');
+                    } else {
+                      setModalPartFilter('SAVED');
+                    }
+                  }}
+                  className={`h-8 sm:h-9 px-3 rounded-full text-xs font-bold border inline-flex items-center justify-center gap-1.5 transition-all shrink-0 ${
+                    modalPartFilter === 'SAVED'
+                      ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] shadow-xs'
+                      : 'bg-white dark:bg-[#2C2C2E] text-[#1D1D1F] dark:text-white border-black/10 dark:border-white/15 hover:border-black/20'
+                  }`}
+                  title="저장된 항목 보기"
+                >
+                  <svg
+                    className="w-3.5 h-3.5"
+                    viewBox="0 0 24 24"
+                    fill={modalPartFilter === 'SAVED' ? 'currentColor' : 'none'}
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                  </svg>
+                  <span>저장됨</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                      modalPartFilter === 'SAVED'
+                        ? 'bg-white/25 text-white'
+                        : 'bg-black/5 dark:bg-white/10 text-[#6E6E73] dark:text-[#8E8E93]'
+                    }`}
+                  >
+                    {modalMainMode === 'magic' ? savedMagicCount : savedVocabCount}
+                  </span>
+                </button>
+
+                {/* 구분선 */}
+                <div className="h-5 w-px bg-black/10 dark:bg-white/10 shrink-0" />
+
+                {/* 파트 탭 목록 (전체와 저장됨 제외) */}
+                <div className="flex-1 flex p-1 bg-black/5 dark:bg-white/10 rounded-full border border-black/5 dark:border-white/10 gap-1 overflow-x-auto no-scrollbar">
+                  {(modalMainMode === 'magic'
+                    ? [
+                        { id: '2', name: 'Part 2', count: 49 },
+                        { id: '3', name: 'Part 3', count: 47 },
+                        { id: '4', name: 'Part 4', count: 38 },
+                        { id: '5', name: 'Part 5', count: 53 }
+                      ]
+                    : [
+                        { id: '1', name: 'Part 1', count: 24 },
+                        { id: '2', name: 'Part 2', count: 24 },
+                        { id: '3', name: 'Part 3', count: 24 },
+                        { id: '4', name: 'Part 4', count: 24 },
+                        { id: '5', name: 'Part 5', count: 24 }
+                      ]
+                  ).map(f => {
+                    const isActive = modalPartFilter === f.id;
+                    return (
+                      <button
+                        key={f.id}
+                        type="button"
+                        role="tab"
+                        onClick={() => setModalPartFilter(f.id)}
+                        className={`flex-1 min-w-max py-1.5 px-3 rounded-full text-xs font-semibold flex items-center justify-center gap-1.5 transition-all whitespace-nowrap ${
                           isActive
-                            ? 'bg-[#0071E3]/10 dark:bg-white/25 text-[#0071E3] dark:text-white'
-                            : 'bg-black/5 dark:bg-white/10 text-[#86868B] dark:text-[#8E8E93]'
+                            ? 'bg-white dark:bg-[#0A84FF] text-[#0071E3] dark:text-white shadow-sm font-bold'
+                            : 'text-[#6E6E73] dark:text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white'
                         }`}
                       >
-                        {f.count}
-                      </span>
-                    </button>
-                  );
-                })}
+                        <span>{f.name}</span>
+                        <span
+                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                            isActive
+                              ? 'bg-[#0071E3]/10 dark:bg-white/25 text-[#0071E3] dark:text-white'
+                              : 'bg-black/5 dark:bg-white/10 text-[#86868B] dark:text-[#8E8E93]'
+                          }`}
+                        >
+                          {f.count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
