@@ -631,6 +631,60 @@ export const ToeicSpeakingApp: React.FC = () => {
     setP4QuestionVisibleMap({});
   };
 
+  const PARTS_ORDER: ActivePart[] = ['part1', 'part2', 'part3', 'part4', 'part5'];
+
+  const getPartCount = (part: ActivePart): number => {
+    if (part === 'part1') return masterData.part1.length;
+    if (part === 'part2') return masterData.part2.length;
+    if (part === 'part3') {
+      if (part3TypeFilter === 'ALL') return masterData.part3.length;
+      return masterData.part3.filter(q => q.typeId === part3TypeFilter).length;
+    }
+    if (part === 'part4') {
+      if (part4TableTypeFilter === 'ALL') return masterData.part4.length;
+      return masterData.part4.filter(s => s.tableTypeId === part4TableTypeFilter).length;
+    }
+    if (part === 'part5') return masterData.part5.length;
+    return 0;
+  };
+
+  const handleNext = () => {
+    stopSpeech();
+    setIsAnswerOpen(false);
+    setP4AnswerOpenMap({});
+    setP4QuestionVisibleMap({});
+
+    if (selectedIndex < totalItemsCount - 1) {
+      setSelectedIndex(selectedIndex + 1);
+    } else {
+      const pIdx = PARTS_ORDER.indexOf(activePart);
+      if (pIdx < PARTS_ORDER.length - 1) {
+        const nextPart = PARTS_ORDER[pIdx + 1];
+        setActivePart(nextPart);
+        setSelectedIndex(0);
+      }
+    }
+  };
+
+  const handlePrev = () => {
+    stopSpeech();
+    setIsAnswerOpen(false);
+    setP4AnswerOpenMap({});
+    setP4QuestionVisibleMap({});
+
+    if (selectedIndex > 0) {
+      setSelectedIndex(selectedIndex - 1);
+    } else {
+      const pIdx = PARTS_ORDER.indexOf(activePart);
+      if (pIdx > 0) {
+        const prevPart = PARTS_ORDER[pIdx - 1];
+        const prevCount = getPartCount(prevPart);
+        setActivePart(prevPart);
+        setSelectedIndex(Math.max(0, prevCount - 1));
+      }
+    }
+  };
+
   const toggleBookmark = (id: string, type: 'magic' | 'vocab') => {
     if (type === 'magic') {
       setBookmarkedMagicIds(prev => {
@@ -700,6 +754,8 @@ export const ToeicSpeakingApp: React.FC = () => {
   const savedMagicCount = Object.keys(bookmarkedMagicIds).length;
   const savedVocabCount = Object.keys(bookmarkedVocabIds).length;
   const totalItemsCount = activePart === 'part4' ? activeP4Sets.length : activeQuestions.length;
+  const isFirstOfAll = activePart === 'part1' && selectedIndex === 0;
+  const isLastOfAll = activePart === 'part5' && selectedIndex >= totalItemsCount - 1;
   const totalP4Questions = useMemo(() => {
     return masterData.part4.reduce((sum, s) => sum + s.questions.length, 0);
   }, []);
@@ -722,10 +778,9 @@ export const ToeicSpeakingApp: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsVocabModalOpen(true)}
-              className="inline-flex items-center px-3 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20 dark:border-[#0A84FF]/30 hover:bg-[#0071E3] hover:text-white dark:hover:bg-[#0A84FF] dark:hover:text-white transition-all shadow-xs whitespace-nowrap"
+              className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20 dark:border-[#0A84FF]/30 hover:bg-[#0071E3] hover:text-white dark:hover:bg-[#0A84FF] dark:hover:text-white transition-all shadow-xs whitespace-nowrap"
             >
-              <span className="hidden sm:inline">만능문장 187 & 빈출 단어장</span>
-              <span className="inline sm:hidden">만능문장 & 단어장</span>
+              <span>만능문장 & 단어장</span>
             </button>
 
             {/* 5. 다크모드 버튼 (제일 오른쪽 상단에 위치) */}
@@ -870,6 +925,9 @@ export const ToeicSpeakingApp: React.FC = () => {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-start justify-between gap-3 sm:gap-4 pb-4 sm:pb-5 mb-5 sm:mb-6 border-b border-black/5 dark:border-white/10">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#1D1D1F] dark:bg-white text-white dark:text-[#1D1D1F]">
+                    Q{selectedIndex + 1}
+                  </span>
                   <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20">
                     {currentStandardQ.category}
                   </span>
@@ -877,8 +935,8 @@ export const ToeicSpeakingApp: React.FC = () => {
                     준비 45초 · 답변 45초
                   </span>
                 </div>
-                <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-[#1D1D1F] dark:text-white truncate">
-                  {currentStandardQ.qNum} — {currentStandardQ.topic}
+                <h2 className="text-base sm:text-lg font-bold tracking-tight text-[#1D1D1F] dark:text-white truncate">
+                  Q{selectedIndex + 1}. {currentStandardQ.topic}
                 </h2>
               </div>
             </div>
@@ -1047,8 +1105,8 @@ export const ToeicSpeakingApp: React.FC = () => {
                     표 읽기 45초
                   </span>
                 </div>
-                <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-[#1D1D1F] dark:text-white truncate">
-                  {currentP4Set.setNum} — {currentP4Set.topic}
+                <h2 className="text-base sm:text-lg font-bold tracking-tight text-[#1D1D1F] dark:text-white truncate">
+                  Set {selectedIndex + 1} — {currentP4Set.topic}
                 </h2>
               </div>
             </div>
@@ -1116,7 +1174,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                         <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#1D1D1F] dark:bg-white text-white dark:text-[#1D1D1F]">
-                              {q.qNum}
+                              Q{qIdx + 1}
                             </span>
                             <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20">
                               {qIdx >= 2 ? '답변 30초' : '답변 15초'}
@@ -1319,6 +1377,9 @@ export const ToeicSpeakingApp: React.FC = () => {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-start justify-between gap-3 sm:gap-4 pb-4 sm:pb-5 mb-5 sm:mb-6 border-b border-black/5 dark:border-white/10">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#1D1D1F] dark:bg-white text-white dark:text-[#1D1D1F]">
+                    Q{selectedIndex + 1}
+                  </span>
                   <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20">
                     {currentStandardQ.typeBadge || currentStandardQ.category}
                   </span>
@@ -1326,8 +1387,8 @@ export const ToeicSpeakingApp: React.FC = () => {
                     준비 {currentStandardQ.prepTime}초 · 답변 {currentStandardQ.responseTime}초
                   </span>
                 </div>
-                <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-[#1D1D1F] dark:text-white truncate">
-                  {currentStandardQ.qNum} — {currentStandardQ.topic}
+                <h2 className="text-base sm:text-lg font-bold tracking-tight text-[#1D1D1F] dark:text-white truncate">
+                  Q{selectedIndex + 1}. {currentStandardQ.topic}
                 </h2>
               </div>
             </div>
@@ -1582,17 +1643,11 @@ export const ToeicSpeakingApp: React.FC = () => {
 
         <div className="h-4.5 w-px bg-black/10 dark:bg-white/15 shrink-0"></div>
 
-        {/* 2. 이전 문항 버튼 (문구 제거, 화살표 크게) */}
+        {/* 2. 이전 문항 버튼 (문구 제거, 화살표 크게, 전체 시험 연속 이전) */}
         <button
           type="button"
-          disabled={selectedIndex === 0}
-          onClick={() => {
-            stopSpeech();
-            setSelectedIndex(i => Math.max(0, i - 1));
-            setIsAnswerOpen(false);
-            setP4AnswerOpenMap({});
-            setP4QuestionVisibleMap({});
-          }}
+          disabled={isFirstOfAll}
+          onClick={handlePrev}
           className="w-9 h-9 sm:w-10 sm:h-10 rounded-full text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-25 transition-all flex items-center justify-center shrink-0"
           title="이전 문항"
           aria-label="이전 문항"
@@ -1606,17 +1661,11 @@ export const ToeicSpeakingApp: React.FC = () => {
           <strong>{selectedIndex + 1}</strong> / {totalItemsCount}
         </span>
 
-        {/* 2. 다음 문항 버튼 (문구 제거, 화살표 크게) */}
+        {/* 2. 다음 문항 버튼 (문구 제거, 화살표 크게, 전체 시험 연속 다음) */}
         <button
           type="button"
-          disabled={selectedIndex >= totalItemsCount - 1}
-          onClick={() => {
-            stopSpeech();
-            setSelectedIndex(i => Math.min(totalItemsCount - 1, i + 1));
-            setIsAnswerOpen(false);
-            setP4AnswerOpenMap({});
-            setP4QuestionVisibleMap({});
-          }}
+          disabled={isLastOfAll}
+          onClick={handleNext}
           className="w-9 h-9 sm:w-10 sm:h-10 rounded-full text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-25 transition-all flex items-center justify-center shrink-0"
           title="다음 문항"
           aria-label="다음 문항"
@@ -1713,7 +1762,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                       }`}
                     >
                       <div className="flex items-center justify-between gap-1 mb-1">
-                        <strong className="text-xs text-[#1D1D1F] dark:text-white">{s.setNum}</strong>
+                        <strong className="text-xs text-[#1D1D1F] dark:text-white">Set {idx + 1}</strong>
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF]">
                           {s.tableTypeBadge}
                         </span>
@@ -1738,7 +1787,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                       }`}
                     >
                       <div className="flex items-center justify-between gap-1 mb-1">
-                        <strong className="text-xs text-[#1D1D1F] dark:text-white">{q.qNum}</strong>
+                        <strong className="text-xs text-[#1D1D1F] dark:text-white">Q{idx + 1}</strong>
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF]">
                           {q.typeBadge || q.category}
                         </span>

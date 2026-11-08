@@ -3225,8 +3225,7 @@ def main():
       <div class="header-actions">
         <!-- 만능문장 187 & 빈출 단어장 모달 버튼 (이모티콘 없이 깔끔한 캡슐) -->
         <button type="button" class="btn-vocab-toggle" onclick="toggleVocabModal()" title="만능문장 187 & 빈출 단어장">
-          <span class="btn-text-full">만능문장 187 & 빈출 단어장</span>
-          <span class="btn-text-short">만능문장 & 단어장</span>
+          <span>만능문장 & 단어장</span>
         </button>
 
         <!-- 5. 다크모드 버튼 (제일 오른쪽 상단에 위치) -->
@@ -3829,19 +3828,25 @@ def main():
       updateDrawerContent();
     }
 
-    function getActiveItems() {
-      if (state.activePart === 'part1') return MASTER_DATA.part1;
-      if (state.activePart === 'part2') return MASTER_DATA.part2;
-      if (state.activePart === 'part3') {
+    const PARTS_ORDER = ['part1', 'part2', 'part3', 'part4', 'part5'];
+
+    function getItemsForPart(partId) {
+      if (partId === 'part1') return MASTER_DATA.part1;
+      if (partId === 'part2') return MASTER_DATA.part2;
+      if (partId === 'part3') {
         if (state.part3TypeFilter === 'ALL') return MASTER_DATA.part3;
         return MASTER_DATA.part3.filter(q => q.typeId === state.part3TypeFilter);
       }
-      if (state.activePart === 'part4') {
+      if (partId === 'part4') {
         if (state.part4TableTypeFilter === 'ALL') return MASTER_DATA.part4;
         return MASTER_DATA.part4.filter(s => s.tableTypeId === state.part4TableTypeFilter);
       }
-      if (state.activePart === 'part5') return MASTER_DATA.part5;
+      if (partId === 'part5') return MASTER_DATA.part5;
       return [];
+    }
+
+    function getActiveItems() {
+      return getItemsForPart(state.activePart);
     }
 
     function updateFloatingNav() {
@@ -3854,13 +3859,24 @@ def main():
       const cur = state.selectedIndex + 1;
       const total = items.length;
       text.textContent = `${cur} / ${total}`;
-      btnPrev.disabled = state.selectedIndex === 0;
-      btnNext.disabled = state.selectedIndex >= total - 1;
+
+      const isFirstOfAll = state.activePart === 'part1' && state.selectedIndex === 0;
+      const isLastOfAll = state.activePart === 'part5' && state.selectedIndex >= total - 1;
+      btnPrev.disabled = isFirstOfAll;
+      btnNext.disabled = isLastOfAll;
     }
 
     function navPrev() {
       if (state.selectedIndex > 0) {
         selectItem(state.selectedIndex - 1);
+      } else {
+        const pIdx = PARTS_ORDER.indexOf(state.activePart);
+        if (pIdx > 0) {
+          const prevPart = PARTS_ORDER[pIdx - 1];
+          const prevItems = getItemsForPart(prevPart);
+          switchPart(prevPart);
+          selectItem(Math.max(0, prevItems.length - 1));
+        }
       }
     }
 
@@ -3868,6 +3884,13 @@ def main():
       const items = getActiveItems();
       if (state.selectedIndex < items.length - 1) {
         selectItem(state.selectedIndex + 1);
+      } else {
+        const pIdx = PARTS_ORDER.indexOf(state.activePart);
+        if (pIdx < PARTS_ORDER.length - 1) {
+          const nextPart = PARTS_ORDER[pIdx + 1];
+          switchPart(nextPart);
+          selectItem(0);
+        }
       }
     }
 
@@ -3902,7 +3925,7 @@ def main():
       const listEl = document.getElementById('drawerListContainer');
       listEl.innerHTML = items.map((it, idx) => {
         const isSel = idx === state.selectedIndex;
-        const numLabel = it.qNum || it.setNum || `Item ${idx+1}`;
+        const numLabel = state.activePart === 'part4' ? `Set ${idx + 1}` : `Q${idx + 1}`;
         const badge = it.typeBadge || it.tableTypeBadge || it.category || '';
         return `
           <div class="drawer-q-item ${isSel ? 'active' : ''}" onclick="handleSelectFromDrawer(${idx})">
@@ -4082,10 +4105,11 @@ def main():
           <div class="glass-card-header">
             <div class="header-text-group">
               <div class="card-meta-tags">
+                <span class="tag-pill tag-part" style="font-size: 11.5px; padding: 3px 9px;">Q${idx + 1}</span>
                 <span class="tag-pill tag-category">${escapeHtml(q.category)}</span>
                 <span class="tag-pill tag-time">준비 45초 · 답변 45초</span>
               </div>
-              <h2 class="card-title">${escapeHtml(q.qNum)} — ${escapeHtml(q.topic)}</h2>
+              <h2 class="card-title">Q${idx + 1}. ${escapeHtml(q.topic)}</h2>
             </div>
           </div>
 
@@ -4170,10 +4194,11 @@ def main():
           <div class="glass-card-header">
             <div class="header-text-group">
               <div class="card-meta-tags">
+                <span class="tag-pill tag-part" style="font-size: 11.5px; padding: 3px 9px;">Q${idx + 1}</span>
                 <span class="tag-pill tag-category">${escapeHtml(q.typeBadge || q.category || '')}</span>
                 <span class="tag-pill tag-time">준비 ${q.prepTime}초 · 답변 ${q.responseTime}초</span>
               </div>
-              <h2 class="card-title">${escapeHtml(q.qNum)} — ${escapeHtml(q.topic)}</h2>
+              <h2 class="card-title">Q${idx + 1}. ${escapeHtml(q.topic)}</h2>
             </div>
           </div>
 
@@ -4315,7 +4340,7 @@ def main():
                 <span class="tag-pill tag-category">${escapeHtml(setObj.tableTypeBadge)}</span>
                 <span class="tag-pill tag-time">표 읽기 45초</span>
               </div>
-              <h2 class="card-title">${escapeHtml(setObj.setNum)} — ${escapeHtml(setObj.topic)}</h2>
+              <h2 class="card-title">Set ${idx + 1} — ${escapeHtml(setObj.topic)}</h2>
             </div>
           </div>
 
@@ -4369,7 +4394,7 @@ def main():
                     <!-- 4. 파트 4 상단: 질문 번호/답변시간 배지 + 질문듣기/질문보기 토글 -->
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                       <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                        <span class="tag-pill tag-part" style="font-size: 11.5px; padding: 3px 9px;">${escapeHtml(q.qNum)}</span>
+                        <span class="tag-pill tag-part" style="font-size: 11.5px; padding: 3px 9px;">Q${qIdx + 1}</span>
                         <span class="tag-pill" style="font-size: 11px; padding: 3px 8px; background: rgba(0, 113, 227, 0.08); color: var(--apple-blue); border: 1px solid var(--apple-blue-border); font-weight: 700;">
                           ${qIdx >= 2 ? '답변 30초' : '답변 15초'}
                         </span>
