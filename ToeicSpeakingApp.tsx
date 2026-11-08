@@ -555,15 +555,17 @@ export const ToeicSpeakingApp: React.FC = () => {
   }, []);
 
   return (
-    <div className={`min-h-screen transition-colors duration-200 ${isDarkMode ? 'dark bg-[#000000] text-[#F5F5F7]' : 'bg-[#F5F5F7] text-[#1D1D1F]'} font-sans antialiased pb-36`}>
-      {/* iOS 리퀴드 글래스 헤더 */}
-      <header className="sticky top-0 z-40 bg-white/80 dark:bg-[#141416]/85 backdrop-blur-2xl border-b border-black/5 dark:border-white/10 shadow-sm transition-all">
-        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-4">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <h1 className="text-sm sm:text-lg font-bold tracking-tight text-[#1D1D1F] dark:text-[#F5F5F7] truncate">
-              토익스피킹 기출 마스터
-            </h1>
-          </div>
+    <div className={`min-h-screen transition-colors duration-200 ${isDarkMode ? 'dark bg-[#0E0E11] text-[#F5F5F7]' : 'bg-[#EEF2F6] text-[#1D1D1F]'} font-sans antialiased flex flex-col items-center`}>
+      {/* 5. 컴퓨터 & 태블릿에서도 모바일 화면 레이아웃으로 고정하는 앱 셸 */}
+      <div className={`w-full max-w-[480px] min-h-screen ${isDarkMode ? 'bg-[#000000] border-x border-white/10 shadow-2xl' : 'bg-gradient-to-b from-white via-[#F5F5F7] to-[#EBEBF0] shadow-xl'} relative flex flex-col pb-36`}>
+        {/* iOS 리퀴드 글래스 헤더 */}
+        <header className="sticky top-0 z-40 bg-white/80 dark:bg-[#141416]/85 backdrop-blur-2xl border-b border-black/5 dark:border-white/10 shadow-sm transition-all">
+          <div className="w-full px-3.5 py-3 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <h1 className="text-sm sm:text-base font-extrabold tracking-tight text-[#1D1D1F] dark:text-[#F5F5F7] truncate">
+                토익스피킹 기출 마스터
+              </h1>
+            </div>
 
           <div className="flex items-center gap-2 shrink-0">
             {/* 만능문장 187 & 빈출 단어장 모달 버튼 (이모티콘 없이 깔끔한 캡슐) */}
@@ -660,8 +662,8 @@ export const ToeicSpeakingApp: React.FC = () => {
         </div>
       </header>
 
-      {/* 메인 콘텐츠 영역 */}
-      <main className="max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
+      {/* 메인 콘텐츠 영역 (모바일 고정 레이아웃) */}
+      <main className="w-full max-w-[480px] mx-auto px-3 py-3">
         {/* Part 3 유형 세그먼트 탭 바 */}
         {activePart === 'part3' && (
           <div className="flex p-1 mb-6 bg-black/5 dark:bg-white/10 rounded-full border border-black/5 dark:border-white/10 gap-1 overflow-x-auto no-scrollbar">
@@ -859,25 +861,31 @@ export const ToeicSpeakingApp: React.FC = () => {
                       <button
                         type="button"
                         onClick={startCbtTimer}
-                        className="px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold bg-[#0071E3] dark:bg-[#0A84FF] hover:bg-[#0077ED] text-white shadow-md transition-all whitespace-nowrap"
+                        title="시작"
+                        aria-label="시작"
+                        className="w-9 h-9 rounded-full inline-flex items-center justify-center text-sm font-bold bg-[#0071E3] dark:bg-[#0A84FF] hover:bg-[#0077ED] text-white shadow-md transition-all shrink-0"
                       >
-                        ▶ 시험 시작
+                        ▶
                       </button>
                     ) : (
                       <>
                         <button
                           type="button"
                           onClick={pauseCbtTimer}
-                          className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-white transition-all whitespace-nowrap"
+                          title="일시정지"
+                          aria-label="일시정지"
+                          className="w-9 h-9 rounded-full inline-flex items-center justify-center text-sm font-bold bg-white/10 hover:bg-white/20 text-white transition-all shrink-0"
                         >
-                          ⏸ 일시정지
+                          ⏸
                         </button>
                         <button
                           type="button"
                           onClick={resetCbtTimer}
-                          className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-[#FF453A] transition-all whitespace-nowrap"
+                          title="초기화"
+                          aria-label="초기화"
+                          className="w-9 h-9 rounded-full inline-flex items-center justify-center text-sm font-bold bg-white/10 hover:bg-white/20 text-[#FF453A] transition-all shrink-0"
                         >
-                          ↺ 초기화
+                          ↺
                         </button>
                       </>
                     )}
@@ -975,11 +983,11 @@ export const ToeicSpeakingApp: React.FC = () => {
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            {/* 질문 선택 버튼 */}
+                            {/* 질문듣기 버튼 */}
                             <button
                               type="button"
                               onClick={() => handleSelectSpeech(qPromptId, q.question)}
-                              className={`px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-xs font-bold border transition-all ${
+                              className={`h-[34px] px-3.5 rounded-full text-xs font-bold border inline-flex items-center justify-center transition-all ${
                                 selectedItemId === qPromptId
                                   ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] shadow-sm'
                                   : 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/20 hover:bg-[#0071E3]/20'
@@ -987,6 +995,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                             >
                               질문듣기
                             </button>
+                            {/* 질문 보기 토글 버튼 (크기 통일) */}
                             <button
                               type="button"
                               onClick={() =>
@@ -995,13 +1004,13 @@ export const ToeicSpeakingApp: React.FC = () => {
                                   [q.qId]: !prev[q.qId]
                                 }))
                               }
-                              className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all ${
+                              className={`h-[34px] px-3.5 rounded-full text-xs font-bold border inline-flex items-center justify-center transition-all ${
                                 isQVisible
                                   ? 'bg-black/5 dark:bg-white/10 text-[#1D1D1F] dark:text-white border-black/15'
                                   : 'bg-white dark:bg-[#2C2C2E] text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/30 hover:bg-[#0071E3]/5'
                               }`}
                             >
-                              {isQVisible ? '질문 지문 접기 ▲' : '질문 지문 보기 ▼'}
+                              {isQVisible ? '질문 접기 ▲' : '질문 보기 ▼'}
                             </button>
                           </div>
                         </div>
@@ -1180,25 +1189,31 @@ export const ToeicSpeakingApp: React.FC = () => {
                       <button
                         type="button"
                         onClick={startCbtTimer}
-                        className="px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold bg-[#0071E3] dark:bg-[#0A84FF] hover:bg-[#0077ED] text-white shadow-md transition-all whitespace-nowrap"
+                        title="시작"
+                        aria-label="시작"
+                        className="w-9 h-9 rounded-full inline-flex items-center justify-center text-sm font-bold bg-[#0071E3] dark:bg-[#0A84FF] hover:bg-[#0077ED] text-white shadow-md transition-all shrink-0"
                       >
-                        ▶ 시험 시작
+                        ▶
                       </button>
                     ) : (
                       <>
                         <button
                           type="button"
                           onClick={pauseCbtTimer}
-                          className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-white transition-all whitespace-nowrap"
+                          title="일시정지"
+                          aria-label="일시정지"
+                          className="w-9 h-9 rounded-full inline-flex items-center justify-center text-sm font-bold bg-white/10 hover:bg-white/20 text-white transition-all shrink-0"
                         >
-                          ⏸ 일시정지
+                          ⏸
                         </button>
                         <button
                           type="button"
                           onClick={resetCbtTimer}
-                          className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-[#FF453A] transition-all whitespace-nowrap"
+                          title="초기화"
+                          aria-label="초기화"
+                          className="w-9 h-9 rounded-full inline-flex items-center justify-center text-sm font-bold bg-white/10 hover:bg-white/20 text-[#FF453A] transition-all shrink-0"
                         >
-                          ↺ 초기화
+                          ↺
                         </button>
                       </>
                     )}
@@ -1427,25 +1442,31 @@ export const ToeicSpeakingApp: React.FC = () => {
                       <button
                         type="button"
                         onClick={startCbtTimer}
-                        className="px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold bg-[#0071E3] dark:bg-[#0A84FF] hover:bg-[#0077ED] text-white shadow-md transition-all whitespace-nowrap"
+                        title="시작"
+                        aria-label="시작"
+                        className="w-9 h-9 rounded-full inline-flex items-center justify-center text-sm font-bold bg-[#0071E3] dark:bg-[#0A84FF] hover:bg-[#0077ED] text-white shadow-md transition-all shrink-0"
                       >
-                        ▶ 시험 시작
+                        ▶
                       </button>
                     ) : (
                       <>
                         <button
                           type="button"
                           onClick={pauseCbtTimer}
-                          className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-white transition-all whitespace-nowrap"
+                          title="일시정지"
+                          aria-label="일시정지"
+                          className="w-9 h-9 rounded-full inline-flex items-center justify-center text-sm font-bold bg-white/10 hover:bg-white/20 text-white transition-all shrink-0"
                         >
-                          ⏸ 일시정지
+                          ⏸
                         </button>
                         <button
                           type="button"
                           onClick={resetCbtTimer}
-                          className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-[#FF453A] transition-all whitespace-nowrap"
+                          title="초기화"
+                          aria-label="초기화"
+                          className="w-9 h-9 rounded-full inline-flex items-center justify-center text-sm font-bold bg-white/10 hover:bg-white/20 text-[#FF453A] transition-all shrink-0"
                         >
-                          ↺ 초기화
+                          ↺
                         </button>
                       </>
                     )}
@@ -1565,6 +1586,7 @@ export const ToeicSpeakingApp: React.FC = () => {
           0.75x
         </button>
       </aside>
+      </div>{/* /.mobile-app-shell */}
 
       {/* 문항 목록 리퀴드 글래스 사이드 드로어 */}
       {isDrawerOpen && (
@@ -1651,7 +1673,7 @@ export const ToeicSpeakingApp: React.FC = () => {
             className="fixed inset-0 bg-black/40 backdrop-blur-md transition-opacity"
             onClick={() => setIsVocabModalOpen(false)}
           ></div>
-          <div className="relative w-full max-w-4xl h-[92vh] sm:h-[88vh] bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-3xl border border-white/80 dark:border-white/15 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden z-10 animate-in zoom-in-95 duration-200">
+          <div className="relative w-full max-w-[480px] h-[92vh] sm:h-[88vh] bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-3xl border border-white/80 dark:border-white/15 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden z-10 animate-in zoom-in-95 duration-200">
             {/* 1. 모달 헤더 (타이틀 행 + 알약 모드 토글 + iOS 리퀴드 글래스 X + 전체 너비 검색창) */}
             <div className="p-3.5 sm:p-5 border-b border-black/5 dark:border-white/10 flex flex-col gap-3 bg-white/70 dark:bg-[#1C1C1E]/70 backdrop-blur-2xl">
               {/* 1단: 타이틀 행 */}
@@ -1793,7 +1815,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                       : '검색 결과가 없습니다.'}
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-3.5">
+                  <div className="grid grid-cols-1 gap-3 sm:gap-3.5">
                     {filteredMagicItems.map(item => {
                       const isSaved = !!bookmarkedMagicIds[item.id];
                       return (
@@ -1890,7 +1912,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                       : '검색 결과가 없습니다.'}
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-3.5">
+                  <div className="grid grid-cols-1 gap-3 sm:gap-3.5">
                     {filteredVocabItems.map(item => {
                       const isSaved = !!bookmarkedVocabIds[item.id];
                       return (

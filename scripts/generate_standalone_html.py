@@ -78,13 +78,38 @@ def main():
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Noto Sans KR", sans-serif;
-      background: radial-gradient(circle at 15% 15%, #FFFFFF 0%, #F5F5F7 60%, #EBEBF0 100%);
+      background: #EEF2F6;
       background-attachment: fixed;
       color: var(--apple-text);
       line-height: 1.55;
       -webkit-font-smoothing: antialiased;
       min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* 5. 컴퓨터 & 태블릿에서도 모바일 앱 환경 사이트 레이아웃으로 완벽 고정 */
+    .mobile-app-shell {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      background: radial-gradient(circle at 15% 15%, #FFFFFF 0%, #F5F5F7 60%, #EBEBF0 100%);
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.08);
+      position: relative;
+      display: flex;
+      flex-direction: column;
       padding-bottom: 90px;
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+    body.dark .mobile-app-shell {
+      background: #000000;
+      box-shadow: 0 0 60px rgba(0, 0, 0, 0.75);
+      border-left: 1px solid rgba(255, 255, 255, 0.08);
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     /* iOS 리퀴드 글래스 헤더 */
@@ -92,7 +117,8 @@ def main():
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(255, 255, 255, 0.78);
+      width: 100%;
+      background: rgba(255, 255, 255, 0.82);
       backdrop-filter: var(--glass-blur);
       -webkit-backdrop-filter: var(--glass-blur);
       border-bottom: 1px solid var(--apple-border-subtle);
@@ -100,13 +126,15 @@ def main():
     }
 
     .header-inner {
-      max-width: 1240px;
+      width: 100%;
+      max-width: 480px;
       margin: 0 auto;
-      padding: 14px 24px;
+      padding: 12px 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
+      gap: 8px;
+      box-sizing: border-box;
     }
 
     /* 다크모드 테마 스타일 */
@@ -746,11 +774,13 @@ def main():
       transform: translateY(-1px);
     }
 
-    /* iOS 세그먼트 컨트롤 탭 */
+    /* iOS 세그먼트 컨트롤 탭 (모바일 뷰 고정) */
     .apple-segmented-bar {
-      max-width: 1240px;
-      margin: 18px auto 0;
-      padding: 0 24px;
+      width: 100%;
+      max-width: 480px;
+      margin: 10px auto 0;
+      padding: 0 12px;
+      box-sizing: border-box;
     }
 
     .segmented-control {
@@ -760,26 +790,32 @@ def main():
       border-radius: var(--radius-pill);
       border: 1px solid rgba(0, 0, 0, 0.04);
       overflow-x: auto;
-      gap: 3px;
+      gap: 4px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .segmented-control::-webkit-scrollbar {
+      display: none;
     }
 
     .segment-btn {
       flex: 1;
-      min-width: 130px;
+      min-width: 82px;
       background: transparent;
       border: none;
       border-radius: var(--radius-pill);
-      padding: 9px 16px;
-      font-size: 14px;
-      font-weight: 600;
+      padding: 8px 12px;
+      font-size: 13.5px;
+      font-weight: 700;
       color: var(--apple-text-secondary);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 6px;
       transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
       white-space: nowrap;
+      min-height: 38px;
     }
 
     .segment-btn:hover:not(.active) {
@@ -806,21 +842,23 @@ def main():
       color: var(--apple-blue);
     }
 
-    /* 메인 뷰포트 레이아웃 */
+    /* 메인 뷰포트 레이아웃 (모바일 뷰 고정) */
     .main-viewport {
-      max-width: 1040px;
-      margin: 24px auto 100px;
-      padding: 0 24px;
+      width: 100%;
+      max-width: 480px;
+      margin: 14px auto 30px;
+      padding: 0 12px;
+      box-sizing: border-box;
     }
 
-    /* 리퀴드 글래스 메인 카드 */
+    /* 리퀴드 글래스 메인 카드 (모바일 최적화) */
     .glass-card {
       background: var(--apple-card);
       backdrop-filter: var(--glass-blur);
       -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid var(--apple-border);
-      border-radius: var(--radius-lg);
-      padding: 32px;
+      border-radius: 20px;
+      padding: 20px 16px;
       box-shadow: var(--apple-shadow-md);
       transition: border-color 0.2s ease;
       position: relative;
@@ -1025,18 +1063,25 @@ def main():
     .btn-timer-ctrl {
       background: #FFFFFF;
       border: 1px solid var(--apple-border-subtle);
-      border-radius: var(--radius-pill);
-      padding: 5px 13px;
-      font-size: 12px;
-      font-weight: 600;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      padding: 0;
+      font-size: 14px;
+      font-weight: 700;
       color: var(--apple-text);
       cursor: pointer;
       box-shadow: var(--apple-shadow-sm);
       transition: all 0.16s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
     .btn-timer-ctrl:hover {
       background: #F8F8FA;
       border-color: var(--apple-border-strong);
+      transform: scale(1.06);
     }
 
     .timer-progress-track {
@@ -1130,14 +1175,18 @@ def main():
       color: var(--apple-text);
       border: 1px solid var(--apple-border-subtle);
       border-radius: var(--radius-pill);
-      padding: 5px 14px;
-      font-size: 12px;
-      font-weight: 600;
+      height: 34px;
+      padding: 0 14px;
+      font-size: 12.5px;
+      font-weight: 700;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 5px;
       transition: all 0.16s ease;
+      box-sizing: border-box;
+      white-space: nowrap;
     }
 
     .btn-toggle-qtext:hover {
@@ -1832,10 +1881,10 @@ def main():
       backdrop-filter: blur(40px) saturate(200%);
       -webkit-backdrop-filter: blur(40px) saturate(200%);
       border: 1px solid var(--apple-border);
-      border-radius: var(--radius-lg);
-      width: 980px;
+      border-radius: 24px;
+      width: 480px;
       max-width: 95vw;
-      height: 85vh;
+      height: 86vh;
       box-shadow: var(--apple-shadow-lg);
       display: flex;
       flex-direction: column;
@@ -2126,14 +2175,8 @@ def main():
 
     .vocab-grid-cards {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+      grid-template-columns: 1fr;
       gap: 14px;
-    }
-
-    @media (max-width: 600px) {
-      .vocab-grid-cards {
-        grid-template-columns: 1fr;
-      }
     }
 
     /* 2. 카드 상단 헤더 바 (좌측: ID/카테고리 칩, 우측: 1.0x/0.75x 배속 + 인스타 북마크) */
@@ -2919,10 +2962,11 @@ def main():
         margin-bottom: 18px;
       }
       .btn-toggle-qtext {
-        padding: 7px 13px;
-        font-size: 13px;
+        height: 34px;
+        padding: 0 14px;
+        font-size: 12.5px;
         font-weight: 700;
-        min-height: 36px;
+        box-sizing: border-box;
       }
       .p4-qtext-collapse {
         padding: 12px 14px;
@@ -2956,10 +3000,16 @@ def main():
         gap: 6px;
       }
       .btn-timer-ctrl {
-        padding: 7px 14px;
-        font-size: 13px;
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        border-radius: 50%;
+        padding: 0;
+        font-size: 14px;
         font-weight: 700;
-        min-height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
       .timer-info-caption {
         font-size: 12.5px;
@@ -3124,8 +3174,11 @@ def main():
 </head>
 <body>
 
-  <!-- 상단 글래스 헤더 -->
-  <header class="apple-header">
+  <!-- 5. 컴퓨터 & 태블릿 환경에서도 모바일 프레임 레이아웃으로 고정하는 앱 셸 -->
+  <div class="mobile-app-shell" id="appMobileShell">
+
+    <!-- 상단 글래스 헤더 -->
+    <header class="apple-header">
     <div class="header-inner">
       <div class="brand-title-wrap">
         <h1 class="brand-main-title">토익스피킹 기출 마스터</h1>
@@ -3204,6 +3257,7 @@ def main():
     <button type="button" class="btn-floating-rate" id="btnFloatingRate10" onclick="playSelectedRate(1.0)">1.0x</button>
     <button type="button" class="btn-floating-rate" id="btnFloatingRate075" onclick="playSelectedRate(0.75)">0.75x</button>
   </aside>
+  </div><!-- /.mobile-app-shell -->
 
   <!-- 문항 목록 리퀴드 글래스 사이드 드로어 -->
   <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
@@ -3587,47 +3641,46 @@ def main():
     function updateTimerUI() {
       const badge = document.getElementById('timerStageBadge');
       const clock = document.getElementById('timerDigitalClock');
-      const progress = document.getElementById('timerProgressFill');
       const btn = document.getElementById('btnTimerStart');
       const info = document.getElementById('timerInfoCaption');
-      if (!badge || !clock || !progress || !btn || !info) return;
+      if (!badge || !clock || !btn || !info) return;
 
       const m = Math.floor(state.timerRemainingSeconds / 60);
       const s = state.timerRemainingSeconds % 60;
       clock.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 
-      const pct = state.timerTotalSeconds > 0
-        ? Math.max(0, Math.min(100, (state.timerRemainingSeconds / state.timerTotalSeconds) * 100))
-        : 0;
-      progress.style.width = `${pct}%`;
-
       if (state.timerStage === 'prep') {
         badge.className = 'timer-stage-badge prep';
         badge.innerHTML = '<span class="voice-dot" style="background:#0071E3;"></span> 준비 시간';
-        progress.style.backgroundColor = 'var(--apple-blue)';
-        btn.textContent = state.timerInterval ? '⏸ 일시정지' : '▶ 계속';
+        btn.innerHTML = state.timerInterval ? '⏸' : '▶';
+        btn.title = state.timerInterval ? '일시정지' : '계속';
+        btn.setAttribute('aria-label', state.timerInterval ? '일시정지' : '계속');
         info.innerHTML = `준비 시간 ${state.timerRemainingSeconds}초 남음 ➔ 종료 시 비프음 후 답변 시간(${state.timerResponseLimit}초) 자동 전환`;
       } else if (state.timerStage === 'response') {
         badge.className = 'timer-stage-badge response';
-        badge.innerHTML = '<span class="voice-dot" style="background:#FF3B30;"></span> 답변 시간 (Speak Now)';
-        progress.style.backgroundColor = 'var(--apple-red)';
-        btn.textContent = state.timerInterval ? '⏸ 일시정지' : '▶ 계속';
+        badge.innerHTML = '<span class="voice-dot" style="background:#FF3B30;"></span> 답변 시간';
+        btn.innerHTML = state.timerInterval ? '⏸' : '▶';
+        btn.title = state.timerInterval ? '일시정지' : '계속';
+        btn.setAttribute('aria-label', state.timerInterval ? '일시정지' : '계속');
         info.innerHTML = `🎙️ 답변 시간 진행 중! (${state.timerRemainingSeconds}초 남음)`;
       } else if (state.timerStage === 'ended') {
         badge.className = 'timer-stage-badge standby';
-        badge.textContent = '답변 종료 (Time Over)';
-        progress.style.backgroundColor = 'var(--apple-text-muted)';
-        btn.textContent = '↺ 다시 시작';
+        badge.textContent = '답변 종료';
+        btn.innerHTML = '↺';
+        btn.title = '다시 시작';
+        btn.setAttribute('aria-label', '다시 시작');
         info.innerHTML = '시험 시간이 종료되었습니다. 초기화 후 다시 연습해 보세요.';
       } else {
         badge.className = 'timer-stage-badge standby';
         badge.textContent = '타이머 대기 중';
-        progress.style.backgroundColor = 'var(--apple-blue)';
-        btn.textContent = '▶ 시작';
+        btn.innerHTML = '▶';
+        btn.title = '시작';
+        btn.setAttribute('aria-label', '시작');
         info.innerHTML = `준비 ${state.timerPrepLimit}초 ➔ 삐(Beep) ➔ 답변 ${state.timerResponseLimit}초`;
       }
     }
 
+    /* 2 & 3 & 4. 게이지 바 제거 및 아이콘 전용 심플 CBT 타이머 */
     function renderCbtTimerCard(prepSec, respSec) {
       return `
         <div class="cbt-timer-card">
@@ -3635,12 +3688,9 @@ def main():
             <div class="timer-stage-badge standby" id="timerStageBadge">타이머 대기 중</div>
             <div class="timer-digital-display" id="timerDigitalClock">00:${String(prepSec).padStart(2, '0')}</div>
             <div class="timer-btn-actions">
-              <button type="button" class="btn-timer-ctrl" id="btnTimerStart" onclick="toggleTimer()">▶ 시작</button>
-              <button type="button" class="btn-timer-ctrl" onclick="resetTimer(${prepSec}, ${respSec})">↺ 초기화</button>
+              <button type="button" class="btn-timer-ctrl" id="btnTimerStart" onclick="toggleTimer()" title="시작" aria-label="타이머 시작/일시정지">▶</button>
+              <button type="button" class="btn-timer-ctrl" onclick="resetTimer(${prepSec}, ${respSec})" title="초기화" aria-label="타이머 초기화">↺</button>
             </div>
-          </div>
-          <div class="timer-progress-track">
-            <div class="timer-progress-fill" id="timerProgressFill" style="width: 100%;"></div>
           </div>
           <div class="timer-info-caption" id="timerInfoCaption">
             준비 ${prepSec}초 ➔ 삐(Beep) ➔ 답변 ${respSec}초
@@ -3820,7 +3870,7 @@ def main():
       }
     }
 
-    // 4. 파트 4 질문 지문 숨김/열림 토글
+    // 4. 파트 4 질문 숨김/열림 토글
     function toggleP4QuestionText(qId) {
       state.p4QTextOpenMap[qId] = !state.p4QTextOpenMap[qId];
       const el = document.getElementById(`p4-qtext-${qId}`);
@@ -3829,11 +3879,11 @@ def main():
         if (state.p4QTextOpenMap[qId]) {
           el.classList.add('show');
           btn.classList.add('opened');
-          btn.innerHTML = '<span>질문 지문 접기 ▲</span>';
+          btn.innerHTML = '<span>질문 접기 ▲</span>';
         } else {
           el.classList.remove('show');
           btn.classList.remove('opened');
-          btn.innerHTML = '<span>질문 지문 보기 ▼</span>';
+          btn.innerHTML = '<span>질문 보기 ▼</span>';
         }
       }
     }
@@ -4240,12 +4290,12 @@ def main():
                         <button type="button" class="speech-selectable ${state.selectedItemId === q.qId + '-prompt' ? 'selected' : ''}"
                                 data-speech-id="${q.qId}-prompt" data-speech-text="${escapeHtml(q.question)}"
                                 onclick="selectSpeechItem('${q.qId}-prompt', this.getAttribute('data-speech-text'), true)"
-                                style="padding: 5px 13px; font-size: 12px; font-weight: 700; border-radius: var(--radius-pill); border: 1px solid var(--apple-blue-border); background: var(--apple-blue-bg); color: var(--apple-blue);">
+                                style="height: 34px; padding: 0 14px; font-size: 12.5px; font-weight: 700; border-radius: var(--radius-pill); border: 1px solid var(--apple-blue-border); background: var(--apple-blue-bg); color: var(--apple-blue); display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; white-space: nowrap;">
                           질문듣기
                         </button>
                         <button type="button" id="p4-qbtn-${q.qId}" class="btn-toggle-qtext ${isQTextOpen ? 'opened' : ''}"
                           onclick="toggleP4QuestionText('${q.qId}')">
-                          <span>${isQTextOpen ? '질문 지문 접기 ▲' : '질문 지문 보기 ▼'}</span>
+                          <span>${isQTextOpen ? '질문 접기 ▲' : '질문 보기 ▼'}</span>
                         </button>
                       </div>
                     </div>
