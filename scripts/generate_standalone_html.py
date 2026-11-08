@@ -22,9 +22,11 @@ ROOT = Path(__file__).resolve().parent.parent
 def main():
     master_data = json.loads((ROOT / "data" / "toeic_parts_master.json").read_text(encoding="utf-8"))
     magic_data = json.loads((ROOT / "data" / "magic_187_vocab.json").read_text(encoding="utf-8"))
+    vocab_data = json.loads((ROOT / "data" / "toeic_essential_vocab.json").read_text(encoding="utf-8"))
 
     master_json_str = json.dumps(master_data, ensure_ascii=False)
     magic_json_str = json.dumps(magic_data, ensure_ascii=False)
+    vocab_json_str = json.dumps(vocab_data, ensure_ascii=False)
 
     html_template = """<!DOCTYPE html>
 <html lang="ko">
@@ -504,7 +506,7 @@ def main():
       color: #FFFFFF !important;
     }
 
-    /* 다크모드 드로어 & 단어장 모달 */
+    /* 다크모드 드로어 & 만능문장 모달 */
     body.dark .glass-drawer {
       background: rgba(24, 24, 26, 0.96) !important;
       border-right-color: rgba(255, 255, 255, 0.14) !important;
@@ -569,79 +571,69 @@ def main():
       gap: 12px;
     }
 
-    /* 3. 다크모드 iOS 슬라이딩 스위치 토글 (시인성 극대화) */
-    .theme-switch {
-      position: relative;
-      width: 62px;
-      height: 32px;
-      border-radius: var(--radius-pill);
-      background: #E5E5EA;
-      border: 1px solid rgba(0, 0, 0, 0.12);
+    /* 3. 다크모드 버튼 (사진과 동일한 모던 스퀘어클 아이콘 버튼) */
+    .btn-theme-toggle {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      background: #F0F4F8;
+      border: 1px solid rgba(0, 113, 227, 0.12);
+      color: #1E293B;
       cursor: pointer;
-      padding: 0;
-      outline: none;
       display: inline-flex;
       align-items: center;
-      transition: background 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.28s ease, box-shadow 0.28s ease, transform 0.18s ease;
-      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+      justify-content: center;
+      padding: 0;
+      flex-shrink: 0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
       user-select: none;
       -webkit-user-select: none;
-      flex-shrink: 0;
     }
-    .theme-switch:hover {
-      transform: scale(1.04);
+    .btn-theme-toggle:hover {
+      background: #E4ECF4;
+      border-color: rgba(0, 113, 227, 0.25);
+      color: #0071E3;
+      transform: scale(1.05);
     }
-    body.dark .theme-switch {
-      background: var(--apple-blue);
-      border-color: rgba(10, 132, 255, 0.6);
-      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2), 0 0 14px rgba(10, 132, 255, 0.4);
+    .btn-theme-toggle:active {
+      transform: scale(0.95);
     }
-    .theme-switch-track-icons {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 7px;
-      font-size: 11px;
-      pointer-events: none;
+    body.dark .btn-theme-toggle {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.14);
+      color: #FFD60A;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
     }
-    .theme-switch-track-icons .track-sun {
-      opacity: 0;
-      transition: opacity 0.2s ease;
-      color: rgba(255, 255, 255, 0.85);
+    body.dark .btn-theme-toggle:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: rgba(255, 255, 255, 0.25);
+      color: #FFE66D;
+      transform: scale(1.05);
     }
-    body.dark .theme-switch-track-icons .track-sun {
-      opacity: 0.85;
+    .btn-theme-toggle .icon-moon,
+    .btn-theme-toggle .icon-sun {
+      width: 20px;
+      height: 20px;
+      stroke-width: 2;
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
     }
-    .theme-switch-track-icons .track-moon {
-      opacity: 0.55;
-      transition: opacity 0.2s ease;
-      color: #3C3C43;
+    .btn-theme-toggle .icon-sun {
+      display: none;
     }
-    body.dark .theme-switch-track-icons .track-moon {
-      opacity: 0;
+    .btn-theme-toggle .icon-moon {
+      display: block;
     }
-    .theme-switch-thumb {
-      position: absolute;
-      left: 3px;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: #FFFFFF;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22), 0 0 1px rgba(0, 0, 0, 0.15);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      line-height: 1;
-      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), background 0.28s ease;
-      pointer-events: none;
+    body.dark .btn-theme-toggle .icon-sun {
+      display: block;
+      animation: rotateSun 0.35s ease-out forwards;
     }
-    body.dark .theme-switch-thumb {
-      transform: translateX(30px);
-      background: #FFFFFF;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+    body.dark .btn-theme-toggle .icon-moon {
+      display: none;
+    }
+    @keyframes rotateSun {
+      from { transform: rotate(-45deg) scale(0.8); opacity: 0; }
+      to { transform: rotate(0deg) scale(1); opacity: 1; }
     }
 
     .brand-main-title {
@@ -651,25 +643,40 @@ def main():
       color: var(--apple-text);
     }
 
-    /* 제목 옆 단어장 토글 버튼 */
+    /* 제목 옆 만능문장 187 토글 버튼 (이모티콘 없이 깔끔한 애플 캡슐) */
     .btn-vocab-toggle {
       background: rgba(0, 113, 227, 0.08);
       color: var(--apple-blue);
       border: 1px solid var(--apple-blue-border);
       border-radius: var(--radius-pill);
-      padding: 6px 14px;
+      padding: 7px 16px;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
+      user-select: none;
     }
 
     .btn-vocab-toggle:hover {
-      background: rgba(0, 113, 227, 0.16);
-      transform: scale(1.02);
+      background: var(--apple-blue);
+      color: #FFFFFF;
+      border-color: var(--apple-blue);
+      box-shadow: 0 2px 8px rgba(0, 113, 227, 0.3);
+      transform: translateY(-1px);
+    }
+    body.dark .btn-vocab-toggle {
+      background: rgba(10, 132, 255, 0.15);
+      color: #0A84FF;
+      border-color: rgba(10, 132, 255, 0.3);
+    }
+    body.dark .btn-vocab-toggle:hover {
+      background: #0A84FF;
+      color: #FFFFFF;
+      box-shadow: 0 2px 10px rgba(10, 132, 255, 0.45);
     }
 
     .header-actions {
@@ -1379,6 +1386,26 @@ def main():
       line-height: 1.55;
       margin-top: 20px;
     }
+    .explanation-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #166534;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .explanation-body {
+      font-size: 14px;
+      color: #15803D;
+      line-height: 1.6;
+    }
+    body.dark .explanation-title {
+      color: #30D158 !important;
+    }
+    body.dark .explanation-body {
+      color: #A7F3D0 !important;
+    }
 
     /* Part 4 표 카드 */
     .part4-table-card {
@@ -1460,76 +1487,124 @@ def main():
       background: rgba(0, 0, 0, 0.05);
       border: 1px solid rgba(0, 0, 0, 0.08);
       color: var(--apple-text);
-      font-size: 12px;
-      font-weight: 700;
       cursor: pointer;
-      padding: 6px 13px;
-      border-radius: var(--radius-pill);
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      border-radius: 50%;
       transition: all 0.16s ease;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      justify-content: center;
+      padding: 0;
+      flex-shrink: 0;
+    }
+    .btn-floating-drawer svg {
+      width: 22px;
+      height: 22px;
+      stroke-width: 2.2;
     }
     .btn-floating-drawer:hover {
       background: rgba(0, 0, 0, 0.1);
       border-color: rgba(0, 0, 0, 0.15);
+      transform: scale(1.06);
+    }
+    .btn-floating-drawer:active {
+      transform: scale(0.94);
     }
 
     .btn-floating-nav {
       background: transparent;
       border: none;
       color: var(--apple-text);
-      font-size: 13px;
-      font-weight: 700;
       cursor: pointer;
-      padding: 5px 10px;
-      border-radius: var(--radius-pill);
-      transition: background 0.16s ease;
+      width: 38px;
+      height: 38px;
+      min-width: 38px;
+      border-radius: 50%;
+      transition: all 0.16s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      flex-shrink: 0;
+    }
+    .btn-floating-nav svg {
+      width: 22px;
+      height: 22px;
+      stroke-width: 2.5;
     }
     .btn-floating-nav:hover:not(:disabled) {
-      background: rgba(0, 0, 0, 0.06);
+      background: rgba(0, 0, 0, 0.08);
+      color: var(--apple-blue);
+      transform: scale(1.08);
+    }
+    .btn-floating-nav:active:not(:disabled) {
+      transform: scale(0.92);
     }
     .btn-floating-nav:disabled {
-      opacity: 0.35;
+      opacity: 0.25;
       cursor: not-allowed;
     }
 
     .floating-nav-info {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--apple-text-secondary);
-      border-left: 1px solid var(--apple-border-subtle);
-      border-right: 1px solid var(--apple-border-subtle);
-      padding: 0 12px;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--apple-text);
+      padding: 0 10px;
       font-variant-numeric: tabular-nums;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     .btn-floating-stop {
       background: var(--apple-red-bg);
       color: var(--apple-red);
       border: 1px solid var(--apple-red-border);
-      border-radius: var(--radius-pill);
-      padding: 5px 12px;
-      font-size: 12px;
-      font-weight: 700;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      min-width: 38px;
       cursor: pointer;
       transition: all 0.16s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      flex-shrink: 0;
+    }
+    .btn-floating-stop svg {
+      width: 15px;
+      height: 15px;
     }
     .btn-floating-stop:hover {
       background: rgba(255, 59, 48, 0.2);
+      transform: scale(1.06);
+    }
+    .btn-floating-stop:active {
+      transform: scale(0.94);
     }
 
-    /* 1. 하단 플로팅 바 배속 토글 버튼 (1.0x, 0.75x) */
+    /* 1. 하단 플로팅 바 배속 토글 버튼 (1.0x, 0.75x) - 다른 원형 버튼(38px)과 완벽한 수평 높이 일치 */
     .btn-floating-rate {
+      height: 38px;
+      min-width: 48px;
+      padding: 0 12px;
+      border-radius: var(--radius-pill);
       background: rgba(0, 113, 227, 0.08);
       border: 1px solid var(--apple-blue-border);
       color: var(--apple-blue);
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 700;
-      padding: 5px 12px;
-      border-radius: var(--radius-pill);
       cursor: pointer;
-      transition: all 0.18s ease;
+      transition: all 0.16s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      line-height: 1;
     }
     .btn-floating-rate:hover {
       background: var(--apple-blue);
@@ -1539,89 +1614,75 @@ def main():
     .btn-floating-rate.active-playing {
       background: var(--apple-blue) !important;
       color: #FFFFFF !important;
-      box-shadow: 0 0 12px rgba(0, 113, 227, 0.5);
-      animation: pulseRate 1.4s infinite;
+      box-shadow: 0 0 12px rgba(0, 113, 227, 0.45);
     }
     @keyframes pulseRate {
       0%, 100% { transform: scale(1); opacity: 1; }
       50% { transform: scale(1.04); opacity: 0.85; }
     }
 
-    /* 2. 파트 3, 4 유형 및 속성 필터 바 (가독성 & 린 디자인 강화) */
-    .filter-chips-row {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
+    /* 2. 파트 3 유형 & 파트 4 표 속성 세그먼트 탭 바 */
+    .sub-segmented-bar {
       margin-bottom: 22px;
-      padding: 6px 12px;
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      border: 1px solid var(--apple-border-subtle);
+    }
+    .sub-segmented-control {
+      display: flex;
+      background: rgba(0, 0, 0, 0.05);
+      padding: 4px;
       border-radius: var(--radius-pill);
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+      border: 1px solid rgba(0, 0, 0, 0.04);
+      overflow-x: auto;
+      gap: 3px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
     }
-    body.dark .filter-chips-row {
-      background: rgba(28, 28, 30, 0.7);
-      border-color: rgba(255, 255, 255, 0.1);
+    .sub-segmented-control::-webkit-scrollbar {
+      display: none;
     }
-
-    .filter-chips-label {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--apple-text-secondary);
-      padding: 0 4px 0 4px;
-      letter-spacing: -0.01em;
-      user-select: none;
+    body.dark .sub-segmented-control {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.12);
     }
 
-    .chip-filter-btn {
-      background: rgba(255, 255, 255, 0.95);
-      border: 1px solid var(--apple-border);
-      color: var(--apple-text);
-      font-size: 13px;
+    .sub-segment-btn {
+      flex: 1;
+      min-width: max-content;
+      background: transparent;
+      border: none;
+      border-radius: var(--radius-pill);
+      padding: 8px 15px;
+      font-size: 13.5px;
       font-weight: 600;
-      padding: 6px 14px;
-      border-radius: var(--radius-pill);
+      color: var(--apple-text-secondary);
       cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
       white-space: nowrap;
       user-select: none;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
     }
-    .chip-filter-btn:hover:not(.active) {
+    .sub-segment-btn:hover:not(.active) {
+      color: var(--apple-text);
+      background: rgba(255, 255, 255, 0.45);
+    }
+    .sub-segment-btn.active {
       background: #FFFFFF;
-      border-color: var(--apple-blue-border);
       color: var(--apple-blue);
-      transform: translateY(-1px);
-    }
-    .chip-filter-btn.active {
-      background: var(--apple-blue) !important;
-      color: #FFFFFF !important;
-      border-color: var(--apple-blue) !important;
       font-weight: 700;
-      box-shadow: 0 3px 10px rgba(0, 113, 227, 0.35) !important;
-      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
     }
-    body.dark .chip-filter-btn {
-      background: rgba(44, 44, 46, 0.85);
-      border-color: rgba(255, 255, 255, 0.14);
-      color: #E5E5EA;
+    body.dark .sub-segment-btn {
+      color: #AEAEB2;
     }
-    body.dark .chip-filter-btn:hover:not(.active) {
-      background: rgba(58, 58, 60, 0.95);
-      border-color: rgba(255, 255, 255, 0.3);
-      color: #FFFFFF;
+    body.dark .sub-segment-btn:hover:not(.active) {
+      color: #F5F5F7;
+      background: rgba(255, 255, 255, 0.06);
     }
-    body.dark .chip-filter-btn.active {
+    body.dark .sub-segment-btn.active {
       background: #0A84FF !important;
       color: #FFFFFF !important;
-      border-color: #0A84FF !important;
-      box-shadow: 0 3px 12px rgba(10, 132, 255, 0.45) !important;
+      box-shadow: 0 3px 12px rgba(10, 132, 255, 0.4) !important;
     }
 
     /* 2. 발음 가능한 선택형 칸 스타일 */
@@ -1787,35 +1848,286 @@ def main():
       transform: scale(1);
     }
 
+    /* 만능문장 & 빈출 단어장 모달 헤더 리팩토링 */
     .vocab-modal-header {
-      padding: 20px 26px;
+      padding: 16px 22px 14px;
       border-bottom: 1px solid var(--apple-border-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    body.dark .vocab-modal-header {
+      background: rgba(28, 28, 30, 0.75);
+    }
+    .vocab-modal-title-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 10px;
+    }
+    .vocab-modal-title-wrap {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      min-width: 0;
+    }
+    .vocab-modal-title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--apple-text);
+      line-height: 1.25;
+      white-space: nowrap;
+    }
+    .vocab-modal-saved-badge {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--apple-blue);
+      background: var(--apple-blue-bg);
+      border: 1px solid var(--apple-blue-border);
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      white-space: nowrap;
+    }
+    body.dark .vocab-modal-saved-badge {
+      color: #0A84FF;
+      background: rgba(10, 132, 255, 0.15);
+      border-color: rgba(10, 132, 255, 0.3);
     }
 
+    .vocab-modal-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    /* 4. X 버튼 왼쪽에 배치되는 알약 형태 모드 전환 탭 (만능문장 187 vs 빈출 단어장 120) */
+    .modal-mode-pill-toggle {
+      display: inline-flex;
+      background: rgba(118, 118, 128, 0.12);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      padding: 3px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      gap: 2px;
+    }
+    body.dark .modal-mode-pill-toggle {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+    .mode-pill-btn {
+      background: transparent;
+      border: none;
+      border-radius: var(--radius-pill);
+      padding: 6px 13px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--apple-text-secondary);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
+    }
+    .mode-pill-btn:hover:not(.active) {
+      color: var(--apple-text);
+    }
+    .mode-pill-btn.active {
+      background: #FFFFFF;
+      color: var(--apple-blue);
+      font-weight: 700;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1), 0 0.5px 1.5px rgba(0, 0, 0, 0.06);
+    }
+    body.dark .mode-pill-btn.active {
+      background: #0A84FF;
+      color: #FFFFFF;
+      box-shadow: 0 2px 8px rgba(10, 132, 255, 0.4);
+    }
+
+    /* 1. iOS 정통 리퀴드 글래스 (Liquid Glass) 닫기(X) 버튼 */
+    .btn-ios-liquid-close {
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      min-height: 36px;
+      border-radius: 50%;
+      background: rgba(118, 118, 128, 0.14);
+      backdrop-filter: blur(20px) saturate(190%);
+      -webkit-backdrop-filter: blur(20px) saturate(190%);
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      color: #3C3C43;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      flex-shrink: 0;
+      padding: 0;
+    }
+    .btn-ios-liquid-close svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      transition: transform 0.2s ease;
+    }
+    .btn-ios-liquid-close:hover {
+      background: rgba(118, 118, 128, 0.24);
+      transform: scale(1.08);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+    .btn-ios-liquid-close:active {
+      transform: scale(0.92);
+    }
+    body.dark .btn-ios-liquid-close {
+      background: rgba(118, 118, 128, 0.28);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      color: #EBEBF5;
+    }
+    body.dark .btn-ios-liquid-close:hover {
+      background: rgba(118, 118, 128, 0.42);
+    }
+
+    /* 검색창 행 */
+    .vocab-modal-search-row {
+      width: 100%;
+    }
+    .vocab-search-wrap {
+      position: relative;
+      width: 100%;
+      display: flex;
+      align-items: center;
+    }
+    .vocab-search-wrap svg {
+      position: absolute;
+      left: 14px;
+      color: var(--apple-text-muted);
+      pointer-events: none;
+    }
     .vocab-search-input {
-      padding: 8px 14px;
+      width: 100%;
+      padding: 9px 16px 9px 38px;
       border-radius: var(--radius-pill);
       border: 1px solid var(--apple-border-strong);
-      background: rgba(255, 255, 255, 0.85);
-      font-size: 13px;
-      min-width: 260px;
+      background: rgba(255, 255, 255, 0.9);
+      font-size: 13.5px;
+      color: var(--apple-text);
       outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .vocab-search-input:focus {
+      border-color: var(--apple-blue);
+      box-shadow: 0 0 0 3px var(--apple-blue-bg);
+    }
+    body.dark .vocab-search-input {
+      background: rgba(44, 44, 46, 0.9);
+      border-color: rgba(255, 255, 255, 0.15);
+      color: #FFFFFF;
+    }
+
+    /* 만능문장 & 단어장 모달 파트 세그먼트 탭 */
+    .modal-segmented-bar {
+      padding: 10px 22px;
+      border-bottom: 1px solid var(--apple-border-subtle);
+      background: rgba(255, 255, 255, 0.45);
+    }
+    body.dark .modal-segmented-bar {
+      background: rgba(28, 28, 30, 0.45);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+    .modal-segmented-control {
+      display: flex;
+      background: rgba(0, 0, 0, 0.05);
+      padding: 4px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(0, 0, 0, 0.04);
+      gap: 4px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .modal-segmented-control::-webkit-scrollbar {
+      display: none;
+    }
+    body.dark .modal-segmented-control {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+    .modal-segment-btn {
+      flex: 1;
+      min-width: max-content;
+      background: transparent;
+      border: none;
+      border-radius: var(--radius-pill);
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--apple-text-secondary);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
+      user-select: none;
+    }
+    .modal-segment-btn:hover:not(.active) {
+      color: var(--apple-text);
+      background: rgba(255, 255, 255, 0.4);
+    }
+    .modal-segment-btn.active {
+      background: #FFFFFF;
+      color: var(--apple-blue);
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+    body.dark .modal-segment-btn {
+      color: #8E8E93;
+    }
+    body.dark .modal-segment-btn:hover:not(.active) {
+      color: #FFFFFF;
+    }
+    body.dark .modal-segment-btn.active {
+      background: #0A84FF !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 2px 10px rgba(10, 132, 255, 0.4) !important;
+    }
+    .modal-segment-count {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: var(--radius-pill);
+      background: rgba(0, 0, 0, 0.06);
+      color: var(--apple-text-secondary);
+    }
+    .modal-segment-btn.active .modal-segment-count {
+      background: var(--apple-blue-bg);
+      color: var(--apple-blue);
+    }
+    body.dark .modal-segment-btn.active .modal-segment-count {
+      background: rgba(255, 255, 255, 0.25);
+      color: #FFFFFF;
     }
 
     .vocab-modal-body {
       flex: 1;
       overflow-y: auto;
-      padding: 20px 26px;
+      padding: 18px 22px;
     }
 
     .vocab-grid-cards {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+      gap: 14px;
     }
 
     @media (max-width: 600px) {
@@ -1824,38 +2136,454 @@ def main():
       }
     }
 
+    /* 2. 카드 상단 헤더 바 (좌측: ID/카테고리 칩, 우측: 1.0x/0.75x 배속 + 인스타 북마크) */
+    .vocab-card-top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
+      margin-bottom: 8px;
+    }
+
+    .vocab-card-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    @keyframes bookmarkPop {
+      0% { transform: scale(0.8); }
+      50% { transform: scale(1.25); }
+      100% { transform: scale(1); }
+    }
+
+    .btn-bookmark-icon {
+      width: 34px;
+      height: 34px;
+      min-width: 34px;
+      min-height: 34px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.04);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      color: var(--apple-text-muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 0;
+    }
+    .btn-bookmark-icon svg {
+      width: 17px;
+      height: 17px;
+      stroke-width: 2;
+      transition: transform 0.2s ease, fill 0.2s ease;
+    }
+    .btn-bookmark-icon:hover {
+      background: rgba(0, 113, 227, 0.08);
+      color: var(--apple-blue);
+      transform: scale(1.1);
+    }
+    .btn-bookmark-icon.saved {
+      background: rgba(0, 113, 227, 0.12);
+      border-color: rgba(0, 113, 227, 0.3);
+      color: var(--apple-blue);
+      animation: bookmarkPop 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    body.dark .btn-bookmark-icon {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.1);
+      color: #8E8E93;
+    }
+    body.dark .btn-bookmark-icon:hover {
+      background: rgba(10, 132, 255, 0.15);
+      color: #0A84FF;
+    }
+    body.dark .btn-bookmark-icon.saved {
+      background: rgba(10, 132, 255, 0.22);
+      border-color: rgba(10, 132, 255, 0.45);
+      color: #0A84FF;
+    }
+
+    /* 저장 버튼 바로 밑에 문장/단어와 나란히 배치되는 배속 선택 버튼 그룹 */
+    .vocab-audio-mini-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-audio-mini {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 4px 8px;
+      border-radius: var(--radius-pill);
+      font-size: 11.5px;
+      font-weight: 700;
+      background: rgba(0, 113, 227, 0.09);
+      color: var(--apple-blue);
+      border: 1px solid rgba(0, 113, 227, 0.22);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn-audio-mini svg {
+      width: 11px;
+      height: 11px;
+    }
+    .btn-audio-mini:hover {
+      background: var(--apple-blue);
+      color: #FFFFFF;
+    }
+    .btn-audio-mini.subtle {
+      background: rgba(0, 0, 0, 0.04);
+      color: var(--apple-text-secondary);
+      border-color: rgba(0, 0, 0, 0.07);
+    }
+    .btn-audio-mini.subtle:hover {
+      background: rgba(0, 0, 0, 0.1);
+      color: var(--apple-text);
+    }
+    body.dark .btn-audio-mini {
+      background: rgba(10, 132, 255, 0.18);
+      color: #409CFF;
+      border-color: rgba(10, 132, 255, 0.35);
+    }
+    body.dark .btn-audio-mini:hover {
+      background: #0A84FF;
+      color: #FFFFFF;
+    }
+    body.dark .btn-audio-mini.subtle {
+      background: rgba(255, 255, 255, 0.08);
+      color: #A1A1A6;
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+    body.dark .btn-audio-mini.subtle:hover {
+      background: rgba(255, 255, 255, 0.18);
+      color: #FFFFFF;
+    }
+
+    /* 공통 카드 메타 상단 바 (파트 뱃지는 중복 제거하여 삭제하고, ID 및 카테고리만 노출) */
+    .vocab-card-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 8px;
+      padding-right: 90px; /* 우측 상단 액션 버튼 공간 확보 */
+      flex-wrap: wrap;
+    }
+    .vocab-card-id {
+      font-size: 12.5px;
+      font-weight: 800;
+      color: var(--apple-blue);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    body.dark .vocab-card-id {
+      color: #0A84FF;
+    }
+    .vocab-category-chip {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--apple-text-secondary);
+      background: rgba(0, 0, 0, 0.04);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+    body.dark .vocab-category-chip {
+      background: rgba(255, 255, 255, 0.08);
+      color: #A1A1A6;
+    }
+
+    /* 만능문장 카드 */
     .vocab-item-card {
-      background: rgba(255, 255, 255, 0.85);
+      position: relative;
+      background: rgba(255, 255, 255, 0.9);
       border: 1px solid var(--apple-border-subtle);
-      border-radius: var(--radius-md);
+      border-radius: 18px;
       padding: 16px 18px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       gap: 10px;
-      transition: border-color 0.16s ease;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
     }
-
-    .vocab-item-card.memorized {
-      background: rgba(52, 199, 89, 0.08);
-      border-color: rgba(52, 199, 89, 0.35);
+    .vocab-item-card.saved {
+      background: rgba(0, 113, 227, 0.04);
+      border-color: rgba(0, 113, 227, 0.35);
     }
-
-    .btn-mem-toggle {
-      background: transparent;
-      border: 1px solid var(--apple-border-strong);
-      border-radius: var(--radius-pill);
-      padding: 3px 9px;
-      font-size: 11px;
-      font-weight: 600;
-      cursor: pointer;
+    body.dark .vocab-item-card {
+      background: rgba(36, 36, 38, 0.88);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+    body.dark .vocab-item-card.saved {
+      background: rgba(10, 132, 255, 0.09);
+      border-color: rgba(10, 132, 255, 0.45);
+    }
+    .magic-sentence-main-group {
+      width: 100%;
+      padding-right: 0; /* 상단 헤더 분리로 배속 버튼과 겹침 0% 원천 차단 및 가로폭 100% 활용 */
+    }
+    .magic-en-sentence {
+      font-size: 16.5px;
+      font-weight: 700;
+      color: var(--apple-text);
+      line-height: 1.45;
+      letter-spacing: -0.015em;
+    }
+    .magic-ko-translation {
+      font-size: 14px;
       color: var(--apple-text-secondary);
+      line-height: 1.45;
+      margin-top: 3px;
     }
 
-    .btn-mem-toggle.checked {
-      background: var(--apple-emerald);
+    /* 3. 단어장 카드 (인터넷 사전 & 단어장 프리미엄 레이아웃) */
+    .vocab-word-card {
+      position: relative;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid var(--apple-border-subtle);
+      border-radius: 18px;
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+    }
+    .vocab-word-card.saved {
+      border-color: rgba(0, 113, 227, 0.35);
+      background: rgba(0, 113, 227, 0.04);
+    }
+    body.dark .vocab-word-card {
+      background: rgba(36, 36, 38, 0.88);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+    body.dark .vocab-word-card.saved {
+      border-color: rgba(10, 132, 255, 0.45);
+      background: rgba(10, 132, 255, 0.09);
+    }
+
+    /* 표제어 + 발음기호 + 품사 */
+    .vocab-headword-section {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+      width: 100%;
+      padding-right: 0;
+    }
+    .vocab-word-title-group {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .vocab-word-text {
+      font-size: 21px;
+      font-weight: 800;
+      color: var(--apple-text);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    .vocab-word-ipa {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--apple-blue);
+      font-weight: 600;
+    }
+    body.dark .vocab-word-ipa {
+      color: #409CFF;
+    }
+    .vocab-word-pos-tag {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 5px;
+      background: rgba(0, 113, 227, 0.08);
+      color: var(--apple-blue);
+    }
+    body.dark .vocab-word-pos-tag {
+      background: rgba(10, 132, 255, 0.18);
+      color: #409CFF;
+    }
+    .vocab-word-ipa {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--apple-blue);
+      font-weight: 600;
+    }
+    .vocab-word-pos-tag {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 5px;
+      background: rgba(0, 113, 227, 0.08);
+      color: var(--apple-blue);
+    }
+    body.dark .vocab-word-pos-tag {
+      background: rgba(10, 132, 255, 0.18);
+      color: #409CFF;
+    }
+
+    /* 미니 오디오 버튼 캡슐 */
+    .vocab-audio-mini-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .btn-audio-mini {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      font-size: 12px;
+      font-weight: 700;
+      background: rgba(0, 113, 227, 0.09);
+      color: var(--apple-blue);
+      border: 1px solid rgba(0, 113, 227, 0.22);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-audio-mini svg {
+      width: 12px;
+      height: 12px;
+    }
+    .btn-audio-mini:hover {
+      background: var(--apple-blue);
       color: #FFFFFF;
-      border-color: var(--apple-emerald);
+    }
+    .btn-audio-mini.subtle {
+      background: rgba(0, 0, 0, 0.04);
+      color: var(--apple-text-secondary);
+      border-color: rgba(0, 0, 0, 0.07);
+    }
+    .btn-audio-mini.subtle:hover {
+      background: rgba(0, 0, 0, 0.1);
+      color: var(--apple-text);
+    }
+    body.dark .btn-audio-mini {
+      background: rgba(10, 132, 255, 0.18);
+      color: #409CFF;
+      border-color: rgba(10, 132, 255, 0.35);
+    }
+    body.dark .btn-audio-mini:hover {
+      background: #0A84FF;
+      color: #FFFFFF;
+    }
+    body.dark .btn-audio-mini.subtle {
+      background: rgba(255, 255, 255, 0.08);
+      color: #A1A1A6;
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+    body.dark .btn-audio-mini.subtle:hover {
+      background: rgba(255, 255, 255, 0.18);
+      color: #FFFFFF;
+    }
+
+    /* 핵심 뜻 */
+    .vocab-meaning-block {
+      margin-top: -2px;
+    }
+    .vocab-meaning-text {
+      font-size: 15.5px;
+      font-weight: 700;
+      color: var(--apple-text);
+      line-height: 1.45;
+    }
+
+    /* 자주 쓰이는 표현 (연어구) 카드 */
+    .vocab-collocation-card {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 11px;
+      border-radius: 9px;
+      background: rgba(0, 113, 227, 0.05);
+      border: 1px solid rgba(0, 113, 227, 0.14);
+      font-size: 13px;
+    }
+    body.dark .vocab-collocation-card {
+      background: rgba(10, 132, 255, 0.09);
+      border-color: rgba(10, 132, 255, 0.22);
+    }
+    .collocation-tag {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--apple-blue);
+      background: rgba(0, 113, 227, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    body.dark .collocation-tag {
+      color: #409CFF;
+      background: rgba(10, 132, 255, 0.2);
+    }
+    .collocation-phrase {
+      font-weight: 700;
+      color: var(--apple-text);
+      letter-spacing: -0.01em;
+    }
+
+    /* 기출 예문 블록 */
+    .vocab-example-block {
+      padding: 8px 12px;
+      border-left: 3px solid var(--apple-blue);
+      background: rgba(0, 0, 0, 0.02);
+      border-radius: 0 9px 9px 0;
+    }
+    body.dark .vocab-example-block {
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .example-en-sentence {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--apple-text);
+      line-height: 1.5;
+    }
+    .example-ko-translation {
+      font-size: 12.5px;
+      color: var(--apple-text-secondary);
+      margin-top: 3px;
+      line-height: 1.4;
+    }
+
+    /* 시험 출제 및 발음 팁 콜아웃 */
+    .vocab-exam-tip-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 9px;
+      background: rgba(255, 149, 0, 0.08);
+      border: 1px solid rgba(255, 149, 0, 0.22);
+      font-size: 12px;
+      line-height: 1.45;
+      color: #B26200;
+    }
+    body.dark .vocab-exam-tip-box {
+      background: rgba(255, 159, 10, 0.12);
+      border-color: rgba(255, 159, 10, 0.3);
+      color: #FFB340;
+    }
+    .tip-icon-label {
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .tip-content-text {
+      color: inherit;
+    }
+
+    /* 카드 하단 푸터 (만능문장 오디오 재생) */
+    .vocab-card-footer {
+      display: flex;
+      justify-content: flex-end;
+      padding-top: 8px;
+      border-top: 1px solid var(--apple-border-subtle);
     }
 
     /* =========================================================================
@@ -1918,22 +2646,15 @@ def main():
         gap: 8px;
         min-width: 0;
       }
-      .theme-switch {
-        width: 54px;
-        height: 29px;
+      .btn-theme-toggle {
+        width: 36px;
+        height: 36px;
+        border-radius: 12px;
       }
-      .theme-switch-thumb {
-        width: 21px;
-        height: 21px;
-        font-size: 11px;
-        left: 3px;
-      }
-      body.dark .theme-switch-thumb {
-        transform: translateX(25px);
-      }
-      .theme-switch-track-icons {
-        padding: 0 6px;
-        font-size: 10px;
+      .btn-theme-toggle .icon-moon,
+      .btn-theme-toggle .icon-sun {
+        width: 18px;
+        height: 18px;
       }
       .brand-main-title {
         font-size: 16px;
@@ -1984,24 +2705,15 @@ def main():
         padding: 0 12px;
         margin: 14px auto 120px;
       }
-      .filter-chips-row {
-        gap: 6px;
-        padding: 6px 10px;
+      .sub-segmented-bar {
         margin-bottom: 16px;
-        overflow-x: auto;
-        flex-wrap: nowrap;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
       }
-      .filter-chips-row::-webkit-scrollbar {
-        display: none;
+      .sub-segmented-control {
+        padding: 4px;
+        gap: 4px;
       }
-      .filter-chips-label {
-        font-size: 12.5px;
-        font-weight: 700;
-      }
-      .chip-filter-btn {
-        padding: 7px 14px;
+      .sub-segment-btn {
+        padding: 8px 14px;
         font-size: 13.5px;
         font-weight: 700;
         min-height: 38px;
@@ -2254,43 +2966,59 @@ def main():
         margin-top: 4px;
       }
 
-      /* 하단 고정 플로팅 바 (모바일 엄지손가락 최적화: 폰트 확대 & 시원한 터치감) */
+      /* 하단 고정 플로팅 바 (모바일 엄지손가락 최적화: 시원한 원형 버튼 & 큰 아이콘) */
       .floating-bottom-bar {
         bottom: max(16px, env(safe-area-inset-bottom, 16px));
-        width: calc(100% - 16px);
-        max-width: 480px;
-        padding: 7px 10px;
-        gap: 4px;
-        justify-content: space-between;
+        width: auto;
+        max-width: calc(100% - 20px);
+        padding: 5px 8px;
+        gap: 5px;
+        justify-content: center;
       }
       .btn-floating-drawer {
-        padding: 8px 12px;
-        font-size: 13px;
-        font-weight: 700;
-        min-height: 38px;
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        padding: 0;
+      }
+      .btn-floating-drawer svg {
+        width: 20px;
+        height: 20px;
       }
       .btn-floating-nav {
-        padding: 8px 11px;
-        font-size: 13.5px;
-        font-weight: 700;
-        min-height: 38px;
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        padding: 0;
+      }
+      .btn-floating-nav svg {
+        width: 20px;
+        height: 20px;
       }
       .floating-nav-info {
-        padding: 0 6px;
-        font-size: 12.5px;
+        padding: 0 4px;
+        font-size: 13px;
         font-weight: 700;
       }
       .btn-floating-stop {
-        padding: 8px 12px;
-        font-size: 13px;
-        font-weight: 700;
-        min-height: 38px;
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        padding: 0;
+      }
+      .btn-floating-stop svg {
+        width: 14px;
+        height: 14px;
       }
       .btn-floating-rate {
-        padding: 8px 11px;
-        font-size: 13px;
+        height: 36px;
+        min-width: 44px;
+        padding: 0 9px;
+        font-size: 12px;
         font-weight: 700;
-        min-height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
 
       /* 문항 목록 드로어 */
@@ -2313,32 +3041,83 @@ def main():
         font-size: 14px;
       }
 
-      /* 단어장 모달 */
+      /* 만능문장 & 빈출 단어장 모달 모바일 최적화 */
       .vocab-modal-window {
         width: 96vw;
-        height: 92vh;
-        border-radius: 20px;
+        height: 94vh;
+        border-radius: 22px;
       }
       .vocab-modal-header {
-        padding: 16px 18px;
-        flex-direction: column;
-        align-items: stretch;
+        padding: 12px 14px 10px;
         gap: 10px;
       }
+      .vocab-modal-title {
+        font-size: 16px;
+      }
+      .vocab-modal-saved-badge {
+        font-size: 11px;
+        padding: 1.5px 6px;
+      }
+      .mode-pill-btn {
+        padding: 5px 9px;
+        font-size: 12px;
+      }
+      .btn-ios-liquid-close {
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+        min-height: 34px;
+      }
+      .modal-segmented-bar {
+        padding: 8px 10px;
+      }
+      .modal-segment-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
       .vocab-search-input {
-        min-width: 100%;
-        font-size: 14.5px;
-        padding: 9px 14px;
+        font-size: 13.5px;
+        padding: 8px 14px 8px 36px;
       }
       .vocab-modal-body {
-        padding: 14px;
+        padding: 12px 10px;
       }
       .vocab-grid-cards {
         grid-template-columns: 1fr;
         gap: 10px;
       }
-      .vocab-item-card {
-        padding: 15px 16px;
+      .vocab-item-card,
+      .vocab-word-card {
+        padding: 14px 15px;
+        border-radius: 16px;
+      }
+      .vocab-card-top-bar {
+        gap: 6px;
+        margin-bottom: 6px;
+      }
+      .vocab-audio-mini-group {
+        gap: 3px;
+      }
+      .btn-audio-mini {
+        padding: 3px 7px;
+        font-size: 11px;
+      }
+      .btn-bookmark-icon {
+        width: 30px;
+        height: 30px;
+        min-width: 30px;
+        min-height: 30px;
+      }
+      .btn-bookmark-icon svg {
+        width: 15px;
+        height: 15px;
+      }
+      .magic-en-sentence {
+        font-size: 15.5px;
+        line-height: 1.45;
+      }
+      .vocab-word-text {
+        font-size: 19px;
       }
     }
   </style>
@@ -2349,23 +3128,32 @@ def main():
   <header class="apple-header">
     <div class="header-inner">
       <div class="brand-title-wrap">
-        <!-- 3. 다크모드 iOS 슬라이딩 스위치 토글 (상단 맨 왼쪽 ETS CBT MASTER 대신 배치) -->
-        <button type="button" class="theme-switch" id="themeSwitch" onclick="toggleDarkMode()" title="다크/라이트 모드 전환" aria-label="다크 모드 전환">
-          <div class="theme-switch-track-icons">
-            <span class="track-sun">☀️</span>
-            <span class="track-moon">🌙</span>
-          </div>
-          <div class="theme-switch-thumb" id="themeThumb">☀️</div>
-        </button>
         <h1 class="brand-main-title">토익스피킹 기출 마스터</h1>
       </div>
 
       <div class="header-actions">
-        <!-- 4. 오른쪽 상단에 단어장 배치 (모바일 축약 지원) -->
-        <button type="button" class="btn-vocab-toggle" onclick="toggleVocabModal()">
-          <span>📖</span>
-          <span class="btn-text-full"> 시계토끼 만능문장 187</span>
-          <span class="btn-text-short"> 만능문장</span>
+        <!-- 만능문장 187 & 빈출 단어장 모달 버튼 (이모티콘 없이 깔끔한 캡슐) -->
+        <button type="button" class="btn-vocab-toggle" onclick="toggleVocabModal()" title="만능문장 187 & 빈출 단어장">
+          <span class="btn-text-full">만능문장 187 & 빈출 단어장</span>
+          <span class="btn-text-short">만능문장 & 단어장</span>
+        </button>
+
+        <!-- 5. 다크모드 버튼 (제일 오른쪽 상단에 위치) -->
+        <button type="button" class="btn-theme-toggle" id="themeToggleBtn" onclick="toggleDarkMode()" title="다크/라이트 모드 전환" aria-label="다크 모드 전환">
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
         </button>
       </div>
     </div>
@@ -2381,25 +3169,37 @@ def main():
 
   <!-- 1 & 3. 화면 하단 고정 플로팅 바 (문항목록 | 이전 | 번호 | 다음 | 정지 | 1.0x | 0.75x 순서) -->
   <aside class="floating-bottom-bar" id="floatingBottomBar" aria-label="빠른 조작 바">
-    <button type="button" class="btn-floating-drawer" onclick="openDrawer()">
-      <span>☰</span>
-      <span class="btn-text-full"> 문항 목록</span>
-      <span class="btn-text-short"> 목록</span>
+    <!-- 1. 문항 목록 햄버거 버튼 (문구 없이 아이콘만 크게) -->
+    <button type="button" class="btn-floating-drawer" onclick="openDrawer()" aria-label="문항 목록 열기" title="문항 목록">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
     </button>
-    <div class="floating-divider" style="width: 1px; height: 16px; background: rgba(127,127,127,0.25); margin: 0 2px;"></div>
-    <button type="button" class="btn-floating-nav" id="btnFloatingPrev" onclick="navPrev()">
-      <span class="btn-text-full">← 이전</span>
-      <span class="btn-text-short">←</span>
+    <div class="floating-divider" style="width: 1px; height: 18px; background: rgba(127,127,127,0.22); margin: 0 1px;"></div>
+
+    <!-- 2. 이전 문항 버튼 (문구 없이 화살표만 크게) -->
+    <button type="button" class="btn-floating-nav" id="btnFloatingPrev" onclick="navPrev()" aria-label="이전 문항" title="이전 문항">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
     </button>
     <span class="floating-nav-info" id="floatingNavText">1 / 10</span>
-    <button type="button" class="btn-floating-nav" id="btnFloatingNext" onclick="navNext()">
-      <span class="btn-text-full">다음 →</span>
-      <span class="btn-text-short">→</span>
+
+    <!-- 2. 다음 문항 버튼 (문구 없이 화살표만 크게) -->
+    <button type="button" class="btn-floating-nav" id="btnFloatingNext" onclick="navNext()" aria-label="다음 문항" title="다음 문항">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
     </button>
-    <div class="floating-divider" style="width: 1px; height: 16px; background: rgba(127,127,127,0.25); margin: 0 2px;"></div>
-    <button type="button" class="btn-floating-stop" id="btnFloatingStop" onclick="stopSpeech()">
-      <span>⏹</span>
-      <span class="btn-text-full"> 정지</span>
+    <div class="floating-divider" style="width: 1px; height: 18px; background: rgba(127,127,127,0.22); margin: 0 1px;"></div>
+
+    <!-- 3. 발음 정지 버튼 (문구 없이 아이콘만 크게) -->
+    <button type="button" class="btn-floating-stop" id="btnFloatingStop" onclick="stopSpeech()" aria-label="발음 재생 정지" title="발음 정지">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <rect x="5.5" y="5.5" width="13" height="13" rx="2.5"></rect>
+      </svg>
     </button>
     <button type="button" class="btn-floating-rate" id="btnFloatingRate10" onclick="playSelectedRate(1.0)">1.0x</button>
     <button type="button" class="btn-floating-rate" id="btnFloatingRate075" onclick="playSelectedRate(0.75)">0.75x</button>
@@ -2415,22 +3215,52 @@ def main():
     <div class="drawer-scroll-body" id="drawerListContainer"></div>
   </aside>
 
-  <!-- 시계토끼 만능문장 187 리퀴드 글래스 모달 -->
+  <!-- 만능문장 187 & 빈출 단어장 리퀴드 글래스 모달 -->
   <div class="vocab-modal-backdrop" id="vocabModalBackdrop" onclick="handleModalBackdropClick(event)">
     <div class="vocab-modal-window" onclick="event.stopPropagation()">
       <div class="vocab-modal-header">
-        <div>
-          <h2 style="font-size: 18px; font-weight: 700; color: var(--apple-text);">🐰 시계토끼 만능문장 187 단어장</h2>
-          <p style="font-size: 12.5px; color: var(--apple-text-secondary); margin-top: 2px;">
-            Part 2~5 완벽 구성 · 원어민 Daniel 음성 고정 · 암기 완료: <strong id="modalMemCount">0</strong> / 187개
-          </p>
+        <div class="vocab-modal-title-row">
+          <div class="vocab-modal-title-wrap">
+            <h2 class="vocab-modal-title" id="modalMainTitle">만능문장 & 단어장</h2>
+            <span class="vocab-modal-saved-badge">저장됨 <strong id="modalSavedCount">0</strong></span>
+          </div>
+
+          <div class="vocab-modal-header-actions">
+            <!-- 4. X 버튼 왼쪽에 배치된 알약 형태 모드 전환 토글 -->
+            <div class="modal-mode-pill-toggle" id="modalMainModeBar" role="tablist">
+              <button type="button" class="mode-pill-btn active" id="btnModeMagic" onclick="setModalMainMode('magic')">
+                <span class="btn-text-full">만능문장 187</span>
+                <span class="btn-text-short">문장</span>
+              </button>
+              <button type="button" class="mode-pill-btn" id="btnModeVocab" onclick="setModalMainMode('vocab')">
+                <span class="btn-text-full">빈출 단어장 120</span>
+                <span class="btn-text-short">단어</span>
+              </button>
+            </div>
+
+            <!-- 1. iOS 정통 리퀴드 글래스 닫기(X) 버튼 -->
+            <button type="button" class="btn-ios-liquid-close" onclick="toggleVocabModal()" aria-label="닫기">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="17" y1="7" x2="7" y2="17"></line>
+                <line x1="7" y1="7" x2="17" y2="17"></line>
+              </svg>
+            </button>
+          </div>
         </div>
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <input type="search" class="vocab-search-input" id="modalVocabSearch" placeholder="표현, 한국어 뜻 검색..." oninput="handleModalSearch(this.value)" />
-          <button type="button" class="btn-drawer-close" onclick="toggleVocabModal()">✕</button>
+
+        <div class="vocab-modal-search-row">
+          <div class="vocab-search-wrap">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="search" class="vocab-search-input" id="modalVocabSearch" placeholder="단어, 표현, 한국어 뜻 검색..." oninput="handleModalSearch(this.value)" />
+          </div>
         </div>
       </div>
-      <div style="padding: 12px 26px; border-bottom: 1px solid var(--apple-border-subtle); display: flex; gap: 6px; flex-wrap: wrap;" id="modalPartFilterContainer"></div>
+      <div class="modal-segmented-bar">
+        <div class="modal-segmented-control" id="modalPartFilterContainer" role="tablist"></div>
+      </div>
       <div class="vocab-modal-body">
         <div class="vocab-grid-cards" id="modalVocabGrid"></div>
       </div>
@@ -2440,6 +3270,12 @@ def main():
   <script>
     const MASTER_DATA = __MASTER_JSON__;
     const MAGIC_DATA = __MAGIC_JSON__; // Part 2~5 순수 187개
+    const VOCAB_DATA = __VOCAB_JSON__; // Part 1~5 기출 빈출 단어 120개
+
+    // 이전 버전(암기체크) 호환 마이그레이션
+    const legacyMem = JSON.parse(localStorage.getItem('toeic_memorized_187') || '{}');
+    const initMagicSaved = JSON.parse(localStorage.getItem('toeic_saved_magic_sentences') || JSON.stringify(legacyMem));
+    const initVocabSaved = JSON.parse(localStorage.getItem('toeic_saved_vocab_words') || '{}');
 
     // 앱 상태
     const state = {
@@ -2451,9 +3287,11 @@ def main():
       p4AnswerOpenMap: {},
       p4QTextOpenMap: {}, // 파트 4 질문 지문 숨김/열림 맵
       isVocabModalOpen: false,
-      modalPartFilter: 'ALL',
+      modalMainMode: 'magic', // 'magic' | 'vocab'
+      modalPartFilter: 'ALL', // 'ALL' | 'SAVED' | '1' | '2' | '3' | '4' | '5'
       modalSearchQuery: '',
-      memorizedIds: JSON.parse(localStorage.getItem('toeic_memorized_187') || '{}'),
+      bookmarkedMagicIds: initMagicSaved,
+      bookmarkedVocabIds: initVocabSaved,
       playingKey: null,
       // 2. 발음 선택 상태
       selectedItemId: null,
@@ -2468,20 +3306,16 @@ def main():
       timerResponseLimit: 45
     };
 
-    // 3. 다크모드 iOS 스위치 토글 함수
+    // 3. 다크모드 버튼 토글 함수
     function toggleDarkMode() {
       state.isDarkMode = !state.isDarkMode;
       document.body.classList.toggle('dark', state.isDarkMode);
-      const thumb = document.getElementById('themeThumb');
-      if (thumb) thumb.textContent = state.isDarkMode ? '🌙' : '☀️';
       localStorage.setItem('toeic_dark_mode', state.isDarkMode ? 'true' : 'false');
     }
 
     function initTheme() {
       if (state.isDarkMode) {
         document.body.classList.add('dark');
-        const thumb = document.getElementById('themeThumb');
-        if (thumb) thumb.textContent = '🌙';
       }
     }
 
@@ -2510,8 +3344,8 @@ def main():
       window.speechSynthesis.onvoiceschanged = () => { getDanielVoice(); };
     }
 
-    // 2. 발음 선택형 칸 클릭 시 호출 함수
-    function selectSpeechItem(id, text) {
+    // 2. 발음 선택형 칸 클릭 시 호출 함수 (사용자가 칸 클릭 시 즉시 1.0x로 발음 재생)
+    function selectSpeechItem(id, text, autoPlay = false) {
       state.selectedItemId = id;
       state.selectedSpeechText = text;
       document.querySelectorAll('.speech-selectable').forEach(el => {
@@ -2521,6 +3355,25 @@ def main():
           el.classList.remove('selected');
         }
       });
+      if (autoPlay && text) {
+        speakText(text, 1.0, `select-${id}-1`);
+      }
+    }
+
+    // 만능문장 안전 음성 재생 (작은따옴표/특수문자 이스케이프 오류 원천 방지)
+    function speakMagicItem(id, rate = 1.0) {
+      const item = (MAGIC_DATA.items || []).find(it => it.id === id);
+      if (item && item.en) {
+        speakText(item.en, rate, `magic-${id}-${rate}`);
+      }
+    }
+
+    // 단어장 안전 음성 재생
+    function speakVocabItem(id, rate = 1.0) {
+      const item = (VOCAB_DATA.items || []).find(it => it.id === id);
+      if (item && item.word) {
+        speakText(item.word, rate, `vocab-${id}-${rate}`);
+      }
     }
 
     // 1. 하단 플로팅 바에서 1.0x 또는 0.75x 클릭 시 실행
@@ -2615,6 +3468,12 @@ def main():
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+    }
+
+    // 카테고리에서 파트 접두사(예: 'Part 3 ', '파트3 ') 완벽 제거
+    function cleanCategory(cat) {
+      if (!cat) return '';
+      return String(cat).replace(/^(Part|파트)\s*\d+\s*/i, '').trim();
     }
 
     // 5 & 6. 배속 캡슐 + 정지 버튼 렌더러
@@ -2796,19 +3655,18 @@ def main():
     function renderSegmentedTabs() {
       const totalP4Q = MASTER_DATA.part4.reduce((acc, s) => acc + (s.questions ? s.questions.length : 0), 0);
       const tabs = [
-        { id: 'part1', fullLabel: 'Part 1 지문 읽기', shortLabel: 'Part 1', count: MASTER_DATA.part1.length },
-        { id: 'part2', fullLabel: 'Part 2 사진 묘사', shortLabel: 'Part 2', count: MASTER_DATA.part2.length },
-        { id: 'part3', fullLabel: 'Part 3 질문 응답', shortLabel: 'Part 3', count: MASTER_DATA.part3.length },
-        { id: 'part4', fullLabel: 'Part 4 표 정보 안내', shortLabel: 'Part 4', count: `${MASTER_DATA.part4.length}세트` },
-        { id: 'part5', fullLabel: 'Part 5 의견 제시', shortLabel: 'Part 5', count: MASTER_DATA.part5.length }
+        { id: 'part1', label: 'Part 1', count: MASTER_DATA.part1.length },
+        { id: 'part2', label: 'Part 2', count: MASTER_DATA.part2.length },
+        { id: 'part3', label: 'Part 3', count: MASTER_DATA.part3.length },
+        { id: 'part4', label: 'Part 4', count: totalP4Q },
+        { id: 'part5', label: 'Part 5', count: MASTER_DATA.part5.length }
       ];
 
       const c = document.getElementById('partTabContainer');
       c.innerHTML = tabs.map(t => `
         <button type="button" class="segment-btn ${state.activePart === t.id ? 'active' : ''}"
           onclick="switchPart('${t.id}')">
-          <span class="btn-text-full">${t.fullLabel}</span>
-          <span class="btn-text-short">${t.shortLabel}</span>
+          <span class="segment-label">${t.label}</span>
           <span class="segment-count">${t.count}</span>
         </button>
       `).join('');
@@ -2989,33 +3847,35 @@ def main():
       if (state.selectedIndex >= items.length) state.selectedIndex = 0;
       const cur = items[state.selectedIndex];
 
-      // Part 3 유형 필터
+      // Part 3 유형 탭 바
       let filterBarHtml = '';
       if (state.activePart === 'part3') {
         filterBarHtml = `
-          <div class="filter-chips-row">
-            <span class="filter-chips-label">유형</span>
-            ${MASTER_DATA.part3Types.map(t => `
-              <button type="button" class="chip-filter-btn ${state.part3TypeFilter === t.id ? 'active' : ''}"
-                onclick="setPart3Filter('${t.id}')">
-                ${escapeHtml(t.name)}
-              </button>
-            `).join('')}
+          <div class="sub-segmented-bar">
+            <div class="sub-segmented-control" role="tablist">
+              ${MASTER_DATA.part3Types.map(t => `
+                <button type="button" role="tab" class="sub-segment-btn ${state.part3TypeFilter === t.id ? 'active' : ''}"
+                  onclick="setPart3Filter('${t.id}')">
+                  ${escapeHtml(t.name)}
+                </button>
+              `).join('')}
+            </div>
           </div>
         `;
       }
 
-      // 7. Part 4 표 속성별 필터
+      // 7. Part 4 표 속성별 탭 바
       if (state.activePart === 'part4') {
         filterBarHtml = `
-          <div class="filter-chips-row">
-            <span class="filter-chips-label">표 속성</span>
-            ${MASTER_DATA.part4TableTypes.map(t => `
-              <button type="button" class="chip-filter-btn ${state.part4TableTypeFilter === t.id ? 'active' : ''}"
-                onclick="setPart4TableFilter('${t.id}')">
-                ${escapeHtml(t.name)}
-              </button>
-            `).join('')}
+          <div class="sub-segmented-bar">
+            <div class="sub-segmented-control" role="tablist">
+              ${MASTER_DATA.part4TableTypes.map(t => `
+                <button type="button" role="tab" class="sub-segment-btn ${state.part4TableTypeFilter === t.id ? 'active' : ''}"
+                  onclick="setPart4TableFilter('${t.id}')">
+                  ${escapeHtml(t.name)}
+                </button>
+              `).join('')}
+            </div>
           </div>
         `;
       }
@@ -3073,7 +3933,7 @@ def main():
 
       return `
         <article class="glass-card">
-          <!-- 3. 제목이 길어도 우측에 딱 고정되는 헤더 -->
+          <!-- 3. 헤더 -->
           <div class="glass-card-header">
             <div class="header-text-group">
               <div class="card-meta-tags">
@@ -3082,19 +3942,15 @@ def main():
               </div>
               <h2 class="card-title">${escapeHtml(q.qNum)} — ${escapeHtml(q.topic)}</h2>
             </div>
-            <div class="card-nav-controls">
-              <button type="button" class="btn-circle-nav" ${idx === 0 ? 'disabled' : ''} onclick="selectItem(${idx - 1})">← 이전</button>
-              <button type="button" class="btn-circle-nav" ${idx >= total - 1 ? 'disabled' : ''} onclick="selectItem(${idx + 1})">다음 →</button>
-            </div>
           </div>
 
-          <!-- 4. 전체 지문 제일 위 노출 (클릭 시 발음 선택) -->
+          <!-- 4. 전체 지문 제일 위 노출 (클릭 시 발음 선택 및 즉시 재생) -->
           <div class="p1-full-passage-card speech-selectable ${state.selectedItemId === q.id + '-full' ? 'selected' : ''}"
                data-speech-id="${q.id}-full" data-speech-text="${escapeHtml(fullText)}"
-               onclick="selectSpeechItem('${q.id}-full', this.getAttribute('data-speech-text'))">
+               onclick="selectSpeechItem('${q.id}-full', this.getAttribute('data-speech-text'), true)">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
               <span style="font-size: 13px; font-weight: 700; color: var(--apple-text-secondary); text-transform: uppercase; letter-spacing: 0.04em;">
-                전체 지문 (Full Passage) · 클릭하여 선택
+                전체 지문 (Full Passage)
               </span>
             </div>
             <p class="p1-full-passage-text">${escapeHtml(fullText)}</p>
@@ -3103,16 +3959,16 @@ def main():
           <!-- 5. 실제 CBT 타이머 (준비 45초 ➔ 삐 ➔ 답변 45초) -->
           ${renderCbtTimerCard(q.prepTime || 45, q.responseTime || 45)}
 
-          <!-- 문장별 끊어 읽기 (클릭 시 발음 선택) -->
+          <!-- 문장별 끊어 읽기 (클릭 시 발음 선택 및 즉시 재생) -->
           <div style="margin-top: 30px;">
             <h3 style="font-size: 16px; font-weight: 700; color: var(--apple-text); margin-bottom: 12px;">
-              문장별 끊어 읽기 (클릭하여 선택 후 하단에서 재생)
+              문장별 끊어 읽기
             </h3>
             <div class="sentence-block-list">
               ${q.sentences.map((s, sIdx) => `
                 <div class="sentence-item-card speech-selectable ${state.selectedItemId === q.id + '-s' + sIdx ? 'selected' : ''}"
                      data-speech-id="${q.id}-s${sIdx}" data-speech-text="${escapeHtml(s.en)}"
-                     onclick="selectSpeechItem('${q.id}-s${sIdx}', this.getAttribute('data-speech-text'))">
+                     onclick="selectSpeechItem('${q.id}-s${sIdx}', this.getAttribute('data-speech-text'), true)">
                   <div style="flex: 1;">
                     <span class="sentence-step-badge">문장 ${sIdx + 1}</span>
                     <div class="sentence-en-text">${escapeHtml(s.en)}</div>
@@ -3124,16 +3980,16 @@ def main():
             </div>
           </div>
 
-          <!-- 핵심 발음 어휘 (클릭 시 발음 선택) -->
+          <!-- 핵심 발음 어휘 (클릭 시 발음 선택 및 즉시 재생) -->
           <div style="margin-top: 28px;">
             <h3 style="font-size: 15px; font-weight: 700; color: var(--apple-text); margin-bottom: 10px;">
-              핵심 발음 어휘 (클릭하여 선택)
+              핵심 발음 어휘
             </h3>
             <div class="vocab-capsule-grid">
               ${(q.vocabulary || []).map((v, vIdx) => `
                 <div class="vocab-capsule-card speech-selectable ${state.selectedItemId === q.id + '-v' + vIdx ? 'selected' : ''}"
                      data-speech-id="${q.id}-v${vIdx}" data-speech-text="${escapeHtml(v.word)}"
-                     onclick="selectSpeechItem('${q.id}-v${vIdx}', this.getAttribute('data-speech-text'))">
+                     onclick="selectSpeechItem('${q.id}-v${vIdx}', this.getAttribute('data-speech-text'), true)">
                   <div>
                     <div>
                       <span class="vocab-word-bold">${escapeHtml(v.word)}</span>
@@ -3148,7 +4004,8 @@ def main():
 
           ${q.readingTips ? `
             <div class="explanation-callout" style="margin-top: 24px;">
-              <strong>💡 Part 1 발음 팁:</strong> ${escapeHtml(q.readingTips)}
+              <div class="explanation-title">💡 Part 1 발음 팁</div>
+              <div class="explanation-body">${escapeHtml(q.readingTips)}</div>
             </div>
           ` : ''}
         </article>
@@ -3173,10 +4030,6 @@ def main():
               </div>
               <h2 class="card-title">${escapeHtml(q.qNum)} — ${escapeHtml(q.topic)}</h2>
             </div>
-            <div class="card-nav-controls">
-              <button type="button" class="btn-circle-nav" ${idx === 0 ? 'disabled' : ''} onclick="selectItem(${idx - 1})">← 이전</button>
-              <button type="button" class="btn-circle-nav" ${idx >= total - 1 ? 'disabled' : ''} onclick="selectItem(${idx + 1})">다음 →</button>
-            </div>
           </div>
 
           <!-- 1. Part 2 사진: 검은 레터박스 없이 카드 너비에 꽉 차게 렌더링 -->
@@ -3186,13 +4039,13 @@ def main():
             </div>
           ` : ''}
 
-          <!-- 8. 질문 프롬프트 (영어 질문만 노출, 클릭 시 발음 선택) -->
+          <!-- 8. 질문 프롬프트 (영어 질문만 노출, 클릭 시 발음 즉시 재생) -->
           ${q.question ? `
             <div class="question-prompt-card speech-selectable ${state.selectedItemId === q.id + '-prompt' ? 'selected' : ''}"
                  data-speech-id="${q.id}-prompt" data-speech-text="${escapeHtml(q.question)}"
-                 onclick="selectSpeechItem('${q.id}-prompt', this.getAttribute('data-speech-text'))">
+                 onclick="selectSpeechItem('${q.id}-prompt', this.getAttribute('data-speech-text'), true)">
               <div class="question-prompt-header">
-                <span class="prompt-tag-title">QUESTION PROMPT · 클릭하여 선택</span>
+                <span class="prompt-tag-title">QUESTION PROMPT</span>
               </div>
               <p class="question-prompt-en">${escapeHtml(q.question)}</p>
             </div>
@@ -3220,22 +4073,22 @@ def main():
             <!-- 모범답안 헤더 -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
               <h3 style="font-size: 15px; font-weight: 700; color: var(--apple-text);">
-                문장별 모범답안 (클릭하여 선택 후 하단에서 재생)
+                문장별 모범답안
               </h3>
               <button type="button" class="speech-selectable ${state.selectedItemId === q.id + '-all' ? 'selected' : ''}"
                       data-speech-id="${q.id}-all" data-speech-text="${escapeHtml(fullSentences)}"
-                      onclick="selectSpeechItem('${q.id}-all', this.getAttribute('data-speech-text'))"
+                      onclick="selectSpeechItem('${q.id}-all', this.getAttribute('data-speech-text'), true)"
                       style="padding: 4px 12px; font-size: 12px; font-weight: 600; border-radius: var(--radius-pill); border: 1px solid var(--apple-blue-border); background: var(--apple-blue-bg); color: var(--apple-blue);">
-                전체 모범답안 선택
+                전체 모범답안 듣기
               </button>
             </div>
 
-            <!-- 문장 목록 (클릭하여 발음 선택) -->
+            <!-- 문장 목록 (클릭하여 발음 즉시 재생) -->
             <div class="sentence-block-list">
               ${(q.sentences || []).map((s, sIdx) => `
                 <div class="sentence-item-card speech-selectable ${state.selectedItemId === q.id + '-ms' + sIdx ? 'selected' : ''}"
                      data-speech-id="${q.id}-ms${sIdx}" data-speech-text="${escapeHtml(s.en)}"
-                     onclick="selectSpeechItem('${q.id}-ms${sIdx}', this.getAttribute('data-speech-text'))">
+                     onclick="selectSpeechItem('${q.id}-ms${sIdx}', this.getAttribute('data-speech-text'), true)">
                   <div style="flex: 1;">
                     ${s.step ? `<span class="sentence-step-badge">${escapeHtml(s.step)}</span>` : ''}
                     <div class="sentence-en-text">${escapeHtml(s.en)}</div>
@@ -3245,17 +4098,17 @@ def main():
               `).join('')}
             </div>
 
-            <!-- 쓰인 만능문장 (클릭하여 발음 선택) -->
+            <!-- 2. 쓰인 만능문장 (적용된 만능문장 ➔ 다른 만능문장 표현으로 변경, 클릭하여 듣기 삭제) -->
             ${q.magicSentences && q.magicSentences.length > 0 ? `
               <div style="margin-top: 24px;">
                 <h3 style="font-size: 15px; font-weight: 700; color: var(--apple-text); margin-bottom: 10px;">
-                  적용된 만능문장 표현 (클릭하여 선택)
+                  다른 만능문장 표현
                 </h3>
                 <div style="display: flex; flex-direction: column; gap: 8px;">
                   ${q.magicSentences.map((m, mIdx) => `
                     <div class="magic-sentence-card speech-selectable ${state.selectedItemId === q.id + '-mg' + mIdx ? 'selected' : ''}"
                          data-speech-id="${q.id}-mg${mIdx}" data-speech-text="${escapeHtml(m.en)}"
-                         onclick="selectSpeechItem('${q.id}-mg${mIdx}', this.getAttribute('data-speech-text'))">
+                         onclick="selectSpeechItem('${q.id}-mg${mIdx}', this.getAttribute('data-speech-text'), true)">
                       <div>
                         <div class="magic-sentence-en">${escapeHtml(m.en)}</div>
                         <div class="magic-sentence-ko">${escapeHtml(m.ko)}</div>
@@ -3267,16 +4120,16 @@ def main():
               </div>
             ` : ''}
 
-            <!-- 핵심 어휘 (클릭하여 발음 선택) -->
+            <!-- 핵심 어휘 (클릭하여 발음 즉시 재생) -->
             <div style="margin-top: 24px;">
               <h3 style="font-size: 15px; font-weight: 700; color: var(--apple-text); margin-bottom: 10px;">
-                핵심 어휘 (클릭하여 선택)
+                핵심 어휘
               </h3>
               <div class="vocab-capsule-grid">
                 ${(q.vocabulary || []).map((v, vIdx) => `
                   <div class="vocab-capsule-card speech-selectable ${state.selectedItemId === q.id + '-vv' + vIdx ? 'selected' : ''}"
                        data-speech-id="${q.id}-vv${vIdx}" data-speech-text="${escapeHtml(v.word)}"
-                       onclick="selectSpeechItem('${q.id}-vv${vIdx}', this.getAttribute('data-speech-text'))">
+                       onclick="selectSpeechItem('${q.id}-vv${vIdx}', this.getAttribute('data-speech-text'), true)">
                     <div>
                       <div>
                         <span class="vocab-word-bold">${escapeHtml(v.word)}</span>
@@ -3289,10 +4142,11 @@ def main():
               </div>
             </div>
 
-            <!-- 해설 -->
+            <!-- 4. 고득점 해설 전략: 밑으로 줄 바꿔서 내용 적기 -->
             ${q.explanation ? `
               <div class="explanation-callout">
-                <strong>💡 고득점 해설 전략:</strong> ${escapeHtml(q.explanation)}
+                <div class="explanation-title">💡 고득점 해설 전략</div>
+                <div class="explanation-body">${escapeHtml(q.explanation)}</div>
               </div>
             ` : ''}
           </div>
@@ -3317,10 +4171,6 @@ def main():
                 <span class="tag-pill tag-time">표 읽기 45초 · 연계 문제 ${setObj.questions.length}문항</span>
               </div>
               <h2 class="card-title">${escapeHtml(setObj.setNum)} — ${escapeHtml(setObj.topic)}</h2>
-            </div>
-            <div class="card-nav-controls">
-              <button type="button" class="btn-circle-nav" ${idx === 0 ? 'disabled' : ''} onclick="selectItem(${idx - 1})">← 이전 표</button>
-              <button type="button" class="btn-circle-nav" ${idx >= total - 1 ? 'disabled' : ''} onclick="selectItem(${idx + 1})">다음 표 →</button>
             </div>
           </div>
 
@@ -3389,7 +4239,7 @@ def main():
                       <div style="display: flex; align-items: center; gap: 8px;">
                         <button type="button" class="speech-selectable ${state.selectedItemId === q.qId + '-prompt' ? 'selected' : ''}"
                                 data-speech-id="${q.qId}-prompt" data-speech-text="${escapeHtml(q.question)}"
-                                onclick="selectSpeechItem('${q.qId}-prompt', this.getAttribute('data-speech-text'))"
+                                onclick="selectSpeechItem('${q.qId}-prompt', this.getAttribute('data-speech-text'), true)"
                                 style="padding: 5px 13px; font-size: 12px; font-weight: 700; border-radius: var(--radius-pill); border: 1px solid var(--apple-blue-border); background: var(--apple-blue-bg); color: var(--apple-blue);">
                           질문듣기
                         </button>
@@ -3400,11 +4250,11 @@ def main():
                       </div>
                     </div>
 
-                    <!-- 4. [질문 보기] 버튼을 누르면 나타나는 지문 + 해석 (클릭하여 선택 가능) -->
+                    <!-- 4. [질문 보기] 버튼을 누르면 나타나는 지문 + 해석 (클릭하여 선택 및 재생) -->
                     <div id="p4-qtext-${q.qId}" class="p4-qtext-collapse ${isQTextOpen ? 'show' : ''}">
                       <div class="speech-selectable ${state.selectedItemId === q.qId + '-prompt' ? 'selected' : ''}"
                            data-speech-id="${q.qId}-prompt" data-speech-text="${escapeHtml(q.question)}"
-                           onclick="selectSpeechItem('${q.qId}-prompt', this.getAttribute('data-speech-text'))"
+                           onclick="selectSpeechItem('${q.qId}-prompt', this.getAttribute('data-speech-text'), true)"
                            style="padding: 12px 14px; margin-top: 8px; border-radius: var(--radius-md);">
                         <div style="font-size: 16px; font-weight: 700; color: var(--apple-text); line-height: 1.45;">
                           ${escapeHtml(q.question)}
@@ -3433,13 +4283,13 @@ def main():
                       <!-- 모범답안 헤더 -->
                       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                         <h4 style="font-size: 15px; font-weight: 700; color: var(--apple-text);">
-                          문장별 모범답안 (클릭하여 선택)
+                          문장별 모범답안
                         </h4>
                         <button type="button" class="speech-selectable ${state.selectedItemId === q.qId + '-all' ? 'selected' : ''}"
                                 data-speech-id="${q.qId}-all" data-speech-text="${escapeHtml(fullSentences)}"
-                                onclick="selectSpeechItem('${q.qId}-all', this.getAttribute('data-speech-text'))"
+                                onclick="selectSpeechItem('${q.qId}-all', this.getAttribute('data-speech-text'), true)"
                                 style="padding: 4px 12px; font-size: 12px; font-weight: 600; border-radius: var(--radius-pill); border: 1px solid var(--apple-blue-border); background: var(--apple-blue-bg); color: var(--apple-blue);">
-                          전체 모범답안 선택
+                          전체 모범답안 듣기
                         </button>
                       </div>
 
@@ -3448,7 +4298,7 @@ def main():
                         ${(q.sentences || []).map((s, sIdx) => `
                           <div class="sentence-item-card speech-selectable ${state.selectedItemId === q.qId + '-ms' + sIdx ? 'selected' : ''}"
                                data-speech-id="${q.qId}-ms${sIdx}" data-speech-text="${escapeHtml(s.en)}"
-                               onclick="selectSpeechItem('${q.qId}-ms${sIdx}', this.getAttribute('data-speech-text'))">
+                               onclick="selectSpeechItem('${q.qId}-ms${sIdx}', this.getAttribute('data-speech-text'), true)">
                             <div style="flex: 1;">
                               ${s.step ? `<span class="sentence-step-badge">${escapeHtml(s.step)}</span>` : ''}
                               <div class="sentence-en-text">${escapeHtml(s.en)}</div>
@@ -3458,14 +4308,17 @@ def main():
                         `).join('')}
                       </div>
 
-                      <!-- 만능문장 -->
+                      <!-- 2. 만능문장: 다른 만능문장 표현으로 변경 -->
                       ${q.magicSentences && q.magicSentences.length > 0 ? `
                         <div style="margin-top: 16px;">
+                          <h5 style="font-size: 14px; font-weight: 700; color: var(--apple-text); margin-bottom: 8px;">
+                            다른 만능문장 표현
+                          </h5>
                           <div style="display: flex; flex-direction: column; gap: 8px;">
                             ${q.magicSentences.map((m, mIdx) => `
                               <div class="magic-sentence-card speech-selectable ${state.selectedItemId === q.qId + '-mg' + mIdx ? 'selected' : ''}"
                                    data-speech-id="${q.qId}-mg${mIdx}" data-speech-text="${escapeHtml(m.en)}"
-                                   onclick="selectSpeechItem('${q.qId}-mg${mIdx}', this.getAttribute('data-speech-text'))">
+                                   onclick="selectSpeechItem('${q.qId}-mg${mIdx}', this.getAttribute('data-speech-text'), true)">
                                 <div>
                                   <div class="magic-sentence-en">${escapeHtml(m.en)}</div>
                                   <div class="magic-sentence-ko">${escapeHtml(m.ko)}</div>
@@ -3482,7 +4335,7 @@ def main():
                         ${(q.vocabulary || []).map((v, vIdx) => `
                           <div class="vocab-capsule-card speech-selectable ${state.selectedItemId === q.qId + '-vv' + vIdx ? 'selected' : ''}"
                                data-speech-id="${q.qId}-vv${vIdx}" data-speech-text="${escapeHtml(v.word)}"
-                               onclick="selectSpeechItem('${q.qId}-vv${vIdx}', this.getAttribute('data-speech-text'))">
+                               onclick="selectSpeechItem('${q.qId}-vv${vIdx}', this.getAttribute('data-speech-text'), true)">
                             <div>
                               <div>
                                 <span class="vocab-word-bold">${escapeHtml(v.word)}</span>
@@ -3496,7 +4349,8 @@ def main():
 
                       ${q.explanation ? `
                         <div class="explanation-callout" style="margin-top: 16px;">
-                          <strong>💡 답변 팁:</strong> ${escapeHtml(q.explanation)}
+                          <div class="explanation-title">💡 답변 팁</div>
+                          <div class="explanation-body">${escapeHtml(q.explanation)}</div>
                         </div>
                       ` : ''}
                     </div>
@@ -3510,13 +4364,14 @@ def main():
     }
 
     // =========================================================================
-    // 2. 단어장 모달
+    // 2. 만능문장 187 & 빈출 단어장 모달
     // =========================================================================
     function toggleVocabModal() {
       state.isVocabModalOpen = !state.isVocabModalOpen;
       const backdrop = document.getElementById('vocabModalBackdrop');
       if (state.isVocabModalOpen) {
         backdrop.classList.add('active');
+        updateModalModeButtonsUI();
         renderModalPartFilters();
         renderModalVocabList();
       } else {
@@ -3531,26 +4386,61 @@ def main():
       }
     }
 
+    function setModalMainMode(mode) {
+      if (state.modalMainMode === mode) return;
+      state.modalMainMode = mode;
+      state.modalPartFilter = 'ALL';
+      updateModalModeButtonsUI();
+      renderModalPartFilters();
+      renderModalVocabList();
+    }
+
+    function updateModalModeButtonsUI() {
+      const btnMagic = document.getElementById('btnModeMagic');
+      const btnVocab = document.getElementById('btnModeVocab');
+      if (btnMagic) btnMagic.classList.toggle('active', state.modalMainMode === 'magic');
+      if (btnVocab) btnVocab.classList.toggle('active', state.modalMainMode === 'vocab');
+    }
+
     function renderModalPartFilters() {
-      const filters = [
-        { id: 'ALL', label: `전체 (187)` },
-        { id: '2', label: 'Part 2 사진묘사 (49)' },
-        { id: '3', label: 'Part 3 질문응답 (47)' },
-        { id: '4', label: 'Part 4 표정보 (38)' },
-        { id: '5', label: 'Part 5 의견제시 (53)' }
-      ];
+      const isMagic = state.modalMainMode === 'magic';
+      const magicSavedCount = Object.keys(state.bookmarkedMagicIds).length;
+      const vocabSavedCount = Object.keys(state.bookmarkedVocabIds).length;
+
+      let filters = [];
+      if (isMagic) {
+        filters = [
+          { id: 'ALL', name: '전체', count: MAGIC_DATA.items.length },
+          { id: 'SAVED', name: '저장됨', count: magicSavedCount },
+          { id: '2', name: 'Part 2', count: 49 },
+          { id: '3', name: 'Part 3', count: 47 },
+          { id: '4', name: 'Part 4', count: 38 },
+          { id: '5', name: 'Part 5', count: 53 }
+        ];
+      } else {
+        filters = [
+          { id: 'ALL', name: '전체', count: VOCAB_DATA.items.length },
+          { id: 'SAVED', name: '저장됨', count: vocabSavedCount },
+          { id: '1', name: 'Part 1', count: 24 },
+          { id: '2', name: 'Part 2', count: 24 },
+          { id: '3', name: 'Part 3', count: 24 },
+          { id: '4', name: 'Part 4', count: 24 },
+          { id: '5', name: 'Part 5', count: 24 }
+        ];
+      }
 
       const c = document.getElementById('modalPartFilterContainer');
       c.innerHTML = filters.map(f => `
-        <button type="button" class="chip-filter-btn ${state.modalPartFilter === f.id ? 'active' : ''}"
+        <button type="button" role="tab" class="modal-segment-btn ${state.modalPartFilter === f.id ? 'active' : ''}"
           onclick="setModalPartFilter('${f.id}')">
-          ${f.label}
+          <span>${f.name}</span>
+          <span class="modal-segment-count">${f.count}</span>
         </button>
       `).join('');
     }
 
-    function setModalPartFilter(partId) {
-      state.modalPartFilter = partId;
+    function setModalPartFilter(filterId) {
+      state.modalPartFilter = filterId;
       renderModalPartFilters();
       renderModalVocabList();
     }
@@ -3560,62 +4450,208 @@ def main():
       renderModalVocabList();
     }
 
-    function toggleMemorize(id) {
-      if (state.memorizedIds[id]) {
-        delete state.memorizedIds[id];
+    function toggleBookmark(id, type) {
+      if (type === 'magic') {
+        if (state.bookmarkedMagicIds[id]) {
+          delete state.bookmarkedMagicIds[id];
+        } else {
+          state.bookmarkedMagicIds[id] = true;
+        }
+        localStorage.setItem('toeic_saved_magic_sentences', JSON.stringify(state.bookmarkedMagicIds));
       } else {
-        state.memorizedIds[id] = true;
+        if (state.bookmarkedVocabIds[id]) {
+          delete state.bookmarkedVocabIds[id];
+        } else {
+          state.bookmarkedVocabIds[id] = true;
+        }
+        localStorage.setItem('toeic_saved_vocab_words', JSON.stringify(state.bookmarkedVocabIds));
       }
-      localStorage.setItem('toeic_memorized_187', JSON.stringify(state.memorizedIds));
+      renderModalPartFilters();
       renderModalVocabList();
     }
 
     function renderModalVocabList() {
       const q = (state.modalSearchQuery || '').trim().toLowerCase();
-      const filtered = MAGIC_DATA.items.filter(item => {
-        if (state.modalPartFilter !== 'ALL' && String(item.part) !== state.modalPartFilter) return false;
-        if (q) {
-          return (
-            item.en.toLowerCase().includes(q) ||
-            item.ko.toLowerCase().includes(q) ||
-            item.category.toLowerCase().includes(q) ||
-            item.id.toLowerCase().includes(q) ||
-            (item.tip || '').toLowerCase().includes(q)
-          );
-        }
-        return true;
-      });
-
-      const memCount = Object.keys(state.memorizedIds).length;
-      document.getElementById('modalMemCount').textContent = memCount;
-
+      const isMagic = state.modalMainMode === 'magic';
       const grid = document.getElementById('modalVocabGrid');
-      grid.innerHTML = filtered.map(item => {
-        const isMem = !!state.memorizedIds[item.id];
-        return `
-          <div class="vocab-item-card ${isMem ? 'memorized' : ''}">
-            <div>
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <div style="display: flex; align-items: center; gap: 6px;">
-                  <span class="tag-pill tag-part" style="font-size: 11px;">Part ${item.part}</span>
-                  <span style="font-size: 12px; font-weight: 700; color: var(--apple-blue);">${item.id}</span>
-                  <span style="font-size: 12px; font-weight: 600; color: var(--apple-text-muted);">${escapeHtml(item.category)}</span>
+
+      if (isMagic) {
+        const savedCount = Object.keys(state.bookmarkedMagicIds).length;
+        document.getElementById('modalSavedCount').textContent = savedCount;
+
+        const filtered = MAGIC_DATA.items.filter(item => {
+          if (state.modalPartFilter === 'SAVED') {
+            if (!state.bookmarkedMagicIds[item.id]) return false;
+          } else if (state.modalPartFilter !== 'ALL' && String(item.part) !== state.modalPartFilter) {
+            return false;
+          }
+          if (q) {
+            return (
+              item.en.toLowerCase().includes(q) ||
+              item.ko.toLowerCase().includes(q) ||
+              item.category.toLowerCase().includes(q) ||
+              item.id.toLowerCase().includes(q) ||
+              (item.tip || '').toLowerCase().includes(q)
+            );
+          }
+          return true;
+        });
+
+        if (filtered.length === 0) {
+          grid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 48px 16px; color: var(--apple-text-muted);">
+              ${state.modalPartFilter === 'SAVED' ? '저장된 만능문장이 없습니다. 우측 상단 책갈피 아이콘을 눌러 저장해보세요.' : '검색 결과가 없습니다.'}
+            </div>
+          `;
+          return;
+        }
+
+        grid.innerHTML = filtered.map(item => {
+          const isSaved = !!state.bookmarkedMagicIds[item.id];
+          return `
+            <div class="vocab-item-card ${isSaved ? 'saved' : ''}">
+              <!-- 1. 상단 바: 좌측 ID/카테고리 + 우측 배속버튼 및 저장 (모바일 문장 겹침 0% 원천 차단) -->
+              <div class="vocab-card-top-bar">
+                <div class="vocab-card-meta-row">
+                  <span class="vocab-card-id">${item.id}</span>
+                  <span class="vocab-category-chip">${escapeHtml(cleanCategory(item.category))}</span>
                 </div>
-                <button type="button" class="btn-mem-toggle ${isMem ? 'checked' : ''}" onclick="toggleMemorize('${item.id}')">
-                  ${isMem ? '✓ 암기완료' : '암기 체크'}
-                </button>
+                <div class="vocab-card-actions">
+                  <div class="vocab-audio-mini-group">
+                    <button type="button" class="btn-audio-mini" onclick="speakMagicItem('${item.id}', 1.0)" title="1.0배속 발음 듣기">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                      <span>1.0x</span>
+                    </button>
+                    <button type="button" class="btn-audio-mini subtle" onclick="speakMagicItem('${item.id}', 0.75)" title="0.75배속 느리게 듣기">
+                      <span>0.75x</span>
+                    </button>
+                  </div>
+                  <button type="button" class="btn-bookmark-icon ${isSaved ? 'saved' : ''}" onclick="toggleBookmark('${item.id}', 'magic')" aria-label="저장" title="${isSaved ? '저장 해제' : '저장'}">
+                    <svg viewBox="0 0 24 24" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M19 21l-7-4.5L5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                  </button>
+                </div>
               </div>
-              <div style="font-size: 15.5px; font-weight: 700; color: var(--apple-text); line-height: 1.4;">${escapeHtml(item.en)}</div>
-              <div style="font-size: 13.5px; color: var(--apple-text-secondary); margin-top: 3px;">${escapeHtml(item.ko)}</div>
-              ${item.tip ? `<div style="font-size: 11.5px; color: var(--apple-amber); margin-top: 6px;">💡 ${escapeHtml(item.tip)}</div>` : ''}
+
+              <!-- 2. 본문 문장: 가로폭 100%를 여유롭게 활용하여 모바일에서 아무리 길어도 겹치지 않음 -->
+              <div class="magic-sentence-main-group">
+                <div class="magic-en-sentence">${escapeHtml(item.en)}</div>
+                <div class="magic-ko-translation">${escapeHtml(item.ko)}</div>
+              </div>
+
+              ${item.tip ? `
+                <div class="vocab-exam-tip-box">
+                  <span class="tip-icon-label">💡 만능 팁:</span>
+                  <span class="tip-content-text">${escapeHtml(item.tip)}</span>
+                </div>
+              ` : ''}
             </div>
-            <div style="display: flex; justify-content: flex-end; padding-top: 8px; border-top: 1px solid var(--apple-border-subtle); gap: 6px;">
-              <button type="button" class="btn-floating-rate" onclick="speakText('${escapeHtml(item.en)}', 1.0, 'v-${item.id}-1')">1.0x</button>
-              <button type="button" class="btn-floating-rate" onclick="speakText('${escapeHtml(item.en)}', 0.75, 'v-${item.id}-075')">0.75x</button>
+          `;
+        }).join('');
+      } else {
+        // 단어장 모드
+        const savedCount = Object.keys(state.bookmarkedVocabIds).length;
+        document.getElementById('modalSavedCount').textContent = savedCount;
+
+        const filtered = VOCAB_DATA.items.filter(item => {
+          if (state.modalPartFilter === 'SAVED') {
+            if (!state.bookmarkedVocabIds[item.id]) return false;
+          } else if (state.modalPartFilter !== 'ALL' && String(item.part) !== state.modalPartFilter) {
+            return false;
+          }
+          if (q) {
+            return (
+              item.word.toLowerCase().includes(q) ||
+              item.meaning.toLowerCase().includes(q) ||
+              (item.ipa || '').toLowerCase().includes(q) ||
+              item.category.toLowerCase().includes(q) ||
+              item.id.toLowerCase().includes(q) ||
+              (item.collocation || '').toLowerCase().includes(q) ||
+              (item.example || '').toLowerCase().includes(q) ||
+              (item.exampleKo || '').toLowerCase().includes(q) ||
+              (item.tip || '').toLowerCase().includes(q)
+            );
+          }
+          return true;
+        });
+
+        if (filtered.length === 0) {
+          grid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 48px 16px; color: var(--apple-text-muted);">
+              ${state.modalPartFilter === 'SAVED' ? '저장된 단어가 없습니다. 우측 상단 책갈피 아이콘을 눌러 저장해보세요.' : '검색 결과가 없습니다.'}
             </div>
-          </div>
-        `;
-      }).join('');
+          `;
+          return;
+        }
+
+        grid.innerHTML = filtered.map(item => {
+          const isSaved = !!state.bookmarkedVocabIds[item.id];
+          return `
+            <div class="vocab-word-card ${isSaved ? 'saved' : ''}">
+              <!-- 1. 상단 바: 좌측 ID/카테고리 + 우측 배속버튼 및 저장 (파트 표기 완전 삭제 및 겹침 0%) -->
+              <div class="vocab-card-top-bar">
+                <div class="vocab-card-meta-row">
+                  <span class="vocab-card-id">${item.id}</span>
+                  <span class="vocab-category-chip">${escapeHtml(cleanCategory(item.category))}</span>
+                </div>
+                <div class="vocab-card-actions">
+                  <div class="vocab-audio-mini-group">
+                    <button type="button" class="btn-audio-mini" onclick="speakVocabItem('${item.id}', 1.0)" title="1.0배속 발음 듣기">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                      <span>1.0x</span>
+                    </button>
+                    <button type="button" class="btn-audio-mini subtle" onclick="speakVocabItem('${item.id}', 0.75)" title="0.75배속 느리게 듣기">
+                      <span>0.75x</span>
+                    </button>
+                  </div>
+                  <button type="button" class="btn-bookmark-icon ${isSaved ? 'saved' : ''}" onclick="toggleBookmark('${item.id}', 'vocab')" aria-label="저장" title="${isSaved ? '저장 해제' : '저장'}">
+                    <svg viewBox="0 0 24 24" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M19 21l-7-4.5L5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 2. 표제어 + 발음기호 + 품사 (전체 너비 여유롭게 활용) -->
+              <div class="vocab-headword-section">
+                <span class="vocab-word-text">${escapeHtml(item.word)}</span>
+                <span class="vocab-word-ipa">${escapeHtml(item.ipa)}</span>
+                <span class="vocab-word-pos-tag">${escapeHtml(item.pos)}</span>
+              </div>
+
+              <!-- 3. 핵심 뜻 -->
+              <div class="vocab-meaning-block">
+                <div class="vocab-meaning-text">${escapeHtml(item.meaning)}</div>
+              </div>
+
+              <!-- 4. 자주 쓰이는 표현 (연어구) -->
+              ${item.collocation ? `
+                <div class="vocab-collocation-card">
+                  <span class="collocation-tag">자주 쓰이는 표현</span>
+                  <span class="collocation-phrase">${escapeHtml(item.collocation)}</span>
+                </div>
+              ` : ''}
+
+              <!-- 5. 실전 기출 예문 -->
+              ${item.example ? `
+                <div class="vocab-example-block">
+                  <div class="example-en-sentence">"${escapeHtml(item.example)}"</div>
+                  <div class="example-ko-translation">${escapeHtml(item.exampleKo || '')}</div>
+                </div>
+              ` : ''}
+
+              <!-- 6. 출제 포인트 및 발음 팁 -->
+              ${item.tip ? `
+                <div class="vocab-exam-tip-box">
+                  <span class="tip-icon-label">💡 기출 팁:</span>
+                  <span class="tip-content-text">${escapeHtml(item.tip)}</span>
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }).join('');
+      }
     }
 
     document.addEventListener('keydown', (e) => {
@@ -3634,7 +4670,12 @@ def main():
 </html>
 """
 
-    html_content = html_template.replace("__MASTER_JSON__", master_json_str).replace("__MAGIC_JSON__", magic_json_str)
+    html_content = (
+        html_template
+        .replace("__MASTER_JSON__", master_json_str)
+        .replace("__MAGIC_JSON__", magic_json_str)
+        .replace("__VOCAB_JSON__", vocab_json_str)
+    )
 
     target_path = ROOT / "toeicspk_cbt2026.html"
     target_path.write_text(html_content, encoding="utf-8")

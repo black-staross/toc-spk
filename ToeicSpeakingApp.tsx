@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import masterDataRaw from './data/toeic_parts_master.json';
 import magicDataRaw from './data/magic_187_vocab.json';
+import vocabDataRaw from './data/toeic_essential_vocab.json';
 
 interface SentenceItem {
   step?: string;
@@ -20,6 +21,20 @@ interface VocabItem {
   ipa: string;
   pos: string;
   meaning: string;
+}
+
+interface EssentialVocabItem {
+  id: string;
+  word: string;
+  ipa: string;
+  pos: string;
+  meaning: string;
+  part: number;
+  category: string;
+  collocation?: string;
+  example: string;
+  exampleKo: string;
+  tip?: string;
 }
 
 interface ScheduleTable {
@@ -106,8 +121,18 @@ const magicData = magicDataRaw as {
   items: MagicBookItem[];
 };
 
+const vocabData = vocabDataRaw as {
+  metadata: {
+    title: string;
+    totalCount?: number;
+    total_count?: number;
+  };
+  items: EssentialVocabItem[];
+};
+
 type ActivePart = 'part1' | 'part2' | 'part3' | 'part4' | 'part5';
 type TimerStatus = 'idle' | 'prep' | 'resp' | 'done';
+type ModalMainMode = 'magic' | 'vocab';
 
 export const ToeicSpeakingApp: React.FC = () => {
   const [activePart, setActivePart] = useState<ActivePart>('part1');
@@ -125,13 +150,24 @@ export const ToeicSpeakingApp: React.FC = () => {
   // 문항 목록 드로어 상태
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
 
-  // 시계토끼 만능문장 187 모달 상태
+  // 만능문장 187 & 빈출 단어장 모달 상태
   const [isVocabModalOpen, setIsVocabModalOpen] = useState<boolean>(false);
+  const [modalMainMode, setModalMainMode] = useState<ModalMainMode>('magic');
   const [modalPartFilter, setModalPartFilter] = useState<string>('ALL');
   const [modalSearch, setModalSearch] = useState<string>('');
-  const [memorizedIds, setMemorizedIds] = useState<Record<string, boolean>>(() => {
+
+  const [bookmarkedMagicIds, setBookmarkedMagicIds] = useState<Record<string, boolean>>(() => {
     try {
-      return JSON.parse(localStorage.getItem('toeic_memorized_187') || '{}');
+      const legacy = JSON.parse(localStorage.getItem('toeic_memorized_187') || '{}');
+      return JSON.parse(localStorage.getItem('toeic_saved_magic_sentences') || JSON.stringify(legacy));
+    } catch {
+      return {};
+    }
+  });
+
+  const [bookmarkedVocabIds, setBookmarkedVocabIds] = useState<Record<string, boolean>>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('toeic_saved_vocab_words') || '{}');
     } catch {
       return {};
     }
@@ -249,6 +285,26 @@ export const ToeicSpeakingApp: React.FC = () => {
     window.speechSynthesis.speak(utter);
   };
 
+  const speakMagicItem = (id: string, rate: number = 1.0) => {
+    const item = magicData.items.find(it => it.id === id);
+    if (item && item.en) {
+      speakText(item.en, rate, `magic-${id}-${rate}`);
+    }
+  };
+
+  const speakVocabItem = (id: string, rate: number = 1.0) => {
+    const item = vocabData.items.find(it => it.id === id);
+    if (item && item.word) {
+      speakText(item.word, rate, `vocab-${id}-${rate}`);
+    }
+  };
+
+  // 카테고리에서 파트 접두사(예: 'Part 3 ', '파트3 ') 완벽 제거
+  const cleanCategory = (cat: string) => {
+    if (!cat) return '';
+    return cat.replace(/^(Part|파트)\s*\d+\s*/i, '').trim();
+  };
+
   // 1 & 2. 하단 플로팅 바에서 현재 선택된 텍스트 재생
   const playSelectedRate = (rate: number) => {
     if (!selectedSpeechText) {
@@ -282,10 +338,13 @@ export const ToeicSpeakingApp: React.FC = () => {
     }
   };
 
-  // 2. 칸 선택 핸들러
-  const handleSelectSpeech = (id: string, text: string) => {
+  // 2. 칸 선택 핸들러 (autoPlay=true면 클릭 시 즉시 1.0x 원어민 음성 재생)
+  const handleSelectSpeech = (id: string, text: string, autoPlay: boolean = true) => {
     setSelectedItemId(id);
     setSelectedSpeechText(text);
+    if (autoPlay && text) {
+      speakText(text, 1.0, `select-${id}-1`);
+    }
   };
 
   // 2. 선택된 칸 구분 효과 클래스
@@ -422,20 +481,34 @@ export const ToeicSpeakingApp: React.FC = () => {
     setP4QuestionVisibleMap({});
   };
 
-  const toggleMemorized = (id: string) => {
-    setMemorizedIds(prev => {
-      const next = { ...prev };
-      if (next[id]) delete next[id];
-      else next[id] = true;
-      localStorage.setItem('toeic_memorized_187', JSON.stringify(next));
-      return next;
-    });
+  const toggleBookmark = (id: string, type: 'magic' | 'vocab') => {
+    if (type === 'magic') {
+      setBookmarkedMagicIds(prev => {
+        const next = { ...prev };
+        if (next[id]) delete next[id];
+        else next[id] = true;
+        localStorage.setItem('toeic_saved_magic_sentences', JSON.stringify(next));
+        return next;
+      });
+    } else {
+      setBookmarkedVocabIds(prev => {
+        const next = { ...prev };
+        if (next[id]) delete next[id];
+        else next[id] = true;
+        localStorage.setItem('toeic_saved_vocab_words', JSON.stringify(next));
+        return next;
+      });
+    }
   };
 
-  const filteredVocabItems = useMemo(() => {
+  const filteredMagicItems = useMemo(() => {
     const q = modalSearch.trim().toLowerCase();
     return magicData.items.filter(item => {
-      if (modalPartFilter !== 'ALL' && String(item.part) !== modalPartFilter) return false;
+      if (modalPartFilter === 'SAVED') {
+        if (!bookmarkedMagicIds[item.id]) return false;
+      } else if (modalPartFilter !== 'ALL' && String(item.part) !== modalPartFilter) {
+        return false;
+      }
       if (q) {
         return (
           item.en.toLowerCase().includes(q) ||
@@ -447,9 +520,35 @@ export const ToeicSpeakingApp: React.FC = () => {
       }
       return true;
     });
-  }, [modalPartFilter, modalSearch]);
+  }, [modalPartFilter, modalSearch, bookmarkedMagicIds]);
 
-  const memorizedCount = Object.keys(memorizedIds).length;
+  const filteredVocabItems = useMemo(() => {
+    const q = modalSearch.trim().toLowerCase();
+    return vocabData.items.filter(item => {
+      if (modalPartFilter === 'SAVED') {
+        if (!bookmarkedVocabIds[item.id]) return false;
+      } else if (modalPartFilter !== 'ALL' && String(item.part) !== modalPartFilter) {
+        return false;
+      }
+      if (q) {
+        return (
+          item.word.toLowerCase().includes(q) ||
+          item.meaning.toLowerCase().includes(q) ||
+          (item.ipa || '').toLowerCase().includes(q) ||
+          item.category.toLowerCase().includes(q) ||
+          item.id.toLowerCase().includes(q) ||
+          (item.collocation || '').toLowerCase().includes(q) ||
+          (item.example || '').toLowerCase().includes(q) ||
+          (item.exampleKo || '').toLowerCase().includes(q) ||
+          (item.tip || '').toLowerCase().includes(q)
+        );
+      }
+      return true;
+    });
+  }, [modalPartFilter, modalSearch, bookmarkedVocabIds]);
+
+  const savedMagicCount = Object.keys(bookmarkedMagicIds).length;
+  const savedVocabCount = Object.keys(bookmarkedVocabIds).length;
   const totalItemsCount = activePart === 'part4' ? activeP4Sets.length : activeQuestions.length;
   const totalP4Questions = useMemo(() => {
     return masterData.part4.reduce((sum, s) => sum + s.questions.length, 0);
@@ -461,45 +560,63 @@ export const ToeicSpeakingApp: React.FC = () => {
       <header className="sticky top-0 z-40 bg-white/80 dark:bg-[#141416]/85 backdrop-blur-2xl border-b border-black/5 dark:border-white/10 shadow-sm transition-all">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-4">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            {/* 3. 다크모드 iOS 슬라이딩 스위치 토글 (상단 맨 왼쪽 ETS CBT MASTER 대신 배치) */}
-            <button
-              type="button"
-              onClick={toggleDarkMode}
-              className={`relative inline-flex h-7 w-14 sm:h-8 sm:w-16 shrink-0 cursor-pointer items-center rounded-full p-1 transition-all duration-300 ease-out focus:outline-none border shadow-inner ${
-                isDarkMode
-                  ? 'bg-[#0A84FF] border-[#0A84FF]/80 shadow-blue-900/30 ring-2 ring-[#0A84FF]/20'
-                  : 'bg-[#E5E5EA] border-black/10 shadow-black/5'
-              }`}
-              title={isDarkMode ? '라이트 모드로 전환' : '다크 모드로 전환'}
-              aria-label="다크 모드 전환"
-            >
-              <span className="absolute inset-0 flex items-center justify-between px-1.5 sm:px-2 text-[10px] sm:text-[11px] select-none pointer-events-none">
-                <span className={`transition-opacity duration-200 ${isDarkMode ? 'opacity-85 text-white' : 'opacity-0'}`}>☀️</span>
-                <span className={`transition-opacity duration-200 ${isDarkMode ? 'opacity-0' : 'opacity-55 text-slate-700'}`}>🌙</span>
-              </span>
-              <span
-                className={`pointer-events-none flex h-5 w-5 sm:h-6 sm:w-6 transform items-center justify-center rounded-full bg-white shadow-md ring-0 transition duration-300 ease-out text-[11px] sm:text-xs ${
-                  isDarkMode ? 'translate-x-7 sm:translate-x-8 text-[#0A84FF]' : 'translate-x-0 text-amber-500'
-                }`}
-              >
-                {isDarkMode ? '🌙' : '☀️'}
-              </span>
-            </button>
             <h1 className="text-sm sm:text-lg font-bold tracking-tight text-[#1D1D1F] dark:text-[#F5F5F7] truncate">
               토익스피킹 기출 마스터
             </h1>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            {/* 4. 오른쪽 상단에 단어장 배치 */}
+            {/* 만능문장 187 & 빈출 단어장 모달 버튼 (이모티콘 없이 깔끔한 캡슐) */}
             <button
               type="button"
               onClick={() => setIsVocabModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20 dark:border-[#0A84FF]/30 hover:bg-[#0071E3]/20 transition-all hover:scale-105 shadow-sm whitespace-nowrap"
+              className="inline-flex items-center px-3 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20 dark:border-[#0A84FF]/30 hover:bg-[#0071E3] hover:text-white dark:hover:bg-[#0A84FF] dark:hover:text-white transition-all shadow-xs whitespace-nowrap"
             >
-              <span>📖</span>
-              <span className="hidden sm:inline">시계토끼 만능문장 187</span>
-              <span className="inline sm:hidden">만능문장</span>
+              <span className="hidden sm:inline">만능문장 187 & 빈출 단어장</span>
+              <span className="inline sm:hidden">만능문장 & 단어장</span>
+            </button>
+
+            {/* 5. 다크모드 버튼 (제일 오른쪽 상단에 위치) */}
+            <button
+              type="button"
+              onClick={toggleDarkMode}
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-[#F0F4F8] dark:bg-white/10 hover:bg-[#E4ECF4] dark:hover:bg-white/15 border border-[#0071E3]/15 dark:border-white/10 flex items-center justify-center text-[#1E293B] dark:text-[#FFD60A] transition-all duration-200 hover:scale-105 active:scale-95 shadow-xs shrink-0"
+              title={isDarkMode ? '라이트 모드로 전환' : '다크 모드로 전환'}
+              aria-label="다크 모드 전환"
+            >
+              {isDarkMode ? (
+                <svg
+                  className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="5" />
+                  <line x1="12" y1="1" x2="12" y2="3" />
+                  <line x1="12" y1="21" x2="12" y2="23" />
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                  <line x1="1" y1="12" x2="3" y2="12" />
+                  <line x1="21" y1="12" x2="23" y2="12" />
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </svg>
+              ) : (
+                <svg
+                  className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+              )}
             </button>
           </div>
         </div>
@@ -508,11 +625,11 @@ export const ToeicSpeakingApp: React.FC = () => {
         <div className="max-w-6xl mx-auto px-2 sm:px-4 pb-2.5 sm:pb-3">
           <div className="flex p-1 bg-black/5 dark:bg-white/10 rounded-full border border-black/5 dark:border-white/10 gap-1 overflow-x-auto no-scrollbar">
             {[
-              { id: 'part1' as ActivePart, fullLabel: 'Part 1 지문 읽기', shortLabel: 'Part 1', count: String(masterData.part1.length) },
-              { id: 'part2' as ActivePart, fullLabel: 'Part 2 사진 묘사', shortLabel: 'Part 2', count: String(masterData.part2.length) },
-              { id: 'part3' as ActivePart, fullLabel: 'Part 3 질문 응답', shortLabel: 'Part 3', count: String(masterData.part3.length) },
-              { id: 'part4' as ActivePart, fullLabel: 'Part 4 표 정보 안내', shortLabel: 'Part 4', count: `${masterData.part4.length}세트 (${totalP4Questions})` },
-              { id: 'part5' as ActivePart, fullLabel: 'Part 5 의견 제시', shortLabel: 'Part 5', count: String(masterData.part5.length) }
+              { id: 'part1' as ActivePart, label: 'Part 1', count: String(masterData.part1.length) },
+              { id: 'part2' as ActivePart, label: 'Part 2', count: String(masterData.part2.length) },
+              { id: 'part3' as ActivePart, label: 'Part 3', count: String(masterData.part3.length) },
+              { id: 'part4' as ActivePart, label: 'Part 4', count: String(totalP4Questions) },
+              { id: 'part5' as ActivePart, label: 'Part 5', count: String(masterData.part5.length) }
             ].map(tab => {
               const isActive = activePart === tab.id;
               return (
@@ -520,14 +637,13 @@ export const ToeicSpeakingApp: React.FC = () => {
                   key={tab.id}
                   type="button"
                   onClick={() => handleTabChange(tab.id)}
-                  className={`flex-1 min-w-[72px] sm:min-w-[120px] py-1.5 sm:py-2 px-2 sm:px-3 rounded-full text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 transition-all whitespace-nowrap ${
+                  className={`flex-1 min-w-[64px] sm:min-w-[90px] py-1.5 sm:py-2 px-2 sm:px-3 rounded-full text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 transition-all whitespace-nowrap ${
                     isActive
                       ? 'bg-white dark:bg-white/20 text-[#1D1D1F] dark:text-white shadow-sm font-bold'
                       : 'text-[#6E6E73] dark:text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white'
                   }`}
                 >
-                  <span className="hidden sm:inline">{tab.fullLabel}</span>
-                  <span className="inline sm:hidden">{tab.shortLabel}</span>
+                  <span>{tab.label}</span>
                   <span
                     className={`text-[10px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 rounded-full ${
                       isActive
@@ -546,28 +662,26 @@ export const ToeicSpeakingApp: React.FC = () => {
 
       {/* 메인 콘텐츠 영역 */}
       <main className="max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
-        {/* Part 3 유형 필터 칩 */}
+        {/* Part 3 유형 세그먼트 탭 바 */}
         {activePart === 'part3' && (
-          <div className="flex items-center gap-1.5 sm:gap-2 mb-6 p-1.5 sm:p-2 bg-white/70 dark:bg-[#1C1C1E]/75 backdrop-blur-md border border-black/5 dark:border-white/10 rounded-full shadow-xs overflow-x-auto no-scrollbar">
-            <span className="text-xs font-bold text-[#6E6E73] dark:text-[#8E8E93] px-2.5 shrink-0 select-none">
-              유형
-            </span>
+          <div className="flex p-1 mb-6 bg-black/5 dark:bg-white/10 rounded-full border border-black/5 dark:border-white/10 gap-1 overflow-x-auto no-scrollbar">
             {masterData.part3Types.map(t => {
               const isSelected = part3TypeFilter === t.id;
               return (
                 <button
                   key={t.id}
                   type="button"
+                  role="tab"
                   onClick={() => {
                     stopSpeech();
                     setPart3TypeFilter(t.id);
                     setSelectedIndex(0);
                     setIsAnswerOpen(false);
                   }}
-                  className={`px-3 sm:px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-semibold border transition-all whitespace-nowrap shrink-0 ${
+                  className={`flex-1 min-w-max py-2 px-3.5 rounded-full text-xs sm:text-sm font-semibold flex items-center justify-center transition-all whitespace-nowrap ${
                     isSelected
-                      ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] dark:border-[#0A84FF] font-bold shadow-md shadow-blue-500/25 -translate-y-0.5'
-                      : 'bg-white/90 dark:bg-[#2C2C2E] text-[#1D1D1F] dark:text-[#E5E5EA] border-black/10 dark:border-white/15 hover:border-[#0071E3]/40 hover:text-[#0071E3] dark:hover:text-white shadow-xs'
+                      ? 'bg-white dark:bg-[#0A84FF] text-[#0071E3] dark:text-white shadow-sm font-bold'
+                      : 'text-[#6E6E73] dark:text-[#AEAEB2] hover:text-[#1D1D1F] dark:hover:text-white'
                   }`}
                 >
                   {t.name}
@@ -577,18 +691,16 @@ export const ToeicSpeakingApp: React.FC = () => {
           </div>
         )}
 
-        {/* Part 4 표 속성별 필터 칩 */}
+        {/* Part 4 표 속성 세그먼트 탭 바 */}
         {activePart === 'part4' && (
-          <div className="flex items-center gap-1.5 sm:gap-2 mb-6 p-1.5 sm:p-2 bg-white/70 dark:bg-[#1C1C1E]/75 backdrop-blur-md border border-black/5 dark:border-white/10 rounded-full shadow-xs overflow-x-auto no-scrollbar">
-            <span className="text-xs font-bold text-[#6E6E73] dark:text-[#8E8E93] px-2.5 shrink-0 select-none">
-              표 속성
-            </span>
+          <div className="flex p-1 mb-6 bg-black/5 dark:bg-white/10 rounded-full border border-black/5 dark:border-white/10 gap-1 overflow-x-auto no-scrollbar">
             {masterData.part4TableTypes.map(t => {
               const isSelected = part4TableTypeFilter === t.id;
               return (
                 <button
                   key={t.id}
                   type="button"
+                  role="tab"
                   onClick={() => {
                     stopSpeech();
                     setPart4TableTypeFilter(t.id);
@@ -596,10 +708,10 @@ export const ToeicSpeakingApp: React.FC = () => {
                     setP4AnswerOpenMap({});
                     setP4QuestionVisibleMap({});
                   }}
-                  className={`px-3 sm:px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-semibold border transition-all whitespace-nowrap shrink-0 ${
+                  className={`flex-1 min-w-max py-2 px-3.5 rounded-full text-xs sm:text-sm font-semibold flex items-center justify-center transition-all whitespace-nowrap ${
                     isSelected
-                      ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] dark:border-[#0A84FF] font-bold shadow-md shadow-blue-500/25 -translate-y-0.5'
-                      : 'bg-white/90 dark:bg-[#2C2C2E] text-[#1D1D1F] dark:text-[#E5E5EA] border-black/10 dark:border-white/15 hover:border-[#0071E3]/40 hover:text-[#0071E3] dark:hover:text-white shadow-xs'
+                      ? 'bg-white dark:bg-[#0A84FF] text-[#0071E3] dark:text-white shadow-sm font-bold'
+                      : 'text-[#6E6E73] dark:text-[#AEAEB2] hover:text-[#1D1D1F] dark:hover:text-white'
                   }`}
                 >
                   {t.name}
@@ -626,31 +738,6 @@ export const ToeicSpeakingApp: React.FC = () => {
                   {currentStandardQ.qNum} — {currentStandardQ.topic}
                 </h2>
               </div>
-
-              <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0 w-full sm:w-auto">
-                <button
-                  type="button"
-                  disabled={selectedIndex === 0}
-                  onClick={() => {
-                    stopSpeech();
-                    setSelectedIndex(i => Math.max(0, i - 1));
-                  }}
-                  className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-full text-xs font-semibold border border-black/10 dark:border-white/15 bg-white/90 dark:bg-[#2C2C2E] hover:bg-white disabled:opacity-30 transition-all shadow-sm text-center"
-                >
-                  ← 이전
-                </button>
-                <button
-                  type="button"
-                  disabled={selectedIndex >= activeQuestions.length - 1}
-                  onClick={() => {
-                    stopSpeech();
-                    setSelectedIndex(i => Math.min(activeQuestions.length - 1, i + 1));
-                  }}
-                  className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-full text-xs font-semibold border border-black/10 dark:border-white/15 bg-white/90 dark:bg-[#2C2C2E] hover:bg-white disabled:opacity-30 transition-all shadow-sm text-center"
-                >
-                  다음 →
-                </button>
-              </div>
             </div>
 
             {/* 4. 전체 지문 제일 위 노출 (클릭 시 발음 선택) */}
@@ -664,7 +751,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                 >
                   <div className="flex items-center justify-between gap-3 mb-3">
                     <span className="text-xs font-bold text-[#6E6E73] dark:text-[#8E8E93] tracking-wide uppercase">
-                      전체 지문 (Full Passage) · 클릭하여 선택
+                      전체 지문 (Full Passage)
                     </span>
                   </div>
                   <p className="text-lg sm:text-xl font-medium text-[#1D1D1F] dark:text-white leading-relaxed">
@@ -677,7 +764,7 @@ export const ToeicSpeakingApp: React.FC = () => {
             {/* 문장별 끊어 읽기 (클릭 시 발음 선택) */}
             <div>
               <h3 className="text-base font-bold text-[#1D1D1F] dark:text-white mb-3">
-                문장별 끊어 읽기 (클릭하여 선택 후 하단에서 재생)
+                문장별 끊어 읽기
               </h3>
               <div className="space-y-3">
                 {currentStandardQ.sentences.map((s, sIdx) => {
@@ -709,7 +796,7 @@ export const ToeicSpeakingApp: React.FC = () => {
             {/* 핵심 발음 어휘 (클릭 시 발음 선택) */}
             <div className="mt-7">
               <h3 className="text-base font-bold text-[#1D1D1F] dark:text-white mb-3">
-                핵심 발음 어휘 (클릭하여 선택)
+                핵심 발음 어휘
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {currentStandardQ.vocabulary.map((v, vIdx) => {
@@ -736,8 +823,9 @@ export const ToeicSpeakingApp: React.FC = () => {
             </div>
 
             {currentStandardQ.readingTips && (
-              <div className="mt-6 p-4 rounded-2xl bg-[#34C759]/10 border border-[#34C759]/20 text-sm text-[#166534] dark:text-[#4ADE80]">
-                <strong>💡 Part 1 발음 팁:</strong> {currentStandardQ.readingTips}
+              <div className="mt-6 p-4 rounded-2xl bg-[#34C759]/10 border border-[#34C759]/20 text-sm text-[#166534] dark:text-[#4ADE80] flex flex-col gap-1.5">
+                <div className="font-bold">💡 Part 1 발음 팁</div>
+                <p className="leading-relaxed">{currentStandardQ.readingTips}</p>
               </div>
             )}
 
@@ -816,35 +904,6 @@ export const ToeicSpeakingApp: React.FC = () => {
                 <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-[#1D1D1F] dark:text-white truncate">
                   {currentP4Set.setNum} — {currentP4Set.topic}
                 </h2>
-              </div>
-
-              <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0 w-full sm:w-auto">
-                <button
-                  type="button"
-                  disabled={selectedIndex === 0}
-                  onClick={() => {
-                    stopSpeech();
-                    setSelectedIndex(i => Math.max(0, i - 1));
-                    setP4AnswerOpenMap({});
-                    setP4QuestionVisibleMap({});
-                  }}
-                  className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-full text-xs font-semibold border border-black/10 dark:border-white/15 bg-white/90 dark:bg-[#2C2C2E] hover:bg-white disabled:opacity-30 transition-all shadow-sm text-center"
-                >
-                  ← 이전 표
-                </button>
-                <button
-                  type="button"
-                  disabled={selectedIndex >= activeP4Sets.length - 1}
-                  onClick={() => {
-                    stopSpeech();
-                    setSelectedIndex(i => Math.min(activeP4Sets.length - 1, i + 1));
-                    setP4AnswerOpenMap({});
-                    setP4QuestionVisibleMap({});
-                  }}
-                  className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-full text-xs font-semibold border border-black/10 dark:border-white/15 bg-white/90 dark:bg-[#2C2C2E] hover:bg-white disabled:opacity-30 transition-all shadow-sm text-center"
-                >
-                  다음 표 →
-                </button>
               </div>
             </div>
 
@@ -983,7 +1042,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                         <div className="mt-4 pt-4 border-t border-black/5 dark:border-white/10 space-y-4">
                           <div className="flex items-center justify-between gap-3 pb-2 border-b border-black/5 dark:border-white/10">
                             <span className="text-xs font-bold text-[#1D1D1F] dark:text-white">
-                              문장별 모범답안 (클릭하여 선택)
+                              문장별 모범답안
                             </span>
                             <button
                               type="button"
@@ -998,7 +1057,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                             </button>
                           </div>
 
-                          {/* 문장별 모범답안 (클릭 시 선택) */}
+                          {/* 문장별 모범답안 */}
                           <div className="space-y-2.5">
                             {q.sentences.map((s, sIdx) => {
                               const sId = `${q.qId}-ms${sIdx}`;
@@ -1027,6 +1086,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                           {/* 만능문장 */}
                           {q.magicSentences && q.magicSentences.length > 0 && (
                             <div className="space-y-2">
+                              <h5 className="text-xs font-bold text-[#1D1D1F] dark:text-white">다른 만능문장 표현</h5>
                               {q.magicSentences.map((m, mIdx) => {
                                 const mId = `${q.qId}-mg${mIdx}`;
                                 return (
@@ -1077,8 +1137,9 @@ export const ToeicSpeakingApp: React.FC = () => {
                           </div>
 
                           {q.explanation && (
-                            <div className="p-3 rounded-xl bg-[#34C759]/10 border border-[#34C759]/20 text-xs sm:text-sm text-[#166534] dark:text-[#4ADE80]">
-                              <strong>💡 답변 팁:</strong> {q.explanation}
+                            <div className="p-3 rounded-xl bg-[#34C759]/10 border border-[#34C759]/20 text-xs sm:text-sm text-[#166534] dark:text-[#4ADE80] flex flex-col gap-1">
+                              <div className="font-bold">💡 답변 팁</div>
+                              <p className="leading-relaxed">{q.explanation}</p>
                             </div>
                           )}
                         </div>
@@ -1165,33 +1226,6 @@ export const ToeicSpeakingApp: React.FC = () => {
                   {currentStandardQ.qNum} — {currentStandardQ.topic}
                 </h2>
               </div>
-
-              <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0 w-full sm:w-auto">
-                <button
-                  type="button"
-                  disabled={selectedIndex === 0}
-                  onClick={() => {
-                    stopSpeech();
-                    setSelectedIndex(i => Math.max(0, i - 1));
-                    setIsAnswerOpen(false);
-                  }}
-                  className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-full text-xs font-semibold border border-black/10 dark:border-white/15 bg-white/90 dark:bg-[#2C2C2E] hover:bg-white disabled:opacity-30 transition-all shadow-sm text-center"
-                >
-                  ← 이전
-                </button>
-                <button
-                  type="button"
-                  disabled={selectedIndex >= activeQuestions.length - 1}
-                  onClick={() => {
-                    stopSpeech();
-                    setSelectedIndex(i => Math.min(activeQuestions.length - 1, i + 1));
-                    setIsAnswerOpen(false);
-                  }}
-                  className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-full text-xs font-semibold border border-black/10 dark:border-white/15 bg-white/90 dark:bg-[#2C2C2E] hover:bg-white disabled:opacity-30 transition-all shadow-sm text-center"
-                >
-                  다음 →
-                </button>
-              </div>
             </div>
 
             {/* Part 2 사진 (레터박스 없이 꽉 차게) */}
@@ -1215,7 +1249,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                 >
                   <div className="flex items-center justify-between gap-3 mb-2">
                     <span className="text-xs font-bold text-[#6E6E73] dark:text-[#8E8E93] tracking-wide uppercase">
-                      QUESTION PROMPT · 클릭하여 선택
+                      QUESTION PROMPT
                     </span>
                   </div>
                   <p className="text-base sm:text-lg font-bold text-[#1D1D1F] dark:text-white">
@@ -1256,7 +1290,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                   <div>
                     <div className="flex items-center justify-between gap-3 mb-3 pb-2 border-b border-black/5 dark:border-white/10">
                       <h3 className="text-base font-bold text-[#1D1D1F] dark:text-white">
-                        문장별 모범답안 (클릭하여 선택 후 하단에서 재생)
+                        문장별 모범답안
                       </h3>
                       <button
                         type="button"
@@ -1295,11 +1329,11 @@ export const ToeicSpeakingApp: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* 쓰인 만능문장 */}
+                  {/* 2. 쓰인 만능문장 (적용된 만능문장 ➔ 다른 만능문장 표현으로 변경, 안내문구 제거) */}
                   {currentStandardQ.magicSentences && currentStandardQ.magicSentences.length > 0 && (
                     <div>
                       <h3 className="text-base font-bold text-[#1D1D1F] dark:text-white mb-3">
-                        적용된 만능문장 표현 (클릭하여 선택)
+                        다른 만능문장 표현
                       </h3>
                       <div className="space-y-2">
                         {currentStandardQ.magicSentences.map((m, mIdx) => {
@@ -1327,7 +1361,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                   {/* 핵심 어휘 */}
                   <div>
                     <h3 className="text-base font-bold text-[#1D1D1F] dark:text-white mb-3">
-                      핵심 어휘 (클릭하여 선택)
+                      핵심 어휘
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       {currentStandardQ.vocabulary.map((v, vIdx) => {
@@ -1351,9 +1385,11 @@ export const ToeicSpeakingApp: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* 4. 고득점 해설 전략: 밑으로 줄 바꿔서 내용 적기 */}
                   {currentStandardQ.explanation && (
-                    <div className="p-4 rounded-2xl bg-[#34C759]/10 border border-[#34C759]/20 text-sm text-[#166534] dark:text-[#4ADE80]">
-                      <strong>💡 고득점 해설 전략:</strong> {currentStandardQ.explanation}
+                    <div className="p-4 rounded-2xl bg-[#34C759]/10 border border-[#34C759]/20 text-sm text-[#166534] dark:text-[#4ADE80] flex flex-col gap-1.5">
+                      <div className="font-bold">💡 고득점 해설 전략</div>
+                      <p className="leading-relaxed">{currentStandardQ.explanation}</p>
                     </div>
                   )}
                 </div>
@@ -1422,19 +1458,25 @@ export const ToeicSpeakingApp: React.FC = () => {
       </main>
 
       {/* 1 & 3. 하단 중앙 플로팅 바 (문항목록 | 이전 | 번호 | 다음 | 정지 | 1.0x | 0.75x 순서) */}
-      <aside className="fixed bottom-[calc(16px+env(safe-area-inset-bottom,12px))] sm:bottom-9 left-1/2 -translate-x-1/2 z-40 bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-2xl border border-white/90 dark:border-white/15 shadow-2xl rounded-full px-2.5 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between sm:justify-center gap-1.5 sm:gap-2.5 w-[calc(100%-16px)] max-w-xl sm:w-auto">
+      <aside className="fixed bottom-[calc(16px+env(safe-area-inset-bottom,12px))] sm:bottom-9 left-1/2 -translate-x-1/2 z-40 bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-2xl border border-white/90 dark:border-white/15 shadow-2xl rounded-full px-2.5 sm:px-3.5 py-1.5 sm:py-2 flex items-center justify-between sm:justify-center gap-1.5 sm:gap-2.5 w-auto max-w-[calc(100%-16px)]">
+        {/* 1. 문항 목록 햄버거 버튼 (문구 제거, 아이콘 크게) */}
         <button
           type="button"
           onClick={() => setIsDrawerOpen(true)}
-          className="px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold text-[#1D1D1F] dark:text-[#F5F5F7] bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 transition-all flex items-center gap-1 shadow-xs shrink-0"
+          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full text-[#1D1D1F] dark:text-[#F5F5F7] bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 transition-all flex items-center justify-center shrink-0"
+          title="문항 목록"
+          aria-label="문항 목록 열기"
         >
-          <span>☰</span>
-          <span className="hidden sm:inline"> 문항 목록</span>
-          <span className="inline sm:hidden"> 목록</span>
+          <svg className="w-5 h-5 sm:w-5.5 sm:h-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
         </button>
 
-        <div className="h-4 w-px bg-black/10 dark:bg-white/15 shrink-0"></div>
+        <div className="h-4.5 w-px bg-black/10 dark:bg-white/15 shrink-0"></div>
 
+        {/* 2. 이전 문항 버튼 (문구 제거, 화살표 크게) */}
         <button
           type="button"
           disabled={selectedIndex === 0}
@@ -1445,16 +1487,20 @@ export const ToeicSpeakingApp: React.FC = () => {
             setP4AnswerOpenMap({});
             setP4QuestionVisibleMap({});
           }}
-          className="px-2.5 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm font-bold text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-30 transition-all shrink-0"
+          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-25 transition-all flex items-center justify-center shrink-0"
+          title="이전 문항"
+          aria-label="이전 문항"
         >
-          <span className="hidden sm:inline">← 이전</span>
-          <span className="inline sm:hidden">←</span>
+          <svg className="w-5 h-5 sm:w-5.5 sm:h-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
         </button>
 
-        <span className="text-xs sm:text-sm font-bold text-[#1D1D1F] dark:text-[#F5F5F7] px-1 font-mono shrink-0">
+        <span className="text-xs sm:text-sm font-bold text-[#1D1D1F] dark:text-[#F5F5F7] px-1 font-mono shrink-0 select-none">
           <strong>{selectedIndex + 1}</strong> / {totalItemsCount}
         </span>
 
+        {/* 2. 다음 문항 버튼 (문구 제거, 화살표 크게) */}
         <button
           type="button"
           disabled={selectedIndex >= totalItemsCount - 1}
@@ -1465,34 +1511,39 @@ export const ToeicSpeakingApp: React.FC = () => {
             setP4AnswerOpenMap({});
             setP4QuestionVisibleMap({});
           }}
-          className="px-2.5 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm font-bold text-[#0071E3] dark:text-[#0A84FF] hover:bg-[#0071E3]/10 disabled:opacity-30 transition-all shrink-0"
+          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-25 transition-all flex items-center justify-center shrink-0"
+          title="다음 문항"
+          aria-label="다음 문항"
         >
-          <span className="hidden sm:inline">다음 →</span>
-          <span className="inline sm:hidden">→</span>
+          <svg className="w-5 h-5 sm:w-5.5 sm:h-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
         </button>
 
-        <div className="h-4 w-px bg-black/10 dark:bg-white/15 shrink-0"></div>
+        <div className="h-4.5 w-px bg-black/10 dark:bg-white/15 shrink-0"></div>
 
-        {/* 1. 정지 버튼 */}
+        {/* 3. 정지 버튼 (문구 제거, 아이콘 크게) */}
         <button
           type="button"
           onClick={stopSpeech}
-          className={`px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold border transition-all shrink-0 ${
+          className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border transition-all flex items-center justify-center shrink-0 ${
             playingKey
               ? 'bg-[#FF3B30] text-white border-[#FF3B30] shadow-md animate-pulse'
-              : 'bg-black/5 dark:bg-white/10 text-[#86868B] dark:text-[#A1A1A6] border-black/10 dark:border-white/15 hover:bg-black/10 hover:text-[#1D1D1F] dark:hover:text-white'
+              : 'bg-[#FF3B30]/10 text-[#FF3B30] border-[#FF3B30]/25 hover:bg-[#FF3B30]/20'
           }`}
-          title="음성 정지"
+          title="발음 재생 정지"
+          aria-label="발음 정지"
         >
-          <span>⏹</span>
-          <span className="hidden sm:inline"> 정지</span>
+          <svg className="w-4 h-4 sm:w-4.5 sm:h-4.5" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="5.5" y="5.5" width="13" height="13" rx="2.5"></rect>
+          </svg>
         </button>
 
-        {/* 1. 배속 토글 버튼 (1.0x, 0.75x) */}
+        {/* 1. 배속 토글 버튼 (1.0x, 0.75x) - 다른 버튼(38~40px)과 높이/정렬 완벽 일치 */}
         <button
           type="button"
           onClick={() => playSelectedRate(1.0)}
-          className={`px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold border transition-all shrink-0 ${
+          className={`h-9 sm:h-10 min-w-[44px] sm:min-w-[48px] px-3 sm:px-3.5 inline-flex items-center justify-center rounded-full text-xs sm:text-sm font-bold border transition-all shrink-0 ${
             playingKey === 'selected-1'
               ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] shadow-md shadow-blue-500/30'
               : 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/20 hover:bg-[#0071E3]/20'
@@ -1504,7 +1555,7 @@ export const ToeicSpeakingApp: React.FC = () => {
         <button
           type="button"
           onClick={() => playSelectedRate(0.75)}
-          className={`px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold border transition-all shrink-0 ${
+          className={`h-9 sm:h-10 min-w-[44px] sm:min-w-[48px] px-3 sm:px-3.5 inline-flex items-center justify-center rounded-full text-xs sm:text-sm font-bold border transition-all shrink-0 ${
             playingKey === 'selected-0.75'
               ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] shadow-md shadow-blue-500/30'
               : 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/20 hover:bg-[#0071E3]/20'
@@ -1593,139 +1644,374 @@ export const ToeicSpeakingApp: React.FC = () => {
         </div>
       )}
 
-      {/* 시계토끼 만능문장 187 리퀴드 글래스 모달 */}
+      {/* 만능문장 187 & 빈출 단어장 리퀴드 글래스 모달 */}
       {isVocabModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
           <div
             className="fixed inset-0 bg-black/40 backdrop-blur-md transition-opacity"
             onClick={() => setIsVocabModalOpen(false)}
           ></div>
-          <div className="relative w-full max-w-4xl h-[92vh] sm:h-[85vh] bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-3xl border border-white/80 dark:border-white/15 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden z-10 animate-in zoom-in-95 duration-200">
-            <div className="p-3.5 sm:p-5 border-b border-black/5 dark:border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-base sm:text-lg font-bold text-[#1D1D1F] dark:text-white">
-                    🐰 시계토끼 만능문장 187 단어장
+          <div className="relative w-full max-w-4xl h-[92vh] sm:h-[88vh] bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-3xl border border-white/80 dark:border-white/15 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden z-10 animate-in zoom-in-95 duration-200">
+            {/* 1. 모달 헤더 (타이틀 행 + 알약 모드 토글 + iOS 리퀴드 글래스 X + 전체 너비 검색창) */}
+            <div className="p-3.5 sm:p-5 border-b border-black/5 dark:border-white/10 flex flex-col gap-3 bg-white/70 dark:bg-[#1C1C1E]/70 backdrop-blur-2xl">
+              {/* 1단: 타이틀 행 */}
+              <div className="flex items-center justify-between gap-2.5">
+                <div className="flex items-baseline gap-2 min-w-0">
+                  <h2 className="text-base sm:text-lg font-bold text-[#1D1D1F] dark:text-white truncate">
+                    만능문장 & 단어장
                   </h2>
-                  <p className="text-[11px] sm:text-xs text-[#6E6E73] dark:text-[#8E8E93]">
-                    Part 2~5 구성 · 원어민 Daniel · 암기: <strong>{memorizedCount}</strong> / {magicData.items.length}개
-                  </p>
+                  <span className="text-[11px] sm:text-xs font-bold text-[#0071E3] dark:text-[#0A84FF] bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 px-2 py-0.5 rounded-full border border-[#0071E3]/20 dark:border-[#0A84FF]/30 whitespace-nowrap">
+                    저장됨 {modalMainMode === 'magic' ? savedMagicCount : savedVocabCount}
+                  </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setIsVocabModalOpen(false)}
-                  className="sm:hidden w-8 h-8 rounded-full bg-black/5 dark:bg-white/10 text-[#6E6E73] dark:text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white font-bold flex items-center justify-center text-sm"
-                >
-                  ✕
-                </button>
+
+                <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+                  {/* 4. X 버튼 왼쪽에 배치된 알약 형태 모드 전환 탭 */}
+                  <div className="inline-flex p-1 bg-black/5 dark:bg-white/10 rounded-full border border-black/5 dark:border-white/10 gap-1 backdrop-blur-md">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setModalMainMode('magic');
+                        setModalPartFilter('ALL');
+                      }}
+                      className={`py-1 sm:py-1.5 px-2.5 sm:px-3.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap ${
+                        modalMainMode === 'magic'
+                          ? 'bg-white dark:bg-[#0A84FF] text-[#0071E3] dark:text-white shadow-xs font-bold'
+                          : 'text-[#6E6E73] dark:text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white'
+                      }`}
+                    >
+                      <span className="hidden sm:inline">만능문장 187</span>
+                      <span className="inline sm:hidden">문장 187</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setModalMainMode('vocab');
+                        setModalPartFilter('ALL');
+                      }}
+                      className={`py-1 sm:py-1.5 px-2.5 sm:px-3.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap ${
+                        modalMainMode === 'vocab'
+                          ? 'bg-white dark:bg-[#0A84FF] text-[#0071E3] dark:text-white shadow-xs font-bold'
+                          : 'text-[#6E6E73] dark:text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white'
+                      }`}
+                    >
+                      <span className="hidden sm:inline">빈출 단어장 120</span>
+                      <span className="inline sm:hidden">단어 120</span>
+                    </button>
+                  </div>
+
+                  {/* 1. iOS 정통 리퀴드 글래스 닫기(X) 버튼 */}
+                  <button
+                    type="button"
+                    onClick={() => setIsVocabModalOpen(false)}
+                    className="w-9 h-9 rounded-full bg-[rgba(118,118,128,0.14)] dark:bg-[rgba(118,118,128,0.28)] backdrop-blur-xl border border-white/60 dark:border-white/15 text-[#3C3C43] dark:text-[#EBEBF5] hover:bg-[rgba(118,118,128,0.24)] dark:hover:bg-[rgba(118,118,128,0.42)] flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-sm shrink-0"
+                    aria-label="닫기"
+                  >
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="17" y1="7" x2="7" y2="17" />
+                      <line x1="7" y1="7" x2="17" y2="17" />
+                    </svg>
+                  </button>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              {/* 2단: 전체 너비 검색창 */}
+              <div className="relative w-full">
+                <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E93]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
                 <input
                   type="search"
                   value={modalSearch}
                   onChange={e => setModalSearch(e.target.value)}
-                  placeholder="영어 표현, 한국어 뜻 검색..."
-                  className="px-3.5 py-1.5 rounded-full border border-black/10 dark:border-white/15 text-xs bg-white dark:bg-[#2C2C2E] text-[#1D1D1F] dark:text-white w-full sm:min-w-[200px] outline-none"
+                  placeholder="단어, 표현, 한국어 뜻 검색..."
+                  className="w-full pl-10 pr-4 py-2 rounded-full border border-black/10 dark:border-white/15 text-xs sm:text-sm bg-white dark:bg-[#2C2C2E] text-[#1D1D1F] dark:text-white outline-none focus:border-[#0071E3] dark:focus:border-[#0A84FF] transition-all"
                 />
-                <button
-                  type="button"
-                  onClick={() => setIsVocabModalOpen(false)}
-                  className="hidden sm:flex w-7 h-7 rounded-full bg-black/5 dark:bg-white/10 text-[#6E6E73] dark:text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white font-bold items-center justify-center text-sm"
-                >
-                  ✕
-                </button>
               </div>
             </div>
 
-            {/* 단어장 파트 필터 (Part 1 제외) */}
-            <div className="px-3 sm:px-5 py-2 sm:py-2.5 border-b border-black/5 dark:border-white/10 flex flex-wrap gap-1.5 overflow-x-auto no-scrollbar">
-              {[
-                { id: 'ALL', label: `전체 (${magicData.items.length})` },
-                { id: '2', label: 'Part 2 사진 (49)' },
-                { id: '3', label: 'Part 3 질문 (47)' },
-                { id: '4', label: 'Part 4 표 (38)' },
-                { id: '5', label: 'Part 5 의견 (53)' }
-              ].map(f => (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => setModalPartFilter(f.id)}
-                  className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold border transition-all whitespace-nowrap ${
-                    modalPartFilter === f.id
-                      ? 'bg-[#1D1D1F] dark:bg-white text-white dark:text-[#1D1D1F] border-[#1D1D1F] dark:border-white'
-                      : 'bg-white/70 dark:bg-[#2C2C2E] text-[#6E6E73] dark:text-[#8E8E93] border-black/10 dark:border-white/10 hover:border-black/20'
-                  }`}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-3 sm:p-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-3">
-                {filteredVocabItems.map(item => {
-                  const isMem = !!memorizedIds[item.id];
+            {/* 파트 필터 세그먼트 컨트롤 탭 */}
+            <div className="px-3 sm:px-5 py-2.5 sm:py-3 border-b border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02]">
+              <div className="flex p-1 bg-black/5 dark:bg-white/10 rounded-full border border-black/5 dark:border-white/10 gap-1 overflow-x-auto no-scrollbar">
+                {(modalMainMode === 'magic'
+                  ? [
+                      { id: 'ALL', name: '전체', count: magicData.items.length },
+                      { id: 'SAVED', name: '저장됨', count: savedMagicCount },
+                      { id: '2', name: 'Part 2', count: 49 },
+                      { id: '3', name: 'Part 3', count: 47 },
+                      { id: '4', name: 'Part 4', count: 38 },
+                      { id: '5', name: 'Part 5', count: 53 }
+                    ]
+                  : [
+                      { id: 'ALL', name: '전체', count: vocabData.items.length },
+                      { id: 'SAVED', name: '저장됨', count: savedVocabCount },
+                      { id: '1', name: 'Part 1', count: 24 },
+                      { id: '2', name: 'Part 2', count: 24 },
+                      { id: '3', name: 'Part 3', count: 24 },
+                      { id: '4', name: 'Part 4', count: 24 },
+                      { id: '5', name: 'Part 5', count: 24 }
+                    ]
+                ).map(f => {
+                  const isActive = modalPartFilter === f.id;
                   return (
-                    <div
-                      key={item.id}
-                      className={`p-4 rounded-2xl border flex flex-col justify-between gap-2.5 transition-all ${
-                        isMem
-                          ? 'bg-[#34C759]/10 border-[#34C759]/30'
-                          : 'bg-white/80 dark:bg-[#242426] border-black/5 dark:border-white/10'
+                    <button
+                      key={f.id}
+                      type="button"
+                      role="tab"
+                      onClick={() => setModalPartFilter(f.id)}
+                      className={`flex-1 min-w-max py-1.5 px-3 rounded-full text-xs font-semibold flex items-center justify-center gap-1.5 transition-all whitespace-nowrap ${
+                        isActive
+                          ? 'bg-white dark:bg-[#0A84FF] text-[#0071E3] dark:text-white shadow-sm font-bold'
+                          : 'text-[#6E6E73] dark:text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white'
                       }`}
                     >
-                      <div>
-                        <div className="flex items-center justify-between gap-2 mb-2">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#1D1D1F] dark:bg-white text-white dark:text-[#1D1D1F]">
-                              Part {item.part}
-                            </span>
-                            <span className="text-xs font-bold text-[#0071E3] dark:text-[#0A84FF]">{item.id}</span>
-                            <span className="text-xs font-medium text-[#86868B] dark:text-[#A1A1A6]">
-                              {item.category}
-                            </span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => toggleMemorized(item.id)}
-                            className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border transition-all ${
-                              isMem
-                                ? 'bg-[#34C759] text-white border-[#34C759]'
-                                : 'bg-white dark:bg-[#2C2C2E] text-[#6E6E73] dark:text-[#8E8E93] border-black/10 dark:border-white/15'
-                            }`}
-                          >
-                            {isMem ? '✓ 암기완료' : '암기 체크'}
-                          </button>
-                        </div>
-                        <p className="text-base font-bold text-[#1D1D1F] dark:text-white leading-snug">{item.en}</p>
-                        <p className="text-xs sm:text-sm text-[#6E6E73] dark:text-[#8E8E93] mt-1">{item.ko}</p>
-                        {item.tip && (
-                          <p className="text-xs text-[#FF9500] font-medium mt-1.5">
-                            💡 {item.tip}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex justify-end pt-2 border-t border-black/5 dark:border-white/10 gap-2">
-                        <button
-                          type="button"
-                          onClick={() => speakText(item.en, 1.0, `v-${item.id}-1`)}
-                          className="px-2.5 py-1 rounded-full text-xs font-semibold bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20 hover:bg-[#0071E3]/20"
-                        >
-                          1.0x
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => speakText(item.en, 0.75, `v-${item.id}-075`)}
-                          className="px-2.5 py-1 rounded-full text-xs font-semibold bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20 hover:bg-[#0071E3]/20"
-                        >
-                          0.75x
-                        </button>
-                      </div>
-                    </div>
+                      <span>{f.name}</span>
+                      <span
+                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                          isActive
+                            ? 'bg-[#0071E3]/10 dark:bg-white/25 text-[#0071E3] dark:text-white'
+                            : 'bg-black/5 dark:bg-white/10 text-[#86868B] dark:text-[#8E8E93]'
+                        }`}
+                      >
+                        {f.count}
+                      </span>
+                    </button>
                   );
                 })}
               </div>
+            </div>
+
+            {/* 카드 목록 영역 */}
+            <div className="flex-1 overflow-y-auto p-3 sm:p-5">
+              {modalMainMode === 'magic' ? (
+                /* 만능문장 카드 그리드 */
+                filteredMagicItems.length === 0 ? (
+                  <div className="text-center py-16 text-xs sm:text-sm text-[#86868B] dark:text-[#8E8E93]">
+                    {modalPartFilter === 'SAVED'
+                      ? '저장된 만능문장이 없습니다. 우측 상단 책갈피 아이콘을 눌러 저장해보세요.'
+                      : '검색 결과가 없습니다.'}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-3.5">
+                    {filteredMagicItems.map(item => {
+                      const isSaved = !!bookmarkedMagicIds[item.id];
+                      return (
+                        <div
+                          key={item.id}
+                          className={`p-4 sm:p-4.5 rounded-2xl border flex flex-col justify-between gap-3 transition-all ${
+                            isSaved
+                              ? 'bg-[#0071E3]/5 dark:bg-[#0A84FF]/10 border-[#0071E3]/35 dark:border-[#0A84FF]/45'
+                              : 'bg-white/90 dark:bg-[#242426] border-black/5 dark:border-white/10'
+                          }`}
+                        >
+                          {/* 1. 상단 바: 좌측 ID/카테고리 + 우측 배속버튼 및 저장 (모바일 문장 겹침 0% 원천 차단) */}
+                          <div className="flex items-center justify-between gap-2.5 w-full">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-xs font-mono font-extrabold text-[#0071E3] dark:text-[#0A84FF]">{item.id}</span>
+                              <span className="text-[11px] font-medium text-[#6E6E73] dark:text-[#A1A1A6] bg-black/[0.04] dark:bg-white/[0.08] px-2 py-0.5 rounded-md">
+                                {cleanCategory(item.category)}
+                              </span>
+                            </div>
+
+                            <div className="inline-flex items-center gap-1.5 shrink-0">
+                              <div className="inline-flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => speakMagicItem(item.id, 1.0)}
+                                  className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20 hover:bg-[#0071E3]/20"
+                                  title="1.0배속 발음 듣기"
+                                >
+                                  <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M15.54 8.46a5 5 0 0 1 0 7.07" /></svg>
+                                  <span>1.0x</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => speakMagicItem(item.id, 0.75)}
+                                  className="px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-black/5 dark:bg-white/10 text-[#6E6E73] dark:text-[#8E8E93] hover:bg-black/10 dark:hover:bg-white/15"
+                                  title="0.75배속 느리게 듣기"
+                                >
+                                  0.75x
+                                </button>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() => toggleBookmark(item.id, 'magic')}
+                                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all ${
+                                  isSaved
+                                    ? 'bg-[#0071E3]/15 dark:bg-[#0A84FF]/25 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/30 scale-105'
+                                    : 'bg-black/5 dark:bg-white/10 text-[#86868B] dark:text-[#8E8E93] hover:text-[#0071E3] dark:hover:text-[#0A84FF]'
+                                }`}
+                                title={isSaved ? '저장 해제' : '저장'}
+                                aria-label="저장"
+                              >
+                                <svg
+                                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                                  viewBox="0 0 24 24"
+                                  fill={isSaved ? 'currentColor' : 'none'}
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <path d="M19 21l-7-4.5L5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* 2. 본문 문장: 가로폭 100% 온전히 활용 (모바일 겹침 원천 제거) */}
+                          <div className="w-full">
+                            <p className="text-base sm:text-[16.5px] font-bold text-[#1D1D1F] dark:text-white leading-snug">
+                              {item.en}
+                            </p>
+                            <p className="text-xs sm:text-sm text-[#6E6E73] dark:text-[#8E8E93] mt-1.5 leading-relaxed">
+                              {item.ko}
+                            </p>
+                          </div>
+
+                          {item.tip && (
+                            <div className="mt-1 p-2 rounded-xl bg-[#FF9500]/10 dark:bg-[#FF9500]/15 border border-[#FF9500]/25 text-xs text-[#B26200] dark:text-[#FFB340]">
+                              <span className="font-bold">💡 만능 팁:</span> {item.tip}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )
+              ) : (
+                /* 기출 빈출 단어장 그리드 (3. 인터넷 사전/단어장 프리미엄 레이아웃) */
+                filteredVocabItems.length === 0 ? (
+                  <div className="text-center py-16 text-xs sm:text-sm text-[#86868B] dark:text-[#8E8E93]">
+                    {modalPartFilter === 'SAVED'
+                      ? '저장된 단어가 없습니다. 우측 상단 책갈피 아이콘을 눌러 저장해보세요.'
+                      : '검색 결과가 없습니다.'}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-3.5">
+                    {filteredVocabItems.map(item => {
+                      const isSaved = !!bookmarkedVocabIds[item.id];
+                      return (
+                        <div
+                          key={item.id}
+                          className={`p-4 sm:p-4.5 rounded-2xl border flex flex-col justify-between gap-2.5 transition-all ${
+                            isSaved
+                              ? 'bg-[#0071E3]/5 dark:bg-[#0A84FF]/10 border-[#0071E3]/35 dark:border-[#0A84FF]/45'
+                              : 'bg-white/90 dark:bg-[#242426] border-black/5 dark:border-white/10'
+                          }`}
+                        >
+                          {/* 1. 상단 바: 좌측 ID/카테고리 + 우측 배속버튼 및 저장 (파트 표기 완전 삭제 및 겹침 0%) */}
+                          <div className="flex items-center justify-between gap-2.5 w-full">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-xs font-mono font-extrabold text-[#0071E3] dark:text-[#0A84FF]">{item.id}</span>
+                              <span className="text-[11px] font-medium text-[#6E6E73] dark:text-[#A1A1A6] bg-black/[0.04] dark:bg-white/[0.08] px-2 py-0.5 rounded-md">
+                                {cleanCategory(item.category)}
+                              </span>
+                            </div>
+
+                            <div className="inline-flex items-center gap-1.5 shrink-0">
+                              <div className="inline-flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => speakVocabItem(item.id, 1.0)}
+                                  className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20 hover:bg-[#0071E3]/20"
+                                  title="1.0배속 발음 듣기"
+                                >
+                                  <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M15.54 8.46a5 5 0 0 1 0 7.07" /></svg>
+                                  <span>1.0x</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => speakVocabItem(item.id, 0.75)}
+                                  className="px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-black/5 dark:bg-white/10 text-[#6E6E73] dark:text-[#8E8E93]"
+                                  title="0.75배속 느리게 듣기"
+                                >
+                                  0.75x
+                                </button>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() => toggleBookmark(item.id, 'vocab')}
+                                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all ${
+                                  isSaved
+                                    ? 'bg-[#0071E3]/15 dark:bg-[#0A84FF]/25 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/30 scale-105'
+                                    : 'bg-black/5 dark:bg-white/10 text-[#86868B] dark:text-[#8E8E93] hover:text-[#0071E3] dark:hover:text-[#0A84FF]'
+                                }`}
+                                title={isSaved ? '저장 해제' : '저장'}
+                                aria-label="저장"
+                              >
+                                <svg
+                                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                                  viewBox="0 0 24 24"
+                                  fill={isSaved ? 'currentColor' : 'none'}
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <path d="M19 21l-7-4.5L5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* 2. 표제어 + 발음기호 + 품사 (전체 너비 여유롭게 활용) */}
+                          <div className="flex items-baseline gap-2 flex-wrap w-full mt-1">
+                            <h3 className="text-xl font-extrabold text-[#1D1D1F] dark:text-white tracking-tight">
+                              {item.word}
+                            </h3>
+                            <span className="text-xs font-mono text-[#0071E3] dark:text-[#0A84FF] font-semibold">
+                              {item.ipa}
+                            </span>
+                            <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF]">
+                              {item.pos}
+                            </span>
+                          </div>
+
+                          {/* 3. 핵심 뜻 */}
+                          <p className="text-[15.5px] font-bold text-[#1D1D1F] dark:text-white mt-1 leading-snug">
+                            {item.meaning}
+                          </p>
+
+                            {/* 4. 자주 쓰이는 표현 (연어구) */}
+                            {item.collocation && (
+                              <div className="mt-2.5 flex items-center gap-2 p-2 rounded-xl bg-[#0071E3]/5 dark:bg-[#0A84FF]/10 border border-[#0071E3]/15 dark:border-[#0A84FF]/20 text-xs">
+                                <span className="font-bold text-[10.5px] px-1.5 py-0.5 rounded bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] whitespace-nowrap">
+                                  자주 쓰이는 표현
+                                </span>
+                                <span className="text-[#1D1D1F] dark:text-[#F5F5F7] font-bold tracking-tight">
+                                  {item.collocation}
+                                </span>
+                              </div>
+                            )}
+
+                            {/* 5. 실전 기출 예문 */}
+                            {item.example && (
+                              <div className="mt-2.5 p-2.5 rounded-r-xl border-l-[3px] border-[#0071E3] dark:border-[#0A84FF] bg-black/[0.02] dark:bg-white/[0.03] text-xs">
+                                <p className="text-[#1D1D1F] dark:text-[#F5F5F7] font-semibold leading-relaxed">
+                                  "{item.example}"
+                                </p>
+                                <p className="text-[#6E6E73] dark:text-[#8E8E93] mt-1">
+                                  {item.exampleKo}
+                                </p>
+                              </div>
+                            )}
+
+                            {/* 6. 출제 포인트 및 팁 */}
+                            {item.tip && (
+                              <div className="mt-2.5 p-2 rounded-xl bg-[#FF9500]/10 dark:bg-[#FF9500]/15 border border-[#FF9500]/25 text-xs text-[#B26200] dark:text-[#FFB340]">
+                                <span className="font-bold">💡 기출 팁:</span> {item.tip}
+                              </div>
+                            )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )
+              )}
             </div>
           </div>
         </div>
