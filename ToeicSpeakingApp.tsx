@@ -968,7 +968,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                           onClick={() => {
                             setP4AnswerOpenMap(prev => ({ ...prev, [q.qId]: !prev[q.qId] }));
                           }}
-                          className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                          className={`w-full sm:w-auto px-5 py-2.5 sm:py-2 rounded-full text-sm sm:text-base font-bold border transition-all text-center justify-center shadow-xs ${
                             isAnsOpen
                               ? 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/30'
                               : 'bg-white dark:bg-[#2C2C2E] text-[#1D1D1F] dark:text-white border-black/10 dark:border-white/15 hover:border-black/20'
@@ -1230,9 +1230,9 @@ export const ToeicSpeakingApp: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsAnswerOpen(prev => !prev)}
-                className={`px-4 py-2 rounded-full text-xs sm:text-sm font-semibold border transition-all ${
+                className={`w-full sm:w-auto px-5 py-3 sm:py-2.5 rounded-full text-sm sm:text-base font-bold border transition-all text-center justify-center shadow-xs ${
                   isAnswerOpen
-                    ? 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/30'
+                    ? 'bg-[#0071E3]/15 dark:bg-[#0A84FF]/25 text-[#0071E3] dark:text-[#64D2FF] border-[#0071E3]/40'
                     : 'bg-white dark:bg-[#2C2C2E] text-[#1D1D1F] dark:text-white border-black/10 dark:border-white/15 hover:border-black/20'
                 }`}
               >
@@ -1422,11 +1422,11 @@ export const ToeicSpeakingApp: React.FC = () => {
       </main>
 
       {/* 1 & 3. 하단 중앙 플로팅 바 (문항목록 | 이전 | 번호 | 다음 | 정지 | 1.0x | 0.75x 순서) */}
-      <aside className="fixed bottom-[calc(22px+env(safe-area-inset-bottom,16px))] sm:bottom-9 left-1/2 -translate-x-1/2 z-40 bg-white/90 dark:bg-[#1C1C1E]/95 backdrop-blur-2xl border border-white/90 dark:border-white/15 shadow-2xl rounded-full px-2.5 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between sm:justify-center gap-1.5 sm:gap-2.5 w-[calc(100%-20px)] max-w-lg sm:w-auto">
+      <aside className="fixed bottom-[calc(16px+env(safe-area-inset-bottom,12px))] sm:bottom-9 left-1/2 -translate-x-1/2 z-40 bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-2xl border border-white/90 dark:border-white/15 shadow-2xl rounded-full px-2.5 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between sm:justify-center gap-1.5 sm:gap-2.5 w-[calc(100%-16px)] max-w-xl sm:w-auto">
         <button
           type="button"
           onClick={() => setIsDrawerOpen(true)}
-          className="px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs font-bold text-[#1D1D1F] dark:text-[#F5F5F7] bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 transition-all flex items-center gap-1 shadow-xs shrink-0"
+          className="px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold text-[#1D1D1F] dark:text-[#F5F5F7] bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 transition-all flex items-center gap-1 shadow-xs shrink-0"
         >
           <span>☰</span>
           <span className="hidden sm:inline"> 문항 목록</span>
@@ -1445,13 +1445,13 @@ export const ToeicSpeakingApp: React.FC = () => {
             setP4AnswerOpenMap({});
             setP4QuestionVisibleMap({});
           }}
-          className="px-2 sm:px-3 py-1.5 rounded-full text-xs font-bold text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-30 transition-all shrink-0"
+          className="px-2.5 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm font-bold text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-30 transition-all shrink-0"
         >
           <span className="hidden sm:inline">← 이전</span>
           <span className="inline sm:hidden">←</span>
         </button>
 
-        <span className="text-[11px] sm:text-xs font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] px-0.5 sm:px-1 font-mono shrink-0">
+        <span className="text-xs sm:text-sm font-bold text-[#1D1D1F] dark:text-[#F5F5F7] px-1 font-mono shrink-0">
           <strong>{selectedIndex + 1}</strong> / {totalItemsCount}
         </span>
 
@@ -1465,7 +1465,7 @@ export const ToeicSpeakingApp: React.FC = () => {
             setP4AnswerOpenMap({});
             setP4QuestionVisibleMap({});
           }}
-          className="px-2 sm:px-3 py-1.5 rounded-full text-xs font-bold text-[#0071E3] dark:text-[#0A84FF] hover:bg-[#0071E3]/10 disabled:opacity-30 transition-all shrink-0"
+          className="px-2.5 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm font-bold text-[#0071E3] dark:text-[#0A84FF] hover:bg-[#0071E3]/10 disabled:opacity-30 transition-all shrink-0"
         >
           <span className="hidden sm:inline">다음 →</span>
           <span className="inline sm:hidden">→</span>
@@ -1477,10 +1477,10 @@ export const ToeicSpeakingApp: React.FC = () => {
         <button
           type="button"
           onClick={stopSpeech}
-          className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-bold border transition-all shrink-0 ${
+          className={`px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold border transition-all shrink-0 ${
             playingKey
               ? 'bg-[#FF3B30] text-white border-[#FF3B30] shadow-md animate-pulse'
-              : 'bg-black/5 dark:bg-white/10 text-[#86868B] border-black/10 dark:border-white/15 hover:bg-black/10 hover:text-[#1D1D1F] dark:hover:text-white'
+              : 'bg-black/5 dark:bg-white/10 text-[#86868B] dark:text-[#A1A1A6] border-black/10 dark:border-white/15 hover:bg-black/10 hover:text-[#1D1D1F] dark:hover:text-white'
           }`}
           title="음성 정지"
         >
@@ -1492,7 +1492,7 @@ export const ToeicSpeakingApp: React.FC = () => {
         <button
           type="button"
           onClick={() => playSelectedRate(1.0)}
-          className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-bold border transition-all shrink-0 ${
+          className={`px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold border transition-all shrink-0 ${
             playingKey === 'selected-1'
               ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] shadow-md shadow-blue-500/30'
               : 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/20 hover:bg-[#0071E3]/20'
@@ -1504,7 +1504,7 @@ export const ToeicSpeakingApp: React.FC = () => {
         <button
           type="button"
           onClick={() => playSelectedRate(0.75)}
-          className={`px-2.5 sm:px-3 py-1 rounded-full text-xs font-bold border transition-all shrink-0 ${
+          className={`px-2.5 sm:px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold border transition-all shrink-0 ${
             playingKey === 'selected-0.75'
               ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] shadow-md shadow-blue-500/30'
               : 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/20 hover:bg-[#0071E3]/20'

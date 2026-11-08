@@ -113,23 +113,30 @@ def main():
       --apple-bg-subtle: #121214;
       --apple-card-bg: rgba(28, 28, 30, 0.88);
       --apple-card-solid: #1C1C1E;
-      --apple-card-inner: rgba(44, 44, 46, 0.7);
-      --apple-border: rgba(255, 255, 255, 0.14);
-      --apple-border-subtle: rgba(255, 255, 255, 0.08);
+      --apple-card-inner: rgba(44, 44, 46, 0.75);
+      --apple-border: rgba(255, 255, 255, 0.16);
+      --apple-border-subtle: rgba(255, 255, 255, 0.1);
       --apple-text: #F5F5F7;
       --apple-text-secondary: #A1A1A6;
-      --apple-text-muted: #6E6E73;
+      --apple-text-muted: #86868B;
       --apple-blue: #0A84FF;
       --apple-blue-hover: #409CFF;
       --apple-blue-bg: rgba(10, 132, 255, 0.18);
-      --apple-blue-border: rgba(10, 132, 255, 0.4);
+      --apple-blue-border: rgba(10, 132, 255, 0.45);
+      --apple-red: #FF453A;
+      --apple-red-bg: rgba(255, 69, 58, 0.18);
+      --apple-red-border: rgba(255, 69, 58, 0.45);
+      --apple-emerald: #30D158;
+      --apple-emerald-bg: rgba(48, 209, 88, 0.15);
+      --apple-amber: #FF9F0A;
+      --apple-amber-bg: rgba(255, 159, 10, 0.15);
       background: radial-gradient(circle at 15% 15%, #1C1C1E 0%, #0D0D0E 60%, #000000 100%) !important;
       background-attachment: fixed !important;
       color: #F5F5F7 !important;
     }
     body.dark .apple-header {
-      background: rgba(20, 20, 22, 0.82) !important;
-      border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+      background: rgba(20, 20, 22, 0.86) !important;
+      border-bottom-color: rgba(255, 255, 255, 0.12) !important;
     }
     body.dark .apple-segmented-bar {
       background: rgba(20, 20, 22, 0.8) !important;
@@ -137,82 +144,423 @@ def main():
     }
     body.dark .segmented-control {
       background: rgba(255, 255, 255, 0.08) !important;
-      border-color: rgba(255, 255, 255, 0.08) !important;
+      border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    body.dark .segment-btn {
+      color: #A1A1A6 !important;
+    }
+    body.dark .segment-btn:hover:not(.active) {
+      color: #FFFFFF !important;
+      background: rgba(255, 255, 255, 0.06) !important;
     }
     body.dark .segment-btn.active {
-      background: rgba(255, 255, 255, 0.18) !important;
+      background: rgba(255, 255, 255, 0.2) !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5) !important;
+    }
+    body.dark .segment-count {
+      background: rgba(255, 255, 255, 0.12) !important;
+      color: #E5E5EA !important;
+    }
+    body.dark .segment-btn.active .segment-count {
+      background: #0A84FF !important;
       color: #FFFFFF !important;
     }
     body.dark .glass-card {
-      background: rgba(28, 28, 30, 0.85) !important;
-      border-color: rgba(255, 255, 255, 0.12) !important;
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
+      background: rgba(28, 28, 30, 0.88) !important;
+      border-color: rgba(255, 255, 255, 0.14) !important;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6) !important;
     }
+    body.dark .glass-card-header {
+      border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    body.dark .card-title {
+      color: #FFFFFF !important;
+    }
+
+    /* 다크모드 Part 1 전체 지문 & 끊어 읽기 문장 */
     body.dark .p1-full-passage-card {
       background: rgba(38, 38, 42, 0.95) !important;
+      border-color: rgba(255, 255, 255, 0.14) !important;
+    }
+    body.dark .p1-full-passage-text {
+      color: #FFFFFF !important;
+    }
+    body.dark .sentence-item-card {
+      background: rgba(44, 44, 48, 0.82) !important;
+      border-color: rgba(255, 255, 255, 0.12) !important;
+      color: #F5F5F7 !important;
+    }
+    body.dark .sentence-item-card:hover {
+      border-color: rgba(10, 132, 255, 0.5) !important;
+      background: rgba(52, 52, 56, 0.95) !important;
+    }
+    body.dark .sentence-step-badge {
+      background: rgba(10, 132, 255, 0.22) !important;
+      color: #64D2FF !important;
+      border: 1px solid rgba(10, 132, 255, 0.4) !important;
+    }
+    body.dark .sentence-en-text {
+      color: #FFFFFF !important;
+    }
+    body.dark .sentence-chunk-text {
+      background: rgba(10, 132, 255, 0.16) !important;
+      color: #64D2FF !important;
+      border: 1px solid rgba(10, 132, 255, 0.3) !important;
+    }
+    body.dark .sentence-ko-text {
+      color: #A1A1A6 !important;
+    }
+
+    /* 다크모드 질문 프롬프트 & 지문 */
+    body.dark .question-prompt-card {
+      background: rgba(38, 38, 42, 0.92) !important;
+      border-color: rgba(255, 255, 255, 0.14) !important;
+    }
+    body.dark .prompt-tag-title {
+      color: #A1A1A6 !important;
+    }
+    body.dark .question-prompt-en {
+      color: #FFFFFF !important;
+    }
+
+    /* 다크모드 모범답안 토글 & 해석 배너 */
+    body.dark .btn-toggle-answer {
+      background: rgba(44, 44, 48, 0.9) !important;
+      color: #F5F5F7 !important;
+      border-color: rgba(255, 255, 255, 0.18) !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+    }
+    body.dark .btn-toggle-answer:hover {
+      background: rgba(58, 58, 62, 1) !important;
+      border-color: rgba(255, 255, 255, 0.3) !important;
+      color: #FFFFFF !important;
+    }
+    body.dark .btn-toggle-answer.opened {
+      background: rgba(10, 132, 255, 0.24) !important;
+      color: #64D2FF !important;
+      border-color: rgba(10, 132, 255, 0.5) !important;
+    }
+    body.dark .answer-collapse-box {
+      border-top-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    body.dark .question-translation-banner {
+      background: rgba(255, 255, 255, 0.06) !important;
+      border-left: 4px solid #0A84FF !important;
+      color: #D1D1D6 !important;
+    }
+    body.dark .question-translation-banner strong {
+      color: #64D2FF !important;
+    }
+
+    /* 다크모드 만능문장 카드 (Golden Formula) */
+    body.dark .magic-sentence-card {
+      background: rgba(255, 159, 10, 0.14) !important;
+      border-color: rgba(255, 159, 10, 0.35) !important;
+    }
+    body.dark .magic-sentence-en {
+      color: #FFD60A !important;
+    }
+    body.dark .magic-sentence-ko {
+      color: #FFE680 !important;
+    }
+    body.dark .magic-sentence-tip {
+      color: #FBBF24 !important;
+    }
+
+    /* 다크모드 핵심 어휘 카드 */
+    body.dark .vocab-capsule-card {
+      background: rgba(44, 44, 48, 0.8) !important;
       border-color: rgba(255, 255, 255, 0.12) !important;
     }
-    body.dark .floating-bottom-bar {
-      background: rgba(28, 28, 30, 0.92) !important;
-      border-color: rgba(255, 255, 255, 0.16) !important;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5) !important;
+    body.dark .vocab-capsule-card:hover {
+      border-color: rgba(10, 132, 255, 0.45) !important;
+      background: rgba(52, 52, 58, 0.95) !important;
     }
-    body.dark .part4-clean-table thead tr {
-      background: #2C2C2E !important;
-      color: #F5F5F7 !important;
+    body.dark .vocab-word-bold {
+      color: #FFFFFF !important;
     }
-    body.dark .part4-clean-table tbody tr {
+    body.dark .vocab-ipa-subtle {
+      color: #64D2FF !important;
+    }
+    body.dark .vocab-mean-subtle {
+      color: #A1A1A6 !important;
+    }
+
+    /* 다크모드 해설 & 발음 팁 콜아웃 */
+    body.dark .explanation-callout {
+      background: rgba(48, 209, 88, 0.14) !important;
+      border-color: rgba(48, 209, 88, 0.35) !important;
+      color: #A7F3D0 !important;
+    }
+    body.dark .explanation-callout strong {
+      color: #30D158 !important;
+    }
+
+    /* 다크모드 Part 4 표 & LC 카드 */
+    body.dark .part4-table-card {
       background: #1C1C1E !important;
-      color: #F5F5F7 !important;
+      border-color: rgba(255, 255, 255, 0.14) !important;
     }
-    body.dark .part4-clean-table tbody tr:hover {
-      background: rgba(255, 255, 255, 0.04) !important;
+    body.dark .table-top-banner {
+      background: #2C2C2E !important;
+      color: #FFFFFF !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
     }
     body.dark .table-meta-pills {
       background: #242426 !important;
-      border-color: rgba(255, 255, 255, 0.08) !important;
-      color: #A1A1A6 !important;
-    }
-    body.dark .glass-drawer {
-      background: rgba(28, 28, 30, 0.95) !important;
-      border-right-color: rgba(255, 255, 255, 0.12) !important;
-    }
-    body.dark .vocab-modal-window {
-      background: rgba(28, 28, 30, 0.96) !important;
-      border-color: rgba(255, 255, 255, 0.15) !important;
-    }
-    body.dark .vocab-search-input {
-      background: rgba(44, 44, 46, 0.8) !important;
-      border-color: rgba(255, 255, 255, 0.15) !important;
-      color: #F5F5F7 !important;
-    }
-    body.dark .question-prompt-card {
-      background: rgba(38, 38, 42, 0.9) !important;
       border-color: rgba(255, 255, 255, 0.1) !important;
+      color: #D1D1D6 !important;
+    }
+    body.dark .table-meta-pills strong {
+      color: #FFFFFF !important;
+    }
+    body.dark .part4-clean-table th {
+      background: #2A2A2D !important;
+      color: #FFFFFF !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+    }
+    body.dark .part4-clean-table td {
+      background: #1C1C1E !important;
+      color: #E5E5EA !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+    body.dark .part4-clean-table td strong {
+      color: #FFFFFF !important;
+    }
+    body.dark .part4-clean-table tbody tr:hover td {
+      background: rgba(255, 255, 255, 0.05) !important;
     }
     body.dark .p4-lc-question-card {
-      background: rgba(38, 38, 42, 0.8) !important;
-      border-color: rgba(255, 255, 255, 0.1) !important;
+      background: rgba(38, 38, 42, 0.88) !important;
+      border-color: rgba(255, 255, 255, 0.12) !important;
+    }
+    body.dark .btn-toggle-qtext {
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: #F5F5F7 !important;
+      border-color: rgba(255, 255, 255, 0.16) !important;
+    }
+    body.dark .btn-toggle-qtext:hover {
+      background: rgba(255, 255, 255, 0.15) !important;
+      color: #FFFFFF !important;
+    }
+    body.dark .btn-toggle-qtext.opened {
+      background: rgba(10, 132, 255, 0.24) !important;
+      color: #64D2FF !important;
+      border-color: rgba(10, 132, 255, 0.5) !important;
+    }
+    body.dark .p4-qtext-collapse {
+      background: rgba(10, 132, 255, 0.1) !important;
+      border-color: rgba(10, 132, 255, 0.35) !important;
+      color: #F5F5F7 !important;
+    }
+
+    /* 다크모드 CBT 타이머 */
+    body.dark .cbt-timer-card {
+      background: rgba(38, 38, 42, 0.88) !important;
+      border-color: rgba(255, 255, 255, 0.14) !important;
+    }
+    body.dark .timer-digital-display {
+      color: #FFFFFF !important;
+      text-shadow: 0 0 14px rgba(255, 255, 255, 0.25) !important;
+    }
+    body.dark .timer-stage-badge.standby {
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: #A1A1A6 !important;
+      border-color: rgba(255, 255, 255, 0.14) !important;
+    }
+    body.dark .btn-timer-ctrl {
+      background: rgba(58, 58, 62, 0.9) !important;
+      color: #F5F5F7 !important;
+      border-color: rgba(255, 255, 255, 0.18) !important;
+    }
+    body.dark .btn-timer-ctrl:hover {
+      background: rgba(72, 72, 78, 1) !important;
+      color: #FFFFFF !important;
+    }
+    body.dark .timer-progress-track {
+      background: rgba(255, 255, 255, 0.12) !important;
+    }
+    body.dark .timer-info-caption {
+      color: #A1A1A6 !important;
+    }
+
+    /* 다크모드 태그 & 네비게이션 */
+    body.dark .tag-part {
+      background: #2C2C2E !important;
+      color: #FFFFFF !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+    body.dark .tag-time {
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: #A1A1A6 !important;
+      border-color: rgba(255, 255, 255, 0.12) !important;
     }
     body.dark .btn-circle-nav {
-      background: rgba(44, 44, 46, 0.8) !important;
+      background: rgba(44, 44, 48, 0.85) !important;
       color: #F5F5F7 !important;
-      border-color: rgba(255, 255, 255, 0.15) !important;
+      border-color: rgba(255, 255, 255, 0.16) !important;
     }
-    body.dark .btn-floating-drawer,
-    body.dark .btn-floating-nav {
+    body.dark .btn-circle-nav:hover:not(:disabled) {
+      background: rgba(58, 58, 62, 1) !important;
+      color: #FFFFFF !important;
+      border-color: rgba(255, 255, 255, 0.28) !important;
+    }
+    body.dark .btn-qlist-toggle {
+      background: rgba(44, 44, 48, 0.85) !important;
       color: #F5F5F7 !important;
+      border-color: rgba(255, 255, 255, 0.16) !important;
+    }
+    body.dark .btn-qlist-toggle:hover {
+      background: rgba(58, 58, 62, 1) !important;
+      color: #FFFFFF !important;
+    }
+    body.dark .btn-vocab-toggle {
+      background: rgba(10, 132, 255, 0.16) !important;
+      border-color: rgba(10, 132, 255, 0.45) !important;
+      color: #64D2FF !important;
+    }
+    body.dark .btn-vocab-toggle:hover {
+      background: rgba(10, 132, 255, 0.28) !important;
+      color: #FFFFFF !important;
+    }
+    body.dark .voice-badge {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border-color: rgba(255, 255, 255, 0.12) !important;
+      color: #D1D1D6 !important;
+    }
+
+    /* 다크모드 발음 선택형 칸 (Speech Selectable) */
+    body.dark .speech-selectable {
+      background: rgba(44, 44, 48, 0.65) !important;
+      border-color: rgba(255, 255, 255, 0.12) !important;
+    }
+    body.dark .speech-selectable:hover {
+      border-color: rgba(10, 132, 255, 0.5) !important;
+      background: rgba(10, 132, 255, 0.14) !important;
+    }
+    body.dark .speech-selectable.selected {
+      border-color: #0A84FF !important;
+      background: rgba(10, 132, 255, 0.25) !important;
+      box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.6), 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    /* 다크모드 하단 플로팅 바 & 컨트롤 */
+    body.dark .floating-bottom-bar {
+      background: rgba(24, 24, 26, 0.94) !important;
+      border-color: rgba(255, 255, 255, 0.18) !important;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7) !important;
     }
     body.dark .btn-floating-drawer {
       background: rgba(255, 255, 255, 0.08) !important;
-      border-color: rgba(255, 255, 255, 0.12) !important;
+      border-color: rgba(255, 255, 255, 0.14) !important;
+      color: #F5F5F7 !important;
     }
     body.dark .btn-floating-drawer:hover {
-      background: rgba(255, 255, 255, 0.15) !important;
+      background: rgba(255, 255, 255, 0.16) !important;
+      color: #FFFFFF !important;
     }
-    body.dark .tag-time {
+    body.dark .btn-floating-nav {
+      color: #F5F5F7 !important;
+    }
+    body.dark .btn-floating-nav:hover:not(:disabled) {
       background: rgba(255, 255, 255, 0.1) !important;
-      color: #A1A1A6 !important;
+      color: #FFFFFF !important;
+    }
+    body.dark .floating-nav-info {
+      border-left-color: rgba(255, 255, 255, 0.14) !important;
+      border-right-color: rgba(255, 255, 255, 0.14) !important;
+      color: #D1D1D6 !important;
+    }
+    body.dark .btn-rate-capsule {
+      background: rgba(10, 132, 255, 0.16) !important;
+      border-color: rgba(10, 132, 255, 0.45) !important;
+      color: #64D2FF !important;
+    }
+    body.dark .btn-rate-capsule:hover {
+      background: rgba(10, 132, 255, 0.28) !important;
+      color: #FFFFFF !important;
+    }
+    body.dark .btn-floating-rate {
+      background: rgba(10, 132, 255, 0.18) !important;
+      border-color: rgba(10, 132, 255, 0.45) !important;
+      color: #64D2FF !important;
+    }
+    body.dark .btn-floating-rate:hover {
+      background: #0A84FF !important;
+      color: #FFFFFF !important;
+    }
+    body.dark .btn-header-stop,
+    body.dark .btn-rate-stop,
+    body.dark .btn-floating-stop {
+      background: rgba(255, 69, 58, 0.18) !important;
+      border-color: rgba(255, 69, 58, 0.45) !important;
+      color: #FF453A !important;
+    }
+    body.dark .btn-header-stop:hover,
+    body.dark .btn-rate-stop:hover,
+    body.dark .btn-floating-stop:hover {
+      background: rgba(255, 69, 58, 0.3) !important;
+      color: #FFFFFF !important;
+    }
+
+    /* 다크모드 드로어 & 단어장 모달 */
+    body.dark .glass-drawer {
+      background: rgba(24, 24, 26, 0.96) !important;
+      border-right-color: rgba(255, 255, 255, 0.14) !important;
+    }
+    body.dark .drawer-header {
+      border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    body.dark .drawer-title {
+      color: #FFFFFF !important;
+    }
+    body.dark .btn-drawer-close {
+      background: rgba(255, 255, 255, 0.1) !important;
+      color: #F5F5F7 !important;
+    }
+    body.dark .drawer-q-item {
+      background: rgba(44, 44, 48, 0.65) !important;
+      border-color: rgba(255, 255, 255, 0.1) !important;
+      color: #F5F5F7 !important;
+    }
+    body.dark .drawer-q-item:hover {
+      background: rgba(58, 58, 62, 0.95) !important;
+      color: #FFFFFF !important;
+      border-color: rgba(255, 255, 255, 0.22) !important;
+    }
+    body.dark .drawer-q-item.active {
+      background: rgba(10, 132, 255, 0.28) !important;
+      border-color: #0A84FF !important;
+    }
+    body.dark .vocab-modal-window {
+      background: rgba(24, 24, 26, 0.97) !important;
+      border-color: rgba(255, 255, 255, 0.16) !important;
+    }
+    body.dark .vocab-modal-header {
+      border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    body.dark .vocab-search-input {
+      background: rgba(44, 44, 48, 0.85) !important;
+      border-color: rgba(255, 255, 255, 0.18) !important;
+      color: #F5F5F7 !important;
+    }
+    body.dark .vocab-item-card {
+      background: rgba(44, 44, 48, 0.75) !important;
+      border-color: rgba(255, 255, 255, 0.12) !important;
+    }
+    body.dark .vocab-item-card.memorized {
+      background: rgba(48, 209, 88, 0.16) !important;
+      border-color: rgba(48, 209, 88, 0.45) !important;
+    }
+    body.dark .btn-mem-toggle {
+      border-color: rgba(255, 255, 255, 0.25) !important;
+      color: #D1D1D6 !important;
+    }
+    body.dark .btn-mem-toggle.checked {
+      background: #30D158 !important;
+      color: #000000 !important;
+      font-weight: 700;
     }
 
     .brand-title-wrap {
@@ -1571,12 +1919,12 @@ def main():
         min-width: 0;
       }
       .theme-switch {
-        width: 52px;
-        height: 28px;
+        width: 54px;
+        height: 29px;
       }
       .theme-switch-thumb {
-        width: 20px;
-        height: 20px;
+        width: 21px;
+        height: 21px;
         font-size: 11px;
         left: 3px;
       }
@@ -1588,27 +1936,29 @@ def main():
         font-size: 10px;
       }
       .brand-main-title {
-        font-size: 15px;
-        letter-spacing: -0.03em;
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: -0.025em;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
       .btn-vocab-toggle {
-        padding: 5px 10px;
-        font-size: 12px;
-        gap: 4px;
+        padding: 7px 12px;
+        font-size: 13px;
+        font-weight: 700;
+        gap: 5px;
         flex-shrink: 0;
       }
 
-      /* 세그먼트 컨트롤 탭 */
+      /* 세그먼트 컨트롤 탭 (모바일 시인성 & 터치감 강화) */
       .apple-segmented-bar {
         padding: 0 10px;
-        margin-top: 8px;
+        margin-top: 10px;
       }
       .segmented-control {
-        padding: 3px;
-        gap: 2px;
+        padding: 4px;
+        gap: 4px;
         scrollbar-width: none;
         -ms-overflow-style: none;
       }
@@ -1616,24 +1966,27 @@ def main():
         display: none;
       }
       .segment-btn {
-        min-width: auto;
-        padding: 6px 10px;
-        font-size: 12px;
-        gap: 5px;
+        min-width: 100px;
+        padding: 9px 12px;
+        font-size: 14px;
+        font-weight: 700;
+        gap: 6px;
+        min-height: 40px;
       }
       .segment-count {
-        font-size: 10px;
-        padding: 1px 5px;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 6px;
       }
 
       /* 메인 뷰포트 & 카드 */
       .main-viewport {
         padding: 0 12px;
-        margin: 14px auto 110px;
+        margin: 14px auto 120px;
       }
       .filter-chips-row {
         gap: 6px;
-        padding: 5px 8px;
+        padding: 6px 10px;
         margin-bottom: 16px;
         overflow-x: auto;
         flex-wrap: nowrap;
@@ -1643,12 +1996,18 @@ def main():
       .filter-chips-row::-webkit-scrollbar {
         display: none;
       }
+      .filter-chips-label {
+        font-size: 12.5px;
+        font-weight: 700;
+      }
       .chip-filter-btn {
-        padding: 5px 11px;
-        font-size: 12px;
+        padding: 7px 14px;
+        font-size: 13.5px;
+        font-weight: 700;
+        min-height: 38px;
       }
       .glass-card {
-        padding: 16px;
+        padding: 18px 16px;
         border-radius: 20px;
       }
       .glass-card-header {
@@ -1656,157 +2015,320 @@ def main():
         align-items: stretch;
         gap: 12px;
         padding-bottom: 14px;
-        margin-bottom: 16px;
+        margin-bottom: 18px;
       }
-      .header-card-nav {
+      .card-meta-tags {
+        gap: 6px;
+        margin-bottom: 6px;
+      }
+      .tag-pill {
+        font-size: 12.5px;
+        font-weight: 700;
+        padding: 4px 11px;
+      }
+      .card-title {
+        font-size: 19px;
+        font-weight: 800;
+        line-height: 1.4;
+        letter-spacing: -0.02em;
+      }
+      .card-nav-controls {
         width: 100%;
         display: flex;
         justify-content: space-between;
+        gap: 10px;
       }
       .btn-circle-nav {
         flex: 1;
         justify-content: center;
-        padding: 8px 12px;
-      }
-      .card-title-lg {
-        font-size: 18px;
-        line-height: 1.35;
+        text-align: center;
+        padding: 10px 14px;
+        font-size: 14px;
+        font-weight: 700;
+        min-height: 42px;
       }
 
-      /* Part 1 전체 지문 & 문장 카드 */
-      .p1-full-passage-card {
-        padding: 16px;
-        margin-bottom: 18px;
+      /* 질문 프롬프트 카드 (글씨 크게 키우고 시원하게) */
+      .question-prompt-card {
+        padding: 18px 16px;
+        margin-bottom: 20px;
         border-radius: 16px;
       }
-      .p1-passage-text {
-        font-size: 16px;
-        line-height: 1.55;
+      .prompt-tag-title {
+        font-size: 12.5px;
+        font-weight: 700;
+      }
+      .question-prompt-en {
+        font-size: 19px;
+        font-weight: 700;
+        line-height: 1.5;
+        letter-spacing: -0.015em;
+      }
+
+      /* Part 1 전체 지문 & 끊어 읽기 문장 카드 (낭독에 최적화된 큰 글씨) */
+      .p1-full-passage-card {
+        padding: 18px 16px;
+        margin-bottom: 20px;
+        border-radius: 16px;
+      }
+      .p1-full-passage-text {
+        font-size: 19px;
+        line-height: 1.75;
+        font-weight: 600;
+      }
+      .sentence-block-list {
+        gap: 12px;
+        margin-top: 12px;
       }
       .sentence-item-card {
-        padding: 14px;
-        flex-direction: column;
-        align-items: stretch;
+        padding: 16px 14px;
+        border-radius: 16px;
         gap: 10px;
       }
-      .sentence-en-text {
-        font-size: 15px;
+      .sentence-step-badge {
+        font-size: 12px;
+        padding: 3px 9px;
       }
-      .vocab-grid {
-        grid-template-columns: 1fr;
-        gap: 8px;
+      .sentence-en-text {
+        font-size: 17.5px;
+        font-weight: 700;
+        line-height: 1.5;
+      }
+      .sentence-chunk-text {
+        font-size: 14.5px;
+        line-height: 1.5;
+        padding: 6px 11px;
+        margin: 6px 0;
+        border-radius: 8px;
+      }
+      .sentence-ko-text {
+        font-size: 15px;
+        line-height: 1.5;
+        margin-top: 3px;
       }
 
-      /* Part 2 사진 영역 */
-      .part2-hero-image-wrap {
-        max-height: 300px;
+      /* Part 2 사진 영역: 모바일에서도 시원하게 꽉 차게 렌더링 */
+      .photo-display-full {
         border-radius: 16px;
-        margin-bottom: 18px;
+        margin-bottom: 20px;
       }
-      .part2-hero-image {
-        max-height: 300px;
+      .photo-display-full img {
+        max-height: 380px;
+        border-radius: 16px;
         object-fit: cover;
       }
 
-      /* Part 4 표(Table) 영역 (가로 스크롤 보장) */
-      .part4-table-card {
-        padding: 12px;
-        border-radius: 16px;
+      /* 모범답안 토글 버튼: 모바일에서 누르기 쉬운 풀 위드 버튼 */
+      .btn-toggle-answer {
+        width: 100%;
+        justify-content: center;
+        padding: 13px 20px;
+        font-size: 15.5px;
+        font-weight: 700;
+        min-height: 48px;
+        border-radius: var(--radius-pill);
+      }
+      .question-translation-banner {
+        padding: 13px 15px;
+        font-size: 15px;
+        line-height: 1.55;
         margin-bottom: 18px;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+      }
+
+      /* 만능문장 카드 & 어휘 카드 폰트 확대 */
+      .magic-sentence-card {
+        padding: 15px 16px;
+        border-radius: 14px;
+      }
+      .magic-sentence-en {
+        font-size: 16.5px;
+        font-weight: 700;
+        line-height: 1.45;
+      }
+      .magic-sentence-ko {
+        font-size: 14.5px;
+        line-height: 1.45;
+      }
+      .magic-sentence-tip {
+        font-size: 13px;
+        margin-top: 4px;
+      }
+      .vocab-capsule-grid {
+        grid-template-columns: 1fr;
+        gap: 9px;
+      }
+      .vocab-capsule-card {
+        padding: 13px 15px;
+        border-radius: 12px;
+      }
+      .vocab-word-bold {
+        font-size: 16px;
+      }
+      .vocab-ipa-subtle {
+        font-size: 13px;
+      }
+      .vocab-mean-subtle {
+        font-size: 14.5px;
+        line-height: 1.4;
+      }
+      .explanation-callout {
+        padding: 15px 16px;
+        font-size: 14.5px;
+        line-height: 1.6;
+        border-radius: 14px;
+      }
+
+      /* Part 4 표(Table) 영역 (가로 스크롤 & 큰 글씨) */
+      .part4-table-card {
+        border-radius: 16px;
+        margin-bottom: 22px;
+      }
+      .table-top-banner {
+        font-size: 15.5px;
+        padding: 12px 14px;
+        font-weight: 700;
+      }
+      .table-meta-pills {
+        padding: 9px 14px;
+        font-size: 13px;
+        gap: 10px;
       }
       .part4-clean-table {
-        min-width: 480px;
-        font-size: 12px;
+        min-width: 500px;
+        font-size: 13.5px;
       }
       .part4-clean-table th,
       .part4-clean-table td {
-        padding: 8px 10px;
+        padding: 9px 11px;
+      }
+      .p4-lc-question-card {
+        padding: 18px 15px;
+        border-radius: 16px;
+        margin-bottom: 18px;
+      }
+      .btn-toggle-qtext {
+        padding: 7px 13px;
+        font-size: 13px;
+        font-weight: 700;
+        min-height: 36px;
+      }
+      .p4-qtext-collapse {
+        padding: 12px 14px;
+        font-size: 15.5px;
       }
 
-      /* CBT 실전 타이머 */
+      /* CBT 실전 타이머 (숫자 큼직하고 조작 편하게) */
       .cbt-timer-card {
         padding: 16px;
-        flex-direction: column;
-        text-align: center;
-        gap: 14px;
         border-radius: 18px;
+        margin: 16px 0 20px;
       }
-      .timer-meta-group {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: 8px;
-      }
-      .timer-digits-box {
-        font-size: 26px;
-        padding: 4px 14px;
-      }
-      .timer-btn-group {
-        width: 100%;
+      .timer-top-line {
         display: flex;
-        justify-content: center;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        flex-wrap: wrap;
       }
-      .btn-timer-action {
-        flex: 1;
-        justify-content: center;
-        padding: 9px 16px;
+      .timer-stage-badge {
+        font-size: 12.5px;
+        font-weight: 700;
+        padding: 4px 10px;
+      }
+      .timer-digital-display {
+        font-size: 28px;
+        font-weight: 800;
+      }
+      .timer-btn-actions {
+        display: flex;
+        gap: 6px;
+      }
+      .btn-timer-ctrl {
+        padding: 7px 14px;
+        font-size: 13px;
+        font-weight: 700;
+        min-height: 36px;
+      }
+      .timer-info-caption {
+        font-size: 12.5px;
+        margin-top: 4px;
       }
 
-      /* 하단 고정 플로팅 바 (모바일 엄지손가락 최적화) */
+      /* 하단 고정 플로팅 바 (모바일 엄지손가락 최적화: 폰트 확대 & 시원한 터치감) */
       .floating-bottom-bar {
-        bottom: max(22px, env(safe-area-inset-bottom, 22px));
-        width: calc(100% - 20px);
-        max-width: 440px;
-        padding: 5px 8px;
-        gap: 3px;
+        bottom: max(16px, env(safe-area-inset-bottom, 16px));
+        width: calc(100% - 16px);
+        max-width: 480px;
+        padding: 7px 10px;
+        gap: 4px;
         justify-content: space-between;
       }
       .btn-floating-drawer {
-        padding: 6px 9px;
-        font-size: 11px;
+        padding: 8px 12px;
+        font-size: 13px;
+        font-weight: 700;
+        min-height: 38px;
       }
       .btn-floating-nav {
-        padding: 6px 7px;
-        font-size: 12px;
+        padding: 8px 11px;
+        font-size: 13.5px;
+        font-weight: 700;
+        min-height: 38px;
       }
       .floating-nav-info {
-        padding: 0 4px;
-        font-size: 11px;
+        padding: 0 6px;
+        font-size: 12.5px;
+        font-weight: 700;
       }
       .btn-floating-stop {
-        padding: 6px 8px;
-        font-size: 11px;
+        padding: 8px 12px;
+        font-size: 13px;
+        font-weight: 700;
+        min-height: 38px;
       }
       .btn-floating-rate {
-        padding: 6px 7px;
-        font-size: 11px;
-      }
-      .floating-divider {
-        margin: 0 1px !important;
+        padding: 8px 11px;
+        font-size: 13px;
+        font-weight: 700;
+        min-height: 38px;
       }
 
       /* 문항 목록 드로어 */
-      .drawer-panel {
-        width: 88vw;
+      .glass-drawer {
+        width: 86vw;
         max-width: 340px;
       }
       .drawer-header {
         padding: 16px 18px;
       }
-      .drawer-body {
+      .drawer-title {
+        font-size: 17px;
+      }
+      .drawer-scroll-body {
         padding: 12px 14px;
+        gap: 8px;
+      }
+      .drawer-q-item {
+        padding: 13px 14px;
+        font-size: 14px;
       }
 
       /* 단어장 모달 */
-      .vocab-modal-card {
-        width: 95vw;
-        max-height: 92vh;
+      .vocab-modal-window {
+        width: 96vw;
+        height: 92vh;
         border-radius: 20px;
       }
       .vocab-modal-header {
         padding: 16px 18px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+      .vocab-search-input {
+        min-width: 100%;
+        font-size: 14.5px;
+        padding: 9px 14px;
       }
       .vocab-modal-body {
         padding: 14px;
@@ -1814,6 +2336,9 @@ def main():
       .vocab-grid-cards {
         grid-template-columns: 1fr;
         gap: 10px;
+      }
+      .vocab-item-card {
+        padding: 15px 16px;
       }
     }
   </style>
