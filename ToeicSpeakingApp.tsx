@@ -930,7 +930,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                   </span>
                 </div>
                 <h2 className="text-base sm:text-lg font-bold tracking-tight text-[#1D1D1F] dark:text-white truncate">
-                  Q{selectedIndex + 1}. {currentStandardQ.topic}
+                  {currentStandardQ.topic}
                 </h2>
               </div>
             </div>
@@ -1374,7 +1374,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                   </span>
                 </div>
                 <h2 className="text-base sm:text-lg font-bold tracking-tight text-[#1D1D1F] dark:text-white truncate">
-                  Q{selectedIndex + 1}. {currentStandardQ.topic}
+                  {currentStandardQ.topic}
                 </h2>
               </div>
             </div>

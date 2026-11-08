@@ -4109,7 +4109,7 @@ def main():
                 <span class="tag-pill tag-category">${escapeHtml(q.category)}</span>
                 <span class="tag-pill tag-time">준비 45초 · 답변 45초</span>
               </div>
-              <h2 class="card-title">Q${idx + 1}. ${escapeHtml(q.topic)}</h2>
+              <h2 class="card-title">${escapeHtml(q.topic)}</h2>
             </div>
           </div>
 
@@ -4198,7 +4198,7 @@ def main():
                 <span class="tag-pill tag-category">${escapeHtml(q.typeBadge || q.category || '')}</span>
                 <span class="tag-pill tag-time">준비 ${q.prepTime}초 · 답변 ${q.responseTime}초</span>
               </div>
-              <h2 class="card-title">Q${idx + 1}. ${escapeHtml(q.topic)}</h2>
+              <h2 class="card-title">${escapeHtml(q.topic)}</h2>
             </div>
           </div>
 
