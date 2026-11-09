@@ -3285,10 +3285,11 @@ def main():
     </button>
     <div class="floating-divider" style="width: 1px; height: 18px; background: rgba(127,127,127,0.22); margin: 0 1px;"></div>
 
-    <!-- 3. 발음 정지 버튼 (문구 없이 아이콘만 크게) -->
+    <!-- 3. 발음 정지 버튼 (퍼지 멈춤 아이콘) -->
     <button type="button" class="btn-floating-stop" id="btnFloatingStop" onclick="stopSpeech()" aria-label="발음 재생 정지" title="발음 정지">
       <svg viewBox="0 0 24 24" fill="currentColor">
-        <rect x="5.5" y="5.5" width="13" height="13" rx="2.5"></rect>
+        <rect x="6" y="5" width="4" height="14" rx="1.5"></rect>
+        <rect x="14" y="5" width="4" height="14" rx="1.5"></rect>
       </svg>
     </button>
     <button type="button" class="btn-floating-rate" id="btnFloatingRate10" onclick="playSelectedRate(1.0)">1.0x</button>
@@ -4093,6 +4094,15 @@ def main():
       updateDrawerContent();
     }
 
+    function cleanEnglishTopic(topic) {
+      if (!topic) return '';
+      const match = topic.match(/\(([^)]+)\)/);
+      if (match && /[a-zA-Z]/.test(match[1])) {
+        return match[1].trim();
+      }
+      return topic.trim();
+    }
+
     // =========================================================================
     // Part 1 렌더링 (전체 지문 맨 위 + 아래로 문장별 끊어 읽기 + 타이머)
     // =========================================================================
@@ -4106,10 +4116,9 @@ def main():
             <div class="header-text-group">
               <div class="card-meta-tags">
                 <span class="tag-pill tag-part" style="font-size: 11.5px; padding: 3px 9px;">Q${idx + 1}</span>
-                <span class="tag-pill tag-category">${escapeHtml(q.category)}</span>
                 <span class="tag-pill tag-time">준비 45초 · 답변 45초</span>
               </div>
-              <h2 class="card-title">${escapeHtml(q.topic)}</h2>
+              <h2 class="card-title">${escapeHtml(cleanEnglishTopic(q.topic))}</h2>
             </div>
           </div>
 
@@ -4117,11 +4126,6 @@ def main():
           <div class="p1-full-passage-card speech-selectable ${state.selectedItemId === q.id + '-full' ? 'selected' : ''}"
                data-speech-id="${q.id}-full" data-speech-text="${escapeHtml(fullText)}"
                onclick="selectSpeechItem('${q.id}-full', this.getAttribute('data-speech-text'), true)">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-              <span style="font-size: 13px; font-weight: 700; color: var(--apple-text-secondary); text-transform: uppercase; letter-spacing: 0.04em;">
-                전체 지문 (Full Passage)
-              </span>
-            </div>
             <p class="p1-full-passage-text">${escapeHtml(fullText)}</p>
           </div>
 
@@ -4195,17 +4199,16 @@ def main():
             <div class="header-text-group">
               <div class="card-meta-tags">
                 <span class="tag-pill tag-part" style="font-size: 11.5px; padding: 3px 9px;">Q${idx + 1}</span>
-                <span class="tag-pill tag-category">${escapeHtml(q.typeBadge || q.category || '')}</span>
                 <span class="tag-pill tag-time">준비 ${q.prepTime}초 · 답변 ${q.responseTime}초</span>
               </div>
-              <h2 class="card-title">${escapeHtml(q.topic)}</h2>
+              <h2 class="card-title">${escapeHtml(cleanEnglishTopic(q.topic))}</h2>
             </div>
           </div>
 
           <!-- 1. Part 2 사진: 검은 레터박스 없이 카드 너비에 꽉 차게 렌더링 -->
           ${q.part === 2 && q.imageBase64 ? `
             <div class="photo-display-full">
-              <img src="${q.imageBase64}" alt="${escapeHtml(q.topic)}" />
+              <img src="${q.imageBase64}" alt="${escapeHtml(cleanEnglishTopic(q.topic))}" />
             </div>
           ` : ''}
 
@@ -4214,9 +4217,6 @@ def main():
             <div class="question-prompt-card speech-selectable ${state.selectedItemId === q.id + '-prompt' ? 'selected' : ''}"
                  data-speech-id="${q.id}-prompt" data-speech-text="${escapeHtml(q.question)}"
                  onclick="selectSpeechItem('${q.id}-prompt', this.getAttribute('data-speech-text'), true)">
-              <div class="question-prompt-header">
-                <span class="prompt-tag-title">QUESTION PROMPT</span>
-              </div>
               <p class="question-prompt-en">${escapeHtml(q.question)}</p>
             </div>
           ` : ''}
@@ -4337,10 +4337,9 @@ def main():
           <div class="glass-card-header">
             <div class="header-text-group">
               <div class="card-meta-tags">
-                <span class="tag-pill tag-category">${escapeHtml(setObj.tableTypeBadge)}</span>
                 <span class="tag-pill tag-time">표 읽기 45초</span>
               </div>
-              <h2 class="card-title">Set ${idx + 1} — ${escapeHtml(setObj.topic)}</h2>
+              <h2 class="card-title">Set ${idx + 1} — ${escapeHtml(cleanEnglishTopic(setObj.topic))}</h2>
             </div>
           </div>
 
@@ -4619,7 +4618,6 @@ def main():
           <button type="button" role="tab" class="modal-segment-btn ${state.modalPartFilter === f.id ? 'active' : ''}"
             onclick="setModalPartFilter('${f.id}')">
             <span>${f.name}</span>
-            <span class="modal-segment-count">${f.count}</span>
           </button>
         `).join('');
       }

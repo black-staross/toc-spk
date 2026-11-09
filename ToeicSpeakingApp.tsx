@@ -102,6 +102,15 @@ interface MagicBookItem {
   keywords: string;
 }
 
+const cleanEnglishTopic = (topic: string): string => {
+  if (!topic) return '';
+  const match = topic.match(/\(([^)]+)\)/);
+  if (match && /[a-zA-Z]/.test(match[1])) {
+    return match[1].trim();
+  }
+  return topic.trim();
+};
+
 const masterData = masterDataRaw as {
   title: string;
   part3Types: { id: string; name: string }[];
@@ -922,15 +931,12 @@ export const ToeicSpeakingApp: React.FC = () => {
                   <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#1D1D1F] dark:bg-white text-white dark:text-[#1D1D1F]">
                     Q{selectedIndex + 1}
                   </span>
-                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20">
-                    {currentStandardQ.category}
-                  </span>
                   <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-[#6E6E73] dark:text-[#8E8E93]">
                     준비 45초 · 답변 45초
                   </span>
                 </div>
                 <h2 className="text-base sm:text-lg font-bold tracking-tight text-[#1D1D1F] dark:text-white truncate">
-                  {currentStandardQ.topic}
+                  {cleanEnglishTopic(currentStandardQ.topic)}
                 </h2>
               </div>
             </div>
@@ -944,11 +950,6 @@ export const ToeicSpeakingApp: React.FC = () => {
                   onClick={() => handleSelectSpeech(fullId, fullPassage)}
                   className={`bg-white/95 dark:bg-[#26262A] border border-black/5 dark:border-white/10 rounded-2xl p-6 mb-7 shadow-sm ${getSelectableClass(fullId)}`}
                 >
-                  <div className="flex items-center justify-between gap-3 mb-3">
-                    <span className="text-xs font-bold text-[#6E6E73] dark:text-[#8E8E93] tracking-wide uppercase">
-                      전체 지문 (Full Passage)
-                    </span>
-                  </div>
                   <p className="text-lg sm:text-xl font-medium text-[#1D1D1F] dark:text-white leading-relaxed">
                     {fullPassage}
                   </p>
@@ -1092,15 +1093,12 @@ export const ToeicSpeakingApp: React.FC = () => {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-start justify-between gap-3 sm:gap-4 pb-4 sm:pb-5 mb-5 sm:mb-6 border-b border-black/5 dark:border-white/10">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
-                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20">
-                    {currentP4Set.tableTypeBadge}
-                  </span>
                   <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-[#6E6E73] dark:text-[#8E8E93]">
                     표 읽기 45초
                   </span>
                 </div>
                 <h2 className="text-base sm:text-lg font-bold tracking-tight text-[#1D1D1F] dark:text-white truncate">
-                  Set {selectedIndex + 1} — {currentP4Set.topic}
+                  Set {selectedIndex + 1} — {cleanEnglishTopic(currentP4Set.topic)}
                 </h2>
               </div>
             </div>
@@ -1366,15 +1364,12 @@ export const ToeicSpeakingApp: React.FC = () => {
                   <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#1D1D1F] dark:bg-white text-white dark:text-[#1D1D1F]">
                     Q{selectedIndex + 1}
                   </span>
-                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20">
-                    {currentStandardQ.typeBadge || currentStandardQ.category}
-                  </span>
                   <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-[#6E6E73] dark:text-[#8E8E93]">
                     준비 {currentStandardQ.prepTime}초 · 답변 {currentStandardQ.responseTime}초
                   </span>
                 </div>
                 <h2 className="text-base sm:text-lg font-bold tracking-tight text-[#1D1D1F] dark:text-white truncate">
-                  {currentStandardQ.topic}
+                  {cleanEnglishTopic(currentStandardQ.topic)}
                 </h2>
               </div>
             </div>
@@ -1384,7 +1379,7 @@ export const ToeicSpeakingApp: React.FC = () => {
               <div className="w-full rounded-2xl overflow-hidden mb-6 border border-black/10 dark:border-white/10 bg-black/5 shadow-md flex items-center justify-center max-h-[320px] sm:max-h-[540px]">
                 <img
                   src={currentStandardQ.imageBase64}
-                  alt={currentStandardQ.topic}
+                  alt={cleanEnglishTopic(currentStandardQ.topic)}
                   className="w-full h-auto max-h-[320px] sm:max-h-[540px] object-cover sm:object-contain rounded-2xl"
                 />
               </div>
@@ -1398,11 +1393,6 @@ export const ToeicSpeakingApp: React.FC = () => {
                   onClick={() => handleSelectSpeech(promptId, currentStandardQ.question || '')}
                   className={`p-5 rounded-2xl bg-white/90 dark:bg-[#26262A] border border-black/5 dark:border-white/10 mb-6 shadow-sm ${getSelectableClass(promptId)}`}
                 >
-                  <div className="flex items-center justify-between gap-3 mb-2">
-                    <span className="text-xs font-bold text-[#6E6E73] dark:text-[#8E8E93] tracking-wide uppercase">
-                      QUESTION PROMPT
-                    </span>
-                  </div>
                   <p className="text-base sm:text-lg font-bold text-[#1D1D1F] dark:text-white">
                     {currentStandardQ.question}
                   </p>
@@ -1676,7 +1666,8 @@ export const ToeicSpeakingApp: React.FC = () => {
           aria-label="발음 정지"
         >
           <svg className="w-4 h-4 sm:w-4.5 sm:h-4.5" viewBox="0 0 24 24" fill="currentColor">
-            <rect x="5.5" y="5.5" width="13" height="13" rx="2.5"></rect>
+            <rect x="6" y="5" width="4" height="14" rx="1.5"></rect>
+            <rect x="14" y="5" width="4" height="14" rx="1.5"></rect>
           </svg>
         </button>
 
@@ -1937,15 +1928,6 @@ export const ToeicSpeakingApp: React.FC = () => {
                         }`}
                       >
                         <span>{f.name}</span>
-                        <span
-                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                            isActive
-                              ? 'bg-[#0071E3]/10 dark:bg-white/25 text-[#0071E3] dark:text-white'
-                              : 'bg-black/5 dark:bg-white/10 text-[#86868B] dark:text-[#8E8E93]'
-                          }`}
-                        >
-                          {f.count}
-                        </span>
                       </button>
                     );
                   })}
