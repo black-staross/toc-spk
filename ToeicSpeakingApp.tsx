@@ -1164,7 +1164,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                       {/* LC 질문 헤더 & 컨트롤 (문항번호 옆에 답변 문구 삭제 및 질문듣기/질문보기 버튼 나란히 배치) */}
                       <div className="p-3.5 sm:p-4 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/10">
                         <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                             <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#1D1D1F] dark:bg-white text-white dark:text-[#1D1D1F] shrink-0">
                               Q{qIdx + 1}
                             </span>
@@ -1172,7 +1172,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => handleSelectSpeech(qPromptId, q.question)}
-                              className={`h-[34px] px-3.5 rounded-full text-xs font-bold border inline-flex items-center justify-center transition-all ${
+                              className={`h-[34px] px-3 sm:px-3.5 rounded-full text-xs font-bold border inline-flex items-center justify-center transition-all ${
                                 selectedItemId === qPromptId
                                   ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] shadow-sm'
                                   : 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/20 hover:bg-[#0071E3]/20'
@@ -1189,13 +1189,27 @@ export const ToeicSpeakingApp: React.FC = () => {
                                   [q.qId]: !prev[q.qId]
                                 }))
                               }
-                              className={`h-[34px] px-3.5 rounded-full text-xs font-bold border inline-flex items-center justify-center transition-all ${
+                              className={`h-[34px] px-3 sm:px-3.5 rounded-full text-xs font-bold border inline-flex items-center justify-center transition-all ${
                                 isQVisible
                                   ? 'bg-black/5 dark:bg-white/10 text-[#1D1D1F] dark:text-white border-black/15'
                                   : 'bg-white dark:bg-[#2C2C2E] text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/30 hover:bg-[#0071E3]/5'
                               }`}
                             >
-                              {isQVisible ? '질문 접기 ▲' : '질문 보기 ▼'}
+                              {isQVisible ? '질문 접기' : '질문 보기'}
+                            </button>
+                            {/* 1. 모범답안 보기 토글 버튼 (질문보기 버튼 오른쪽에 배치, 화살표 삭제) */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setP4AnswerOpenMap(prev => ({ ...prev, [q.qId]: !prev[q.qId] }));
+                              }}
+                              className={`h-[34px] px-3 sm:px-3.5 rounded-full text-xs font-bold border inline-flex items-center justify-center transition-all ${
+                                isAnsOpen
+                                  ? 'bg-[#0071E3]/15 dark:bg-[#0A84FF]/25 text-[#0071E3] dark:text-[#64D2FF] border-[#0071E3]/40'
+                                  : 'bg-white dark:bg-[#2C2C2E] text-[#1D1D1F] dark:text-white border-black/10 dark:border-white/15 hover:border-black/20'
+                              }`}
+                            >
+                              {isAnsOpen ? '모범답안 접기' : '모범답안 보기'}
                             </button>
                           </div>
                         </div>
@@ -1221,23 +1235,6 @@ export const ToeicSpeakingApp: React.FC = () => {
                           responseTime={qIdx >= 2 ? 30 : 15}
                           label={qIdx >= 2 ? '답변 30초' : '답변 15초'}
                         />
-                      </div>
-
-                      {/* 1. 타이머 밑에 모범답안 보기 버튼 배치 */}
-                      <div className="flex items-center justify-between pt-1 border-t border-black/5 dark:border-white/10">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setP4AnswerOpenMap(prev => ({ ...prev, [q.qId]: !prev[q.qId] }));
-                          }}
-                          className={`w-full sm:w-auto px-5 py-2.5 sm:py-2 rounded-full text-sm sm:text-base font-bold border transition-all text-center justify-center shadow-xs ${
-                            isAnsOpen
-                              ? 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/30'
-                              : 'bg-white dark:bg-[#2C2C2E] text-[#1D1D1F] dark:text-white border-black/10 dark:border-white/15 hover:border-black/20'
-                          }`}
-                        >
-                          {isAnsOpen ? '모범답안 접기 ▲' : '모범답안 보기 ▼'}
-                        </button>
                       </div>
 
                       {/* 모범답안 펼침 영역 */}
@@ -1411,7 +1408,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                     : 'bg-white dark:bg-[#2C2C2E] text-[#1D1D1F] dark:text-white border-black/10 dark:border-white/15 hover:border-black/20'
                 }`}
               >
-                {isAnswerOpen ? '모범답안 접기 ▲' : '모범답안 보기 ▼'}
+                {isAnswerOpen ? '모범답안 접기' : '모범답안 보기'}
               </button>
             </div>
 

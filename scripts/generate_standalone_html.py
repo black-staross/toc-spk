@@ -3963,11 +3963,11 @@ def main():
         if (state.isAnswerOpen) {
           el.classList.add('show');
           btn.classList.add('opened');
-          btn.innerHTML = '<span>모범답안 접기 ▲</span>';
+          btn.innerHTML = '<span>모범답안 접기</span>';
         } else {
           el.classList.remove('show');
           btn.classList.remove('opened');
-          btn.innerHTML = '<span>모범답안 보기 ▼</span>';
+          btn.innerHTML = '<span>모범답안 보기</span>';
         }
       }
     }
@@ -3980,11 +3980,11 @@ def main():
         if (state.p4AnswerOpenMap[qId]) {
           el.classList.add('show');
           btn.classList.add('opened');
-          btn.innerHTML = '<span>모범답안 접기 ▲</span>';
+          btn.innerHTML = '<span>모범답안 접기</span>';
         } else {
           el.classList.remove('show');
           btn.classList.remove('opened');
-          btn.innerHTML = '<span>모범답안 보기 ▼</span>';
+          btn.innerHTML = '<span>모범답안 보기</span>';
         }
       }
     }
@@ -3998,11 +3998,11 @@ def main():
         if (state.p4QTextOpenMap[qId]) {
           el.classList.add('show');
           btn.classList.add('opened');
-          btn.innerHTML = '<span>질문 접기 ▲</span>';
+          btn.innerHTML = '<span>질문 접기</span>';
         } else {
           el.classList.remove('show');
           btn.classList.remove('opened');
-          btn.innerHTML = '<span>질문 보기 ▼</span>';
+          btn.innerHTML = '<span>질문 보기</span>';
         }
       }
     }
@@ -4227,7 +4227,7 @@ def main():
           <!-- 2. 모범답안 토글 버튼 -->
           <div style="display: flex; align-items: center; margin-top: 20px;">
             <button type="button" id="btnToggleAnswer" class="btn-toggle-answer ${state.isAnswerOpen ? 'opened' : ''}" onclick="toggleAnswer()">
-              <span>${state.isAnswerOpen ? '모범답안 접기 ▲' : '모범답안 보기 ▼'}</span>
+              <span>${state.isAnswerOpen ? '모범답안 접기' : '모범답안 보기'}</span>
             </button>
           </div>
 
@@ -4390,19 +4390,23 @@ def main():
 
                 return `
                   <div class="p4-lc-question-card" style="border-radius: 18px; padding: 18px 16px; background: rgba(255, 255, 255, 0.95); margin-bottom: 6px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);">
-                    <!-- 2. 파트 4 상단: 문항번호 옆에 답변 문구 삭제 및 질문듣기/질문보기 나란히 배치 -->
+                    <!-- 2. 파트 4 상단: 문항번호 옆에 답변 문구 삭제 및 질문듣기/질문보기/모범답안보기 나란히 배치 -->
                     <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                      <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
                         <span class="tag-pill tag-part" style="font-size: 12px; font-weight: 800; padding: 4px 10px;">Q${qIdx + 1}</span>
                         <button type="button" class="speech-selectable ${state.selectedItemId === q.qId + '-prompt' ? 'selected' : ''}"
                                 data-speech-id="${q.qId}-prompt" data-speech-text="${escapeHtml(q.question)}"
                                 onclick="selectSpeechItem('${q.qId}-prompt', this.getAttribute('data-speech-text'), true)"
-                                style="height: 34px; padding: 0 14px; font-size: 12.5px; font-weight: 700; border-radius: var(--radius-pill); border: 1px solid var(--apple-blue-border); background: var(--apple-blue-bg); color: var(--apple-blue); display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; white-space: nowrap;">
+                                style="height: 34px; padding: 0 12px; font-size: 12.5px; font-weight: 700; border-radius: var(--radius-pill); border: 1px solid var(--apple-blue-border); background: var(--apple-blue-bg); color: var(--apple-blue); display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; white-space: nowrap;">
                           질문듣기
                         </button>
                         <button type="button" id="p4-qbtn-${q.qId}" class="btn-toggle-qtext ${isQTextOpen ? 'opened' : ''}"
                           onclick="toggleP4QuestionText('${q.qId}')">
-                          <span>${isQTextOpen ? '질문 접기 ▲' : '질문 보기 ▼'}</span>
+                          <span>${isQTextOpen ? '질문 접기' : '질문 보기'}</span>
+                        </button>
+                        <button type="button" id="p4-btn-${q.qId}" class="btn-toggle-qtext ${isAnsOpen ? 'opened' : ''}"
+                          onclick="toggleP4QuestionAnswer('${q.qId}')">
+                          <span>${isAnsOpen ? '모범답안 접기' : '모범답안 보기'}</span>
                         </button>
                       </div>
                     </div>
@@ -4425,14 +4429,6 @@ def main():
                     <!-- 1. 파트 4 문제 타이머 (모범답안 보기 위에 배치) -->
                     <div style="margin-top: 14px;">
                       ${renderCbtTimerCard(3, qIdx >= 2 ? 30 : 15, 'p4-q-' + q.qId, qIdx >= 2 ? '답변 30초' : '답변 15초')}
-                    </div>
-
-                    <!-- 1. 타이머 밑에 모범답안 토글 버튼 배치 -->
-                    <div style="display: flex; align-items: center; margin-top: 14px;">
-                      <button type="button" id="p4-btn-${q.qId}" class="btn-toggle-answer ${isAnsOpen ? 'opened' : ''}"
-                        onclick="toggleP4QuestionAnswer('${q.qId}')">
-                        <span>${isAnsOpen ? '모범답안 접기 ▲' : '모범답안 보기 ▼'}</span>
-                      </button>
                     </div>
 
                     <!-- 모범답안 펼침 영역 -->
