@@ -1142,9 +1142,12 @@ export const ToeicSpeakingApp: React.FC = () => {
             </div>
 
             {/* 일정표 밑: 준비 시간 45초 타이머 세팅 */}
-            <div className="mb-6">
+            <div className="mb-5">
               <CbtSubTimer prepTime={45} responseTime={0} label="표 읽기 45초" />
             </div>
+
+            {/* 3. 표 읽는 타이머 밑 구분선 */}
+            <div className="border-t border-black/10 dark:border-white/10 my-6" />
 
             {/* 문제 카드 목록 (표 연계 문구 및 안내사항 삭제) */}
             <div>
@@ -1161,26 +1164,24 @@ export const ToeicSpeakingApp: React.FC = () => {
                       key={q.qId}
                       className="p-5 sm:p-6 rounded-2xl bg-white/90 dark:bg-[#26262A] border border-black/5 dark:border-white/10 shadow-sm space-y-4"
                     >
-                      {/* LC 질문 헤더 & 컨트롤 (문항번호 옆에 답변 문구 삭제 및 질문듣기/질문보기 버튼 나란히 배치) */}
+                      {/* LC 질문 헤더 & 컨트롤 (1. Q1문항+질문듣기 통합 버튼 / 2. 질문보기 & 모범답안보기 우측 밀어서 배치) */}
                       <div className="p-3.5 sm:p-4 rounded-xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/10">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                            <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#1D1D1F] dark:bg-white text-white dark:text-[#1D1D1F] shrink-0">
-                              Q{qIdx + 1}
-                            </span>
-                            {/* 질문듣기 버튼 */}
-                            <button
-                              type="button"
-                              onClick={() => handleSelectSpeech(qPromptId, q.question)}
-                              className={`h-[34px] px-3 sm:px-3.5 rounded-full text-xs font-bold border inline-flex items-center justify-center transition-all ${
-                                selectedItemId === qPromptId
-                                  ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] shadow-sm'
-                                  : 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/20 hover:bg-[#0071E3]/20'
-                              }`}
-                            >
-                              질문듣기
-                            </button>
-                            {/* 질문 보기 토글 버튼 */}
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          {/* 1. Q{qIdx + 1} 질문듣기 통합 버튼 (검은 배경 제거) */}
+                          <button
+                            type="button"
+                            onClick={() => handleSelectSpeech(qPromptId, q.question)}
+                            className={`h-[34px] px-3.5 rounded-full text-xs font-bold border inline-flex items-center justify-center transition-all shrink-0 ${
+                              selectedItemId === qPromptId
+                                ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] shadow-sm'
+                                : 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/20 hover:bg-[#0071E3]/20'
+                            }`}
+                          >
+                            Q{qIdx + 1} 질문듣기
+                          </button>
+
+                          {/* 2. 질문 보기 & 모범답안 보기 우측 밀어서 배치 */}
+                          <div className="flex items-center gap-1.5 shrink-0">
                             <button
                               type="button"
                               onClick={() =>
@@ -1197,7 +1198,6 @@ export const ToeicSpeakingApp: React.FC = () => {
                             >
                               {isQVisible ? '질문 접기' : '질문 보기'}
                             </button>
-                            {/* 1. 모범답안 보기 토글 버튼 (질문보기 버튼 오른쪽에 배치, 화살표 삭제) */}
                             <button
                               type="button"
                               onClick={() => {
@@ -1848,9 +1848,9 @@ export const ToeicSpeakingApp: React.FC = () => {
               </div>
             </div>
 
-            {/* 7. 파트 필터 세그먼트 컨트롤 탭: 좌측 북마크 버튼 분리 + 전체/저장됨 탭 제거 */}
-            <div className="px-3 sm:px-5 py-2.5 sm:py-3 border-b border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02]">
-              <div className="flex items-center gap-2">
+            {/* 7. 파트 필터 세그먼트 컨트롤 탭: 좌측 북마크 버튼 분리 + 전체/저장됨 탭 제거 + 가운데 정렬 */}
+            <div className="px-3 sm:px-5 py-2.5 sm:py-3 border-b border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] flex justify-center">
+              <div className="flex items-center justify-center gap-2 max-w-full overflow-x-auto no-scrollbar">
                 {/* 7. 좌측 북마크 전용 버튼 */}
                 <button
                   type="button"
@@ -1894,8 +1894,8 @@ export const ToeicSpeakingApp: React.FC = () => {
                 {/* 구분선 */}
                 <div className="h-5 w-px bg-black/10 dark:bg-white/10 shrink-0" />
 
-                {/* 파트 탭 목록 (전체와 저장됨 제외) */}
-                <div className="flex-1 flex p-1 bg-black/5 dark:bg-white/10 rounded-full border border-black/5 dark:border-white/10 gap-1 overflow-x-auto no-scrollbar">
+                {/* 파트 탭 목록 (가운데 정렬) */}
+                <div className="flex p-1 bg-black/5 dark:bg-white/10 rounded-full border border-black/5 dark:border-white/10 gap-1 overflow-x-auto no-scrollbar justify-center">
                   {(modalMainMode === 'magic'
                     ? [
                         { id: '2', name: 'Part 2', count: 49 },
@@ -1949,34 +1949,14 @@ export const ToeicSpeakingApp: React.FC = () => {
                       return (
                         <div
                           key={item.id}
-                          className={`p-4 sm:p-4.5 rounded-2xl border flex flex-col justify-between gap-3 transition-all ${
+                          className={`p-4 sm:p-4.5 rounded-2xl border flex flex-col justify-between gap-2.5 transition-all ${
                             isSaved
                               ? 'bg-[#0071E3]/5 dark:bg-[#0A84FF]/10 border-[#0071E3]/35 dark:border-[#0A84FF]/45'
                               : 'bg-white/90 dark:bg-[#242426] border-black/5 dark:border-white/10'
                           }`}
                         >
-                          {/* 1. 상단 바: 우측 배속버튼 및 저장 (문항정보 삭제) */}
-                          <div className="flex items-center justify-end gap-1.5 w-full">
-                            <div className="inline-flex items-center gap-1">
-                              <button
-                                type="button"
-                                onClick={() => speakMagicItem(item.id, 1.0)}
-                                className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20 hover:bg-[#0071E3]/20"
-                                title="1.0배속 발음 듣기"
-                              >
-                                <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M15.54 8.46a5 5 0 0 1 0 7.07" /></svg>
-                                <span>1.0x</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => speakMagicItem(item.id, 0.75)}
-                                className="px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-black/5 dark:bg-white/10 text-[#6E6E73] dark:text-[#8E8E93] hover:bg-black/10 dark:hover:bg-white/15"
-                                title="0.75배속 느리게 듣기"
-                              >
-                                0.75x
-                              </button>
-                            </div>
-
+                          {/* 5. 우측 상단 북마크 저장 버튼 단독 배치 */}
+                          <div className="flex items-center justify-end w-full">
                             <button
                               type="button"
                               onClick={() => toggleBookmark(item.id, 'magic')}
@@ -2002,14 +1982,38 @@ export const ToeicSpeakingApp: React.FC = () => {
                             </button>
                           </div>
 
-                          {/* 2. 본문 문장: 가로폭 100% 온전히 활용 (모바일 겹침 원천 제거) */}
+                          {/* 5. 본문 문장: 문장 앞에 스피커 버튼 배치 (1배속 전용, 문구 없음, 북마크 크기) */}
                           <div className="w-full">
-                            <p className="text-base sm:text-[16.5px] font-bold text-[#1D1D1F] dark:text-white leading-snug">
-                              {item.en}
-                            </p>
-                            <p className="text-xs sm:text-sm text-[#6E6E73] dark:text-[#8E8E93] mt-1.5 leading-relaxed">
-                              {item.ko}
-                            </p>
+                            <div className="flex items-start gap-2.5">
+                              <button
+                                type="button"
+                                onClick={() => speakMagicItem(item.id, 1.0)}
+                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full shrink-0 flex items-center justify-center bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20 hover:bg-[#0071E3]/25 active:scale-95 transition-all mt-0.5"
+                                title="발음 듣기"
+                                aria-label="발음 듣기"
+                              >
+                                <svg
+                                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                                </svg>
+                              </button>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-base sm:text-[16.5px] font-bold text-[#1D1D1F] dark:text-white leading-snug">
+                                  {item.en}
+                                </p>
+                                <p className="text-xs sm:text-sm text-[#6E6E73] dark:text-[#8E8E93] mt-1.5 leading-relaxed">
+                                  {item.ko}
+                                </p>
+                              </div>
+                            </div>
                           </div>
 
                           {item.tip && (
@@ -2043,28 +2047,8 @@ export const ToeicSpeakingApp: React.FC = () => {
                               : 'bg-white/90 dark:bg-[#242426] border-black/5 dark:border-white/10'
                           }`}
                         >
-                          {/* 1. 상단 바: 우측 배속버튼 및 저장 (문항정보 삭제) */}
-                          <div className="flex items-center justify-end gap-1.5 w-full">
-                            <div className="inline-flex items-center gap-1">
-                              <button
-                                type="button"
-                                onClick={() => speakVocabItem(item.id, 1.0)}
-                                className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20 hover:bg-[#0071E3]/20"
-                                title="1.0배속 발음 듣기"
-                              >
-                                <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M15.54 8.46a5 5 0 0 1 0 7.07" /></svg>
-                                <span>1.0x</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => speakVocabItem(item.id, 0.75)}
-                                className="px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-black/5 dark:bg-white/10 text-[#6E6E73] dark:text-[#8E8E93]"
-                                title="0.75배속 느리게 듣기"
-                              >
-                                0.75x
-                              </button>
-                            </div>
-
+                          {/* 5. 우측 상단 북마크 저장 버튼 단독 배치 */}
+                          <div className="flex items-center justify-end w-full">
                             <button
                               type="button"
                               onClick={() => toggleBookmark(item.id, 'vocab')}
@@ -2090,8 +2074,28 @@ export const ToeicSpeakingApp: React.FC = () => {
                             </button>
                           </div>
 
-                          {/* 2. 표제어 + 발음기호 + 품사 (전체 너비 여유롭게 활용) */}
-                          <div className="flex items-baseline gap-2 flex-wrap w-full mt-1">
+                          {/* 5. 표제어 + 발음기호 + 품사: 단어 앞에 스피커 버튼 배치 (1배속 전용, 문구 없음, 북마크 크기) */}
+                          <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap w-full mt-0.5">
+                            <button
+                              type="button"
+                              onClick={() => speakVocabItem(item.id, 1.0)}
+                              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full shrink-0 flex items-center justify-center bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20 hover:bg-[#0071E3]/25 active:scale-95 transition-all"
+                              title="발음 듣기"
+                              aria-label="발음 듣기"
+                            >
+                              <svg
+                                className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                                <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                              </svg>
+                            </button>
                             <h3 className="text-xl font-extrabold text-[#1D1D1F] dark:text-white tracking-tight">
                               {item.word}
                             </h3>

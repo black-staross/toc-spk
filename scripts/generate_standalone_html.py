@@ -2059,10 +2059,11 @@ def main():
       border-color: rgba(255, 255, 255, 0.08);
     }
 
-    /* 7. 북마크 아이콘 버튼 + 파트 탭 분리 툴바 */
+    /* 7. 북마크 아이콘 버튼 + 파트 탭 분리 툴바 (가운데 정렬) */
     .modal-filter-toolbar {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
       width: 100%;
     }
@@ -2132,6 +2133,7 @@ def main():
     }
     .modal-segmented-control {
       display: flex;
+      justify-content: center;
       background: rgba(0, 0, 0, 0.05);
       padding: 4px;
       border-radius: var(--radius-pill);
@@ -4380,8 +4382,11 @@ def main():
           <!-- 3. 일정표 밑: 준비 시간 45초 전용 타이머 세팅 -->
           ${renderCbtTimerCard(45, 0, 'p4-table', '표 읽기 45초')}
 
+          <!-- 3. 표 읽는 타이머 밑 구분선 -->
+          <div style="border-top: 1px solid var(--apple-border-subtle); margin: 24px 0 20px 0;"></div>
+
           <!-- 4 & 5. 표 연계/실제시험처럼 문구 삭제 및 문제 카드 4개 정돈 -->
-          <div style="margin-top: 24px;">
+          <div style="margin-top: 20px;">
             <div style="display: flex; flex-direction: column; gap: 16px;">
               ${setObj.questions.map((q, qIdx) => {
                 const isAnsOpen = !!state.p4AnswerOpenMap[q.qId];
@@ -4390,16 +4395,15 @@ def main():
 
                 return `
                   <div class="p4-lc-question-card" style="border-radius: 18px; padding: 18px 16px; background: rgba(255, 255, 255, 0.95); margin-bottom: 6px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);">
-                    <!-- 2. 파트 4 상단: 문항번호 옆에 답변 문구 삭제 및 질문듣기/질문보기/모범답안보기 나란히 배치 -->
-                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                      <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                        <span class="tag-pill tag-part" style="font-size: 12px; font-weight: 800; padding: 4px 10px;">Q${qIdx + 1}</span>
-                        <button type="button" class="speech-selectable ${state.selectedItemId === q.qId + '-prompt' ? 'selected' : ''}"
-                                data-speech-id="${q.qId}-prompt" data-speech-text="${escapeHtml(q.question)}"
-                                onclick="selectSpeechItem('${q.qId}-prompt', this.getAttribute('data-speech-text'), true)"
-                                style="height: 34px; padding: 0 12px; font-size: 12.5px; font-weight: 700; border-radius: var(--radius-pill); border: 1px solid var(--apple-blue-border); background: var(--apple-blue-bg); color: var(--apple-blue); display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; white-space: nowrap;">
-                          질문듣기
-                        </button>
+                    <!-- 1. 파트 4 상단: Q{qIdx + 1} 질문듣기 통합 버튼 (좌측) / 질문보기 & 모범답안보기 (우측 밀어서 배치) -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+                      <button type="button" class="speech-selectable ${state.selectedItemId === q.qId + '-prompt' ? 'selected' : ''}"
+                              data-speech-id="${q.qId}-prompt" data-speech-text="${escapeHtml(q.question)}"
+                              onclick="selectSpeechItem('${q.qId}-prompt', this.getAttribute('data-speech-text'), true)"
+                              style="height: 34px; padding: 0 14px; font-size: 12.5px; font-weight: 700; border-radius: var(--radius-pill); border: 1px solid var(--apple-blue-border); background: var(--apple-blue-bg); color: var(--apple-blue); display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; white-space: nowrap; flex-shrink: 0;">
+                        Q${qIdx + 1} 질문듣기
+                      </button>
+                      <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
                         <button type="button" id="p4-qbtn-${q.qId}" class="btn-toggle-qtext ${isQTextOpen ? 'opened' : ''}"
                           onclick="toggleP4QuestionText('${q.qId}')">
                           <span>${isQTextOpen ? '질문 접기' : '질문 보기'}</span>
@@ -4691,30 +4695,28 @@ def main():
           const isSaved = !!state.bookmarkedMagicIds[item.id];
           return `
             <div class="vocab-item-card ${isSaved ? 'saved' : ''}">
-              <!-- 1. 상단 바: 우측 배속버튼 및 저장 (문항정보 삭제) -->
-              <div class="vocab-card-top-bar" style="justify-content: flex-end;">
-                <div class="vocab-card-actions">
-                  <div class="vocab-audio-mini-group">
-                    <button type="button" class="btn-audio-mini" onclick="speakMagicItem('${item.id}', 1.0)" title="1.0배속 발음 듣기">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-                      <span>1.0x</span>
-                    </button>
-                    <button type="button" class="btn-audio-mini subtle" onclick="speakMagicItem('${item.id}', 0.75)" title="0.75배속 느리게 듣기">
-                      <span>0.75x</span>
-                    </button>
-                  </div>
-                  <button type="button" class="btn-bookmark-icon ${isSaved ? 'saved' : ''}" onclick="toggleBookmark('${item.id}', 'magic')" aria-label="저장" title="${isSaved ? '저장 해제' : '저장'}">
-                    <svg viewBox="0 0 24 24" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M19 21l-7-4.5L5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-                    </svg>
-                  </button>
-                </div>
+              <!-- 5. 우측 상단 북마크 저장 버튼 단독 배치 -->
+              <div class="vocab-card-top-bar" style="justify-content: flex-end; margin-bottom: 4px;">
+                <button type="button" class="btn-bookmark-icon ${isSaved ? 'saved' : ''}" onclick="toggleBookmark('${item.id}', 'magic')" aria-label="저장" title="${isSaved ? '저장 해제' : '저장'}">
+                  <svg viewBox="0 0 24 24" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21l-7-4.5L5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                  </svg>
+                </button>
               </div>
 
-              <!-- 2. 본문 문장: 가로폭 100%를 여유롭게 활용하여 모바일에서 아무리 길어도 겹치지 않음 -->
-              <div class="magic-sentence-main-group">
-                <div class="magic-en-sentence">${escapeHtml(item.en)}</div>
-                <div class="magic-ko-translation">${escapeHtml(item.ko)}</div>
+              <!-- 5. 본문 문장: 문장 앞에 스피커 버튼 배치 (1배속 전용, 문구 없음, 북마크 크기) -->
+              <div class="magic-sentence-main-group" style="display: flex; align-items: flex-start; gap: 10px;">
+                <button type="button" class="btn-audio-front" onclick="speakMagicItem('${item.id}', 1.0)" title="발음 듣기" aria-label="발음 듣기"
+                        style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--apple-blue-border); background: var(--apple-blue-bg); color: var(--apple-blue); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; margin-top: 2px;">
+                  <svg style="width: 15px; height: 15px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                  </svg>
+                </button>
+                <div style="flex: 1; min-width: 0;">
+                  <div class="magic-en-sentence">${escapeHtml(item.en)}</div>
+                  <div class="magic-ko-translation">${escapeHtml(item.ko)}</div>
+                </div>
               </div>
 
               ${item.tip ? `
@@ -4767,28 +4769,24 @@ def main():
           const isSaved = !!state.bookmarkedVocabIds[item.id];
           return `
             <div class="vocab-word-card ${isSaved ? 'saved' : ''}">
-              <!-- 1. 상단 바: 우측 배속버튼 및 저장 (문항정보 삭제) -->
-              <div class="vocab-card-top-bar" style="justify-content: flex-end;">
-                <div class="vocab-card-actions">
-                  <div class="vocab-audio-mini-group">
-                    <button type="button" class="btn-audio-mini" onclick="speakVocabItem('${item.id}', 1.0)" title="1.0배속 발음 듣기">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-                      <span>1.0x</span>
-                    </button>
-                    <button type="button" class="btn-audio-mini subtle" onclick="speakVocabItem('${item.id}', 0.75)" title="0.75배속 느리게 듣기">
-                      <span>0.75x</span>
-                    </button>
-                  </div>
-                  <button type="button" class="btn-bookmark-icon ${isSaved ? 'saved' : ''}" onclick="toggleBookmark('${item.id}', 'vocab')" aria-label="저장" title="${isSaved ? '저장 해제' : '저장'}">
-                    <svg viewBox="0 0 24 24" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M19 21l-7-4.5L5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-                    </svg>
-                  </button>
-                </div>
+              <!-- 5. 우측 상단 북마크 저장 버튼 단독 배치 -->
+              <div class="vocab-card-top-bar" style="justify-content: flex-end; margin-bottom: 4px;">
+                <button type="button" class="btn-bookmark-icon ${isSaved ? 'saved' : ''}" onclick="toggleBookmark('${item.id}', 'vocab')" aria-label="저장" title="${isSaved ? '저장 해제' : '저장'}">
+                  <svg viewBox="0 0 24 24" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21l-7-4.5L5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                  </svg>
+                </button>
               </div>
 
-              <!-- 2. 표제어 + 발음기호 + 품사 (전체 너비 여유롭게 활용) -->
-              <div class="vocab-headword-section">
+              <!-- 5. 표제어 + 발음기호 + 품사: 단어 앞에 스피커 버튼 배치 (1배속 전용, 문구 없음, 북마크 크기) -->
+              <div class="vocab-headword-section" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="btn-audio-front" onclick="speakVocabItem('${item.id}', 1.0)" title="발음 듣기" aria-label="발음 듣기"
+                        style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--apple-blue-border); background: var(--apple-blue-bg); color: var(--apple-blue); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer;">
+                  <svg style="width: 15px; height: 15px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                  </svg>
+                </button>
                 <span class="vocab-word-text">${escapeHtml(item.word)}</span>
                 <span class="vocab-word-ipa">${escapeHtml(item.ipa)}</span>
                 <span class="vocab-word-pos-tag">${escapeHtml(item.pos)}</span>
