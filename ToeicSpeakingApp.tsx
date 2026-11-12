@@ -1503,11 +1503,6 @@ export const ToeicSpeakingApp: React.FC = () => {
           </svg>
         </button>
 
-        {/* 문항 번호 */}
-        <span className="text-xs sm:text-sm font-bold text-[#1D1D1F] dark:text-[#F5F5F7] px-0.5 sm:px-1 font-mono shrink-0 select-none whitespace-nowrap">
-          <strong>{selectedIndex + 1}</strong> / {totalItemsCount}
-        </span>
-
         {/* 3. 정지 버튼 */}
         <button
           type="button"

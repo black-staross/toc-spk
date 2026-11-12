@@ -3270,7 +3270,6 @@
         <line x1="3" y1="18" x2="21" y2="18"></line>
       </svg>
     </button>
-    <span class="floating-nav-info" id="floatingNavText">1 / 10</span>
 
     <!-- 3. 발음 정지 버튼 (퍼지 멈춤 아이콘) -->
     <button type="button" class="btn-floating-stop" id="btnFloatingStop" onclick="stopSpeech()" aria-label="발음 재생 정지" title="발음 정지">
@@ -3853,11 +3852,11 @@
       const text = document.getElementById('floatingNavText');
       const btnPrev = document.getElementById('btnFloatingPrev');
       const btnNext = document.getElementById('btnFloatingNext');
-      if (!text || !btnPrev || !btnNext) return;
+      if (!btnPrev || !btnNext) return;
 
       const cur = state.selectedIndex + 1;
       const total = items.length;
-      text.textContent = `${cur} / ${total}`;
+      if (text) text.textContent = `${cur} / ${total}`;
 
       const isFirstOfAll = state.activePart === 'part1' && state.selectedIndex === 0;
       const isLastOfAll = state.activePart === 'part5' && state.selectedIndex >= total - 1;
