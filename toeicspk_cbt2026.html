@@ -979,14 +979,16 @@
     }
 
     .timer-top-line {
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
       align-items: center;
-      justify-content: space-between;
       gap: 12px;
       margin-bottom: 10px;
+      width: 100%;
     }
 
     .timer-stage-badge {
+      justify-self: start;
       font-size: 12px;
       font-weight: 700;
       padding: 3px 10px;
@@ -995,6 +997,7 @@
       align-items: center;
       gap: 6px;
       letter-spacing: -0.01em;
+      white-space: nowrap;
     }
 
     .timer-stage-badge.prep {
@@ -1016,6 +1019,8 @@
     }
 
     .timer-digital-display {
+      justify-self: center;
+      text-align: center;
       font-family: 'JetBrains Mono', monospace;
       font-size: 24px;
       font-weight: 700;
@@ -1025,6 +1030,7 @@
     }
 
     .timer-btn-actions {
+      justify-self: end;
       display: flex;
       gap: 6px;
       align-items: center;
@@ -2018,24 +2024,31 @@
       color: #FFFFFF;
     }
 
-    /* 만능문장 & 단어장 모달 파트 세그먼트 탭 */
+    /* 만능문장 & 단어장 모달 파트 세그먼트 탭 (모바일 짤림 방지 가로 스크롤) */
     .modal-segmented-bar {
       padding: 8px 14px;
       border-bottom: 1px solid var(--apple-border-subtle);
       background: rgba(255, 255, 255, 0.45);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .modal-segmented-bar::-webkit-scrollbar {
+      display: none;
     }
     body.dark .modal-segmented-bar {
       background: rgba(28, 28, 30, 0.45);
       border-color: rgba(255, 255, 255, 0.08);
     }
 
-    /* 7. 북마크 아이콘 버튼 + 파트 탭 분리 툴바 (가운데 정렬) */
+    /* 7. 북마크 아이콘 버튼 + 파트 탭 분리 툴바 (모바일 짤림 방지 및 중앙 정렬) */
     .modal-filter-toolbar {
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       gap: 6px;
-      width: 100%;
+      min-width: max-content;
+      margin: 0 auto;
     }
     .btn-modal-bookmark-filter {
       height: 36px;
@@ -2363,17 +2376,9 @@
       transition: all 0.2s ease;
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
     }
-    .vocab-item-card.saved {
-      background: rgba(0, 113, 227, 0.04);
-      border-color: rgba(0, 113, 227, 0.35);
-    }
     body.dark .vocab-item-card {
       background: rgba(36, 36, 38, 0.88);
       border-color: rgba(255, 255, 255, 0.1);
-    }
-    body.dark .vocab-item-card.saved {
-      background: rgba(10, 132, 255, 0.09);
-      border-color: rgba(10, 132, 255, 0.45);
     }
     .magic-sentence-main-group {
       width: 100%;
@@ -2406,17 +2411,9 @@
       transition: all 0.2s ease;
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
     }
-    .vocab-word-card.saved {
-      border-color: rgba(0, 113, 227, 0.35);
-      background: rgba(0, 113, 227, 0.04);
-    }
     body.dark .vocab-word-card {
       background: rgba(36, 36, 38, 0.88);
       border-color: rgba(255, 255, 255, 0.1);
-    }
-    body.dark .vocab-word-card.saved {
-      border-color: rgba(10, 132, 255, 0.45);
-      background: rgba(10, 132, 255, 0.09);
     }
 
     /* 표제어 + 발음기호 + 품사 */
@@ -2990,80 +2987,85 @@
         margin: 16px 0 20px;
       }
       .timer-top-line {
-        display: flex;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
         align-items: center;
-        justify-content: space-between;
         gap: 8px;
-        flex-wrap: wrap;
+        width: 100%;
       }
       .timer-stage-badge {
-        font-size: 12.5px;
+        justify-self: start;
+        font-size: 11.5px;
         font-weight: 700;
-        padding: 4px 10px;
+        padding: 3px 8px;
+        white-space: nowrap;
       }
       .timer-digital-display {
-        font-size: 28px;
+        justify-self: center;
+        text-align: center;
+        font-size: 24px;
         font-weight: 800;
       }
       .timer-btn-actions {
+        justify-self: end;
         display: flex;
-        gap: 6px;
+        gap: 5px;
       }
       .btn-timer-ctrl {
-        width: 36px;
-        height: 36px;
-        min-width: 36px;
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
         border-radius: 50%;
         padding: 0;
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 700;
         display: inline-flex;
         align-items: center;
         justify-content: center;
       }
       .timer-info-caption {
-        font-size: 12.5px;
+        font-size: 12px;
         margin-top: 4px;
       }
 
-      /* 하단 고정 플로팅 바 (모바일 엄지손가락 최적화: 시원한 원형 버튼 & 큰 아이콘) */
+      /* 하단 고정 플로팅 바 (모바일 삐져나옴 완벽 방지: 여유로운 너비 및 컴팩트 정렬) */
       .floating-bottom-bar {
-        bottom: max(16px, env(safe-area-inset-bottom, 16px));
+        bottom: max(14px, env(safe-area-inset-bottom, 12px));
         width: auto;
-        max-width: calc(100% - 20px);
+        max-width: calc(100% - 10px);
         padding: 5px 8px;
-        gap: 5px;
+        gap: 4px;
         justify-content: center;
       }
       .btn-floating-drawer {
-        width: 38px;
-        height: 38px;
-        min-width: 38px;
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
         padding: 0;
       }
       .btn-floating-drawer svg {
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
       }
       .btn-floating-nav {
-        width: 36px;
-        height: 36px;
-        min-width: 36px;
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
         padding: 0;
       }
       .btn-floating-nav svg {
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
       }
       .floating-nav-info {
-        padding: 0 4px;
-        font-size: 13px;
+        padding: 0 2px;
+        font-size: 12px;
         font-weight: 700;
       }
       .btn-floating-stop {
-        width: 36px;
-        height: 36px;
-        min-width: 36px;
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
         padding: 0;
       }
       .btn-floating-stop svg {
@@ -3071,14 +3073,35 @@
         height: 14px;
       }
       .btn-floating-rate {
-        height: 36px;
-        min-width: 44px;
-        padding: 0 9px;
-        font-size: 12px;
+        height: 34px;
+        min-width: 38px;
+        padding: 0 7px;
+        font-size: 11.5px;
         font-weight: 700;
         display: inline-flex;
         align-items: center;
         justify-content: center;
+      }
+
+      /* 단어장 모달 파트 탭 모바일 짤림 방지 */
+      .modal-segmented-bar {
+        padding: 6px 10px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .modal-filter-toolbar {
+        justify-content: flex-start;
+        min-width: max-content;
+      }
+      .btn-modal-bookmark-filter {
+        height: 32px;
+        min-width: 40px;
+        padding: 0 8px;
+        font-size: 11.5px;
+      }
+      .modal-segment-btn {
+        padding: 5px 10px;
+        font-size: 12px;
       }
 
       /* 문항 목록 드로어 */

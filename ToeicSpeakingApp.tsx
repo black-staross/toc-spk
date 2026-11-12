@@ -268,39 +268,41 @@ const CbtTimerCard: React.FC<CbtTimerCardProps> = ({
 
   return (
     <div className={`cbt-timer-card ${className || ''}`} data-timer-id={timerId}>
-      <div className="timer-top-line">
-        {/* 1. 상태 뱃지 (좌측) */}
-        {stage === 'prep' && (
-          <div className="timer-stage-badge prep">
-            <span className="voice-dot" />
-            준비 시간
-          </div>
-        )}
-        {stage === 'response' && (
-          <div className="timer-stage-badge response">
-            <span className="voice-dot" />
-            답변 시간
-          </div>
-        )}
-        {stage === 'ended' && (
-          <div className="timer-stage-badge standby">
-            {responseTime === 0 ? '표 읽기 종료' : '답변 종료'}
-          </div>
-        )}
-        {stage === 'standby' && (
-          <div className="timer-stage-badge standby">
-            {initialBadge}
-          </div>
-        )}
+      <div className="timer-top-line grid grid-cols-[1fr_auto_1fr] items-center gap-2 w-full">
+        {/* 1. 상태 뱃지 (좌측 열) */}
+        <div className="justify-self-start flex items-center min-w-0">
+          {stage === 'prep' && (
+            <div className="timer-stage-badge prep whitespace-nowrap">
+              <span className="voice-dot" />
+              준비 시간
+            </div>
+          )}
+          {stage === 'response' && (
+            <div className="timer-stage-badge response whitespace-nowrap">
+              <span className="voice-dot" />
+              답변 시간
+            </div>
+          )}
+          {stage === 'ended' && (
+            <div className="timer-stage-badge standby whitespace-nowrap">
+              {responseTime === 0 ? '표 읽기 종료' : '답변 종료'}
+            </div>
+          )}
+          {stage === 'standby' && (
+            <div className="timer-stage-badge standby whitespace-nowrap">
+              {initialBadge}
+            </div>
+          )}
+        </div>
 
-        {/* 2. 디지털 시계 (중앙) */}
-        <div className="timer-digital-display">
+        {/* 2. 디지털 시계 (중앙 열: 100% 카드 정중앙 완벽 정렬) */}
+        <div className="timer-digital-display justify-self-center text-center font-mono select-none">
           {String(Math.floor(remaining / 60)).padStart(2, '0')}:
           {String(remaining % 60).padStart(2, '0')}
         </div>
 
-        {/* 3. 컨트롤 버튼 (우측: 시작/일시정지 토글 + 상시 노출 초기화 버튼) */}
-        <div className="timer-btn-actions">
+        {/* 3. 컨트롤 버튼 (우측 열: 시작/일시정지 토글 + 상시 노출 초기화 버튼) */}
+        <div className="timer-btn-actions justify-self-end flex items-center gap-1.5 shrink-0">
           <button
             type="button"
             className="btn-timer-ctrl"
@@ -1468,40 +1470,40 @@ export const ToeicSpeakingApp: React.FC = () => {
         )}
       </main>
 
-      {/* 1 & 3. 하단 중앙 플로팅 바 (문항목록 | 이전 | 번호 | 다음 | 정지 | 1.0x | 0.75x 순서) */}
-      <aside className="fixed bottom-[calc(16px+env(safe-area-inset-bottom,12px))] sm:bottom-9 left-1/2 -translate-x-1/2 z-40 bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-2xl border border-white/90 dark:border-white/15 shadow-2xl rounded-full px-2.5 sm:px-3.5 py-1.5 sm:py-2 flex items-center justify-between sm:justify-center gap-1.5 sm:gap-2.5 w-auto max-w-[calc(100%-16px)]">
+      {/* 1 & 3. 하단 중앙 플로팅 바 (문항목록 | 이전 | 번호 | 다음 | 정지 | 1.0x | 0.75x 순서) - 모바일 삐져나옴 완벽 방지 */}
+      <aside className="fixed bottom-[calc(14px+env(safe-area-inset-bottom,10px))] sm:bottom-9 left-1/2 -translate-x-1/2 z-40 bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-2xl border border-white/90 dark:border-white/15 shadow-2xl rounded-full px-2 sm:px-3.5 py-1.5 sm:py-2 flex items-center justify-between sm:justify-center gap-1 sm:gap-2.5 w-auto max-w-[calc(100%-8px)]">
         {/* 1. 문항 목록 햄버거 버튼 (문구 제거, 아이콘 크게) */}
         <button
           type="button"
           onClick={() => setIsDrawerOpen(true)}
-          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full text-[#1D1D1F] dark:text-[#F5F5F7] bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 transition-all flex items-center justify-center shrink-0"
+          className="w-8.5 h-8.5 sm:w-10 sm:h-10 rounded-full text-[#1D1D1F] dark:text-[#F5F5F7] bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 transition-all flex items-center justify-center shrink-0"
           title="문항 목록"
           aria-label="문항 목록 열기"
         >
-          <svg className="w-5 h-5 sm:w-5.5 sm:h-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="w-4.5 h-4.5 sm:w-5.5 sm:h-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="3" y1="6" x2="21" y2="6"></line>
             <line x1="3" y1="12" x2="21" y2="12"></line>
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
         </button>
 
-        <div className="h-4.5 w-px bg-black/10 dark:bg-white/15 shrink-0"></div>
+        <div className="h-4 w-px bg-black/10 dark:bg-white/15 shrink-0"></div>
 
         {/* 2. 이전 문항 버튼 (문구 제거, 화살표 크게, 전체 시험 연속 이전) */}
         <button
           type="button"
           disabled={isFirstOfAll}
           onClick={handlePrev}
-          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-25 transition-all flex items-center justify-center shrink-0"
+          className="w-8.5 h-8.5 sm:w-10 sm:h-10 rounded-full text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-25 transition-all flex items-center justify-center shrink-0"
           title="이전 문항"
           aria-label="이전 문항"
         >
-          <svg className="w-5 h-5 sm:w-5.5 sm:h-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="w-4.5 h-4.5 sm:w-5.5 sm:h-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15 18 9 12 15 6"></polyline>
           </svg>
         </button>
 
-        <span className="text-xs sm:text-sm font-bold text-[#1D1D1F] dark:text-[#F5F5F7] px-1 font-mono shrink-0 select-none">
+        <span className="text-xs sm:text-sm font-bold text-[#1D1D1F] dark:text-[#F5F5F7] px-0.5 sm:px-1 font-mono shrink-0 select-none">
           <strong>{selectedIndex + 1}</strong> / {totalItemsCount}
         </span>
 
@@ -1510,22 +1512,22 @@ export const ToeicSpeakingApp: React.FC = () => {
           type="button"
           disabled={isLastOfAll}
           onClick={handleNext}
-          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-25 transition-all flex items-center justify-center shrink-0"
+          className="w-8.5 h-8.5 sm:w-10 sm:h-10 rounded-full text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-25 transition-all flex items-center justify-center shrink-0"
           title="다음 문항"
           aria-label="다음 문항"
         >
-          <svg className="w-5 h-5 sm:w-5.5 sm:h-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="w-4.5 h-4.5 sm:w-5.5 sm:h-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
         </button>
 
-        <div className="h-4.5 w-px bg-black/10 dark:bg-white/15 shrink-0"></div>
+        <div className="h-4 w-px bg-black/10 dark:bg-white/15 shrink-0"></div>
 
         {/* 3. 정지 버튼 (문구 제거, 아이콘 크게) */}
         <button
           type="button"
           onClick={stopSpeech}
-          className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border transition-all flex items-center justify-center shrink-0 ${
+          className={`w-8.5 h-8.5 sm:w-10 sm:h-10 rounded-full border transition-all flex items-center justify-center shrink-0 ${
             playingKey
               ? 'bg-[#FF3B30] text-white border-[#FF3B30] shadow-md animate-pulse'
               : 'bg-[#FF3B30]/10 text-[#FF3B30] border-[#FF3B30]/25 hover:bg-[#FF3B30]/20'
@@ -1533,17 +1535,17 @@ export const ToeicSpeakingApp: React.FC = () => {
           title="발음 재생 정지"
           aria-label="발음 정지"
         >
-          <svg className="w-4 h-4 sm:w-4.5 sm:h-4.5" viewBox="0 0 24 24" fill="currentColor">
+          <svg className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" viewBox="0 0 24 24" fill="currentColor">
             <rect x="6" y="5" width="4" height="14" rx="1.5"></rect>
             <rect x="14" y="5" width="4" height="14" rx="1.5"></rect>
           </svg>
         </button>
 
-        {/* 1. 배속 토글 버튼 (1.0x, 0.75x) - 다른 버튼(38~40px)과 높이/정렬 완벽 일치 */}
+        {/* 1. 배속 토글 버튼 (1.0x, 0.75x) - 둥근 모서리 안쪽에 완벽 안착 */}
         <button
           type="button"
           onClick={() => playSelectedRate(1.0)}
-          className={`h-9 sm:h-10 min-w-[44px] sm:min-w-[48px] px-3 sm:px-3.5 inline-flex items-center justify-center rounded-full text-xs sm:text-sm font-bold border transition-all shrink-0 ${
+          className={`h-8.5 sm:h-10 min-w-[38px] sm:min-w-[48px] px-2.5 sm:px-3.5 inline-flex items-center justify-center rounded-full text-xs sm:text-sm font-bold border transition-all shrink-0 ${
             playingKey === 'selected-1'
               ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] shadow-md shadow-blue-500/30'
               : 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/20 hover:bg-[#0071E3]/20'
@@ -1555,7 +1557,7 @@ export const ToeicSpeakingApp: React.FC = () => {
         <button
           type="button"
           onClick={() => playSelectedRate(0.75)}
-          className={`h-9 sm:h-10 min-w-[44px] sm:min-w-[48px] px-3 sm:px-3.5 inline-flex items-center justify-center rounded-full text-xs sm:text-sm font-bold border transition-all shrink-0 ${
+          className={`h-8.5 sm:h-10 min-w-[42px] sm:min-w-[48px] px-2.5 sm:px-3.5 inline-flex items-center justify-center rounded-full text-xs sm:text-sm font-bold border transition-all shrink-0 ${
             playingKey === 'selected-0.75'
               ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] shadow-md shadow-blue-500/30'
               : 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/20 hover:bg-[#0071E3]/20'
@@ -1719,9 +1721,9 @@ export const ToeicSpeakingApp: React.FC = () => {
               </div>
             </div>
 
-            {/* 7. 파트 필터 세그먼트 컨트롤 탭: 좌측 북마크 버튼 분리 + 전체/저장됨 탭 제거 + 가운데 정렬 */}
-            <div className="px-3 sm:px-5 py-2.5 sm:py-3 border-b border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] flex justify-center">
-              <div className="flex items-center justify-center gap-2 max-w-full overflow-x-auto no-scrollbar">
+            {/* 7. 파트 필터 세그먼트 컨트롤 탭: 좌측 북마크 버튼 분리 + 전체/저장됨 탭 제거 + 가운데 정렬(모바일 짤림 방지) */}
+            <div className="px-3 sm:px-5 py-2.5 sm:py-3 border-b border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] overflow-x-auto no-scrollbar">
+              <div className="flex items-center justify-start sm:justify-center gap-2 min-w-max mx-auto px-1">
                 {/* 7. 좌측 북마크 전용 버튼 */}
                 <button
                   type="button"
@@ -1732,7 +1734,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                       setModalPartFilter('SAVED');
                     }
                   }}
-                  className={`h-8 sm:h-9 px-3 rounded-full text-xs font-bold border inline-flex items-center justify-center gap-1.5 transition-all shrink-0 ${
+                  className={`h-8 sm:h-9 px-2.5 sm:px-3 rounded-full text-xs font-bold border inline-flex items-center justify-center gap-1.5 transition-all shrink-0 ${
                     modalPartFilter === 'SAVED'
                       ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] shadow-xs'
                       : 'bg-white dark:bg-[#2C2C2E] text-[#1D1D1F] dark:text-white border-black/10 dark:border-white/15 hover:border-black/20'
@@ -1765,8 +1767,8 @@ export const ToeicSpeakingApp: React.FC = () => {
                 {/* 구분선 */}
                 <div className="h-5 w-px bg-black/10 dark:bg-white/10 shrink-0" />
 
-                {/* 파트 탭 목록 (가운데 정렬) */}
-                <div className="flex p-1 bg-black/5 dark:bg-white/10 rounded-full border border-black/5 dark:border-white/10 gap-1 overflow-x-auto no-scrollbar justify-center">
+                {/* 파트 탭 목록 */}
+                <div className="flex p-1 bg-black/5 dark:bg-white/10 rounded-full border border-black/5 dark:border-white/10 gap-1 shrink-0">
                   {(modalMainMode === 'magic'
                     ? [
                         { id: '2', name: 'Part 2', count: 49 },
@@ -1789,7 +1791,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                         type="button"
                         role="tab"
                         onClick={() => setModalPartFilter(f.id)}
-                        className={`flex-1 min-w-max py-1.5 px-3 rounded-full text-xs font-semibold flex items-center justify-center gap-1.5 transition-all whitespace-nowrap ${
+                        className={`flex-1 min-w-max py-1.5 px-2.5 sm:px-3 rounded-full text-xs font-semibold flex items-center justify-center gap-1.5 transition-all whitespace-nowrap ${
                           isActive
                             ? 'bg-white dark:bg-[#0A84FF] text-[#0071E3] dark:text-white shadow-sm font-bold'
                             : 'text-[#6E6E73] dark:text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white'
@@ -1820,11 +1822,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                       return (
                         <div
                           key={item.id}
-                          className={`p-4 sm:p-4.5 rounded-2xl border flex flex-col justify-between gap-2.5 transition-all ${
-                            isSaved
-                              ? 'bg-[#0071E3]/5 dark:bg-[#0A84FF]/10 border-[#0071E3]/35 dark:border-[#0A84FF]/45'
-                              : 'bg-white/90 dark:bg-[#242426] border-black/5 dark:border-white/10'
-                          }`}
+                          className="p-4 sm:p-4.5 rounded-2xl border flex flex-col justify-between gap-2.5 transition-all bg-white/90 dark:bg-[#242426] border-black/5 dark:border-white/10"
                         >
                           {/* 본문 문장과 북마크 버튼을 같은 줄(같은 선상)에 배치 */}
                           <div className="flex items-start justify-between gap-2.5 w-full">
@@ -1910,11 +1908,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                       return (
                         <div
                           key={item.id}
-                          className={`p-4 sm:p-4.5 rounded-2xl border flex flex-col justify-between gap-2.5 transition-all ${
-                            isSaved
-                              ? 'bg-[#0071E3]/5 dark:bg-[#0A84FF]/10 border-[#0071E3]/35 dark:border-[#0A84FF]/45'
-                              : 'bg-white/90 dark:bg-[#242426] border-black/5 dark:border-white/10'
-                          }`}
+                          className="p-4 sm:p-4.5 rounded-2xl border flex flex-col justify-between gap-2.5 transition-all bg-white/90 dark:bg-[#242426] border-black/5 dark:border-white/10"
                         >
                           {/* 표제어/스피커와 북마크 버튼을 같은 줄(같은 선상)에 배치 */}
                           <div className="flex items-center justify-between gap-2.5 w-full">
