@@ -1470,8 +1470,8 @@ export const ToeicSpeakingApp: React.FC = () => {
         )}
       </main>
 
-      {/* 하단 중앙 플로팅 바 (양옆: 이전/다음 화살표, 가운데: 문항목록 | 번호 | 정지 | 1.0x | 0.75x) */}
-      <aside className="fixed bottom-[calc(14px+env(safe-area-inset-bottom,10px))] sm:bottom-9 left-1/2 -translate-x-1/2 z-40 bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-2xl border border-white/90 dark:border-white/15 shadow-2xl rounded-full px-2 sm:px-3.5 py-1.5 sm:py-2 flex items-center justify-between sm:justify-center gap-1 sm:gap-2 w-auto max-w-[calc(100%-8px)]">
+      {/* 하단 중앙 플로팅 바 (양옆: 이전/다음 화살표, 가운데: 문항목록 | 정지 | 1.0x | 0.75x) */}
+      <aside className="fixed bottom-[calc(26px+env(safe-area-inset-bottom,14px))] sm:bottom-12 left-1/2 -translate-x-1/2 z-40 bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-2xl border border-white/90 dark:border-white/15 shadow-2xl rounded-full px-2 sm:px-3.5 py-1.5 sm:py-2 flex items-center justify-between sm:justify-center gap-1 sm:gap-2 w-auto max-w-[calc(100%-8px)]">
         {/* 1. 이전 문항 버튼 (양옆 배치: 맨 왼쪽) */}
         <button
           type="button"
@@ -1485,8 +1485,6 @@ export const ToeicSpeakingApp: React.FC = () => {
             <polyline points="15 18 9 12 15 6"></polyline>
           </svg>
         </button>
-
-        <div className="h-4 w-px bg-black/10 dark:bg-white/15 shrink-0"></div>
 
         {/* 2. 가운데 영역: 문항 목록 햄버거 버튼 */}
         <button
@@ -1546,8 +1544,6 @@ export const ToeicSpeakingApp: React.FC = () => {
         >
           0.75x
         </button>
-
-        <div className="h-4 w-px bg-black/10 dark:bg-white/15 shrink-0"></div>
 
         {/* 5. 다음 문항 버튼 (양옆 배치: 맨 오른쪽) */}
         <button

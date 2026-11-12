@@ -1522,7 +1522,7 @@ def main():
     /* 3. 화면 하단 고정 플로팅 바 (언제나 손이 닿는 이전/다음/정지) */
     .floating-bottom-bar {
       position: fixed;
-      bottom: 36px;
+      bottom: 48px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 90;
@@ -3060,7 +3060,7 @@ def main():
 
       /* 하단 고정 플로팅 바 (모바일 삐져나옴 완벽 방지: 여유로운 너비 및 컴팩트 정렬) */
       .floating-bottom-bar {
-        bottom: max(14px, env(safe-area-inset-bottom, 12px));
+        bottom: max(26px, env(safe-area-inset-bottom, 16px));
         width: auto;
         max-width: calc(100% - 10px);
         padding: 5px 8px;
@@ -3282,7 +3282,7 @@ def main():
   <!-- 메인 뷰포트 -->
   <main class="main-viewport" id="appMainViewport"></main>
 
-  <!-- 하단 중앙 플로팅 바 (양옆: 이전/다음 화살표, 가운데: 문항목록 | 번호 | 정지 | 1.0x | 0.75x) -->
+  <!-- 하단 중앙 플로팅 바 (양옆: 이전/다음 화살표, 가운데: 문항목록 | 정지 | 1.0x | 0.75x) -->
   <aside class="floating-bottom-bar" id="floatingBottomBar" aria-label="빠른 조작 바">
     <!-- 1. 이전 문항 버튼 (양옆 배치: 맨 왼쪽) -->
     <button type="button" class="btn-floating-nav" id="btnFloatingPrev" onclick="navPrev()" aria-label="이전 문항" title="이전 문항">
@@ -3290,7 +3290,6 @@ def main():
         <polyline points="15 18 9 12 15 6"></polyline>
       </svg>
     </button>
-    <div class="floating-divider" style="width: 1px; height: 18px; background: rgba(127,127,127,0.22); margin: 0 1px;"></div>
 
     <!-- 2. 가운데 영역: 문항 목록 햄버거 버튼 -->
     <button type="button" class="btn-floating-drawer" onclick="openDrawer()" aria-label="문항 목록 열기" title="문항 목록">
@@ -3312,8 +3311,6 @@ def main():
     <!-- 4. 배속 버튼들 (1.0x, 0.75x) -->
     <button type="button" class="btn-floating-rate" id="btnFloatingRate10" onclick="playSelectedRate(1.0)">1.0x</button>
     <button type="button" class="btn-floating-rate" id="btnFloatingRate075" onclick="playSelectedRate(0.75)">0.75x</button>
-
-    <div class="floating-divider" style="width: 1px; height: 18px; background: rgba(127,127,127,0.22); margin: 0 1px;"></div>
 
     <!-- 5. 다음 문항 버튼 (양옆 배치: 맨 오른쪽) -->
     <button type="button" class="btn-floating-nav" id="btnFloatingNext" onclick="navNext()" aria-label="다음 문항" title="다음 문항">
