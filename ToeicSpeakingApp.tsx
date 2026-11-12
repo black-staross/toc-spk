@@ -625,6 +625,65 @@ export const ToeicSpeakingApp: React.FC = () => {
     setTimeLeft(targetPrepTime);
   };
 
+  const renderCbtTimerBlock = (label?: string) => (
+    <div className="p-4 sm:p-5 rounded-2xl bg-[#1D1D1F] dark:bg-[#242426] text-white shadow-lg flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 text-center sm:text-left">
+      <div className="flex items-center gap-3 justify-center sm:justify-start">
+        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/10 flex items-center justify-center font-mono font-bold text-base sm:text-lg text-[#0071E3] dark:text-[#0A84FF] shrink-0">
+          ⏱
+        </div>
+        <div>
+          <div className="text-xs sm:text-sm font-bold text-white tracking-tight">
+            {timerStatus === 'prep' && '준비 시간'}
+            {timerStatus === 'resp' && '답변 시간'}
+            {timerStatus === 'done' && '종료'}
+            {timerStatus === 'idle' && (label || '실전 타이머')}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-center sm:justify-end gap-2.5 sm:gap-3">
+        <span className="font-mono text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0071E3] dark:text-[#0A84FF] bg-white/5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-xl border border-white/10">
+          {String(Math.floor(timeLeft / 60)).padStart(2, '0')}:
+          {String(timeLeft % 60).padStart(2, '0')}
+        </span>
+        <div className="flex items-center gap-1.5">
+          {timerStatus === 'idle' ? (
+            <button
+              type="button"
+              onClick={startCbtTimer}
+              title="시작"
+              aria-label="시작"
+              className="w-9 h-9 rounded-full inline-flex items-center justify-center text-sm font-bold bg-[#0071E3] dark:bg-[#0A84FF] hover:bg-[#0077ED] text-white shadow-md transition-all shrink-0"
+            >
+              ▶
+            </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={pauseCbtTimer}
+                title="일시정지"
+                aria-label="일시정지"
+                className="w-9 h-9 rounded-full inline-flex items-center justify-center text-sm font-bold bg-white/10 hover:bg-white/20 text-white transition-all shrink-0"
+              >
+                ⏸
+              </button>
+              <button
+                type="button"
+                onClick={resetCbtTimer}
+                title="초기화"
+                aria-label="초기화"
+                className="w-9 h-9 rounded-full inline-flex items-center justify-center text-sm font-bold bg-white/10 hover:bg-white/20 text-[#FF453A] transition-all shrink-0"
+              >
+                ↺
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
   const handleTabChange = (part: ActivePart) => {
     stopSpeech();
     setActivePart(part);
@@ -957,6 +1016,11 @@ export const ToeicSpeakingApp: React.FC = () => {
               );
             })()}
 
+            {/* 5. 실제 CBT 타이머 (전체 지문 바로 밑에 배치) */}
+            <div className="mb-7">
+              {renderCbtTimerBlock('준비 45초 · 답변 45초')}
+            </div>
+
             {/* 문장별 끊어 읽기 (클릭 시 발음 선택) */}
             <div>
               <h3 className="text-base font-bold text-[#1D1D1F] dark:text-white mb-3">
@@ -1024,66 +1088,6 @@ export const ToeicSpeakingApp: React.FC = () => {
                 <p className="leading-relaxed">{currentStandardQ.readingTips}</p>
               </div>
             )}
-
-            {/* CBT 실전 디지털 타이머 */}
-            <div className="mt-8 pt-6 border-t border-black/10 dark:border-white/10">
-              <div className="p-4 sm:p-5 rounded-2xl bg-[#1D1D1F] dark:bg-[#242426] text-white shadow-lg flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 text-center sm:text-left">
-                <div className="flex items-center gap-3 justify-center sm:justify-start">
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/10 flex items-center justify-center font-mono font-bold text-base sm:text-lg text-[#0071E3] dark:text-[#0A84FF] shrink-0">
-                    ⏱
-                  </div>
-                  <div>
-                    <div className="text-xs sm:text-sm font-bold text-white tracking-tight">
-                      {timerStatus === 'prep' && '준비 시간'}
-                      {timerStatus === 'resp' && '답변 시간'}
-                      {timerStatus === 'done' && '종료'}
-                      {timerStatus === 'idle' && '실전 타이머'}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-center sm:justify-end gap-2.5 sm:gap-3">
-                  <span className="font-mono text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0071E3] dark:text-[#0A84FF] bg-white/5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-xl border border-white/10">
-                    {String(Math.floor(timeLeft / 60)).padStart(2, '0')}:
-                    {String(timeLeft % 60).padStart(2, '0')}
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    {timerStatus === 'idle' ? (
-                      <button
-                        type="button"
-                        onClick={startCbtTimer}
-                        title="시작"
-                        aria-label="시작"
-                        className="w-9 h-9 rounded-full inline-flex items-center justify-center text-sm font-bold bg-[#0071E3] dark:bg-[#0A84FF] hover:bg-[#0077ED] text-white shadow-md transition-all shrink-0"
-                      >
-                        ▶
-                      </button>
-                    ) : (
-                      <>
-                        <button
-                          type="button"
-                          onClick={pauseCbtTimer}
-                          title="일시정지"
-                          aria-label="일시정지"
-                          className="w-9 h-9 rounded-full inline-flex items-center justify-center text-sm font-bold bg-white/10 hover:bg-white/20 text-white transition-all shrink-0"
-                        >
-                          ⏸
-                        </button>
-                        <button
-                          type="button"
-                          onClick={resetCbtTimer}
-                          title="초기화"
-                          aria-label="초기화"
-                          className="w-9 h-9 rounded-full inline-flex items-center justify-center text-sm font-bold bg-white/10 hover:bg-white/20 text-[#FF453A] transition-all shrink-0"
-                        >
-                          ↺
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
           </article>
         )}
 
@@ -1397,6 +1401,11 @@ export const ToeicSpeakingApp: React.FC = () => {
               );
             })()}
 
+            {/* 5. CBT 타이머 (문제/질문 바로 밑에 배치) */}
+            <div className="mb-6">
+              {renderCbtTimerBlock()}
+            </div>
+
             {/* 모범답안 토글 버튼 */}
             <div className="flex items-center justify-between pt-1">
               <button
@@ -1533,66 +1542,6 @@ export const ToeicSpeakingApp: React.FC = () => {
                 </div>
               );
             })()}
-
-            {/* CBT 실전 디지털 타이머 */}
-            <div className="mt-8 pt-6 border-t border-black/10 dark:border-white/10">
-              <div className="p-4 sm:p-5 rounded-2xl bg-[#1D1D1F] dark:bg-[#242426] text-white shadow-lg flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 text-center sm:text-left">
-                <div className="flex items-center gap-3 justify-center sm:justify-start">
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/10 flex items-center justify-center font-mono font-bold text-base sm:text-lg text-[#0071E3] dark:text-[#0A84FF] shrink-0">
-                    ⏱
-                  </div>
-                  <div>
-                    <div className="text-xs sm:text-sm font-bold text-white tracking-tight">
-                      {timerStatus === 'prep' && '준비 시간'}
-                      {timerStatus === 'resp' && '답변 시간'}
-                      {timerStatus === 'done' && '종료'}
-                      {timerStatus === 'idle' && '실전 타이머'}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-center sm:justify-end gap-2.5 sm:gap-3">
-                  <span className="font-mono text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0071E3] dark:text-[#0A84FF] bg-white/5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-xl border border-white/10">
-                    {String(Math.floor(timeLeft / 60)).padStart(2, '0')}:
-                    {String(timeLeft % 60).padStart(2, '0')}
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    {timerStatus === 'idle' ? (
-                      <button
-                        type="button"
-                        onClick={startCbtTimer}
-                        title="시작"
-                        aria-label="시작"
-                        className="w-9 h-9 rounded-full inline-flex items-center justify-center text-sm font-bold bg-[#0071E3] dark:bg-[#0A84FF] hover:bg-[#0077ED] text-white shadow-md transition-all shrink-0"
-                      >
-                        ▶
-                      </button>
-                    ) : (
-                      <>
-                        <button
-                          type="button"
-                          onClick={pauseCbtTimer}
-                          title="일시정지"
-                          aria-label="일시정지"
-                          className="w-9 h-9 rounded-full inline-flex items-center justify-center text-sm font-bold bg-white/10 hover:bg-white/20 text-white transition-all shrink-0"
-                        >
-                          ⏸
-                        </button>
-                        <button
-                          type="button"
-                          onClick={resetCbtTimer}
-                          title="초기화"
-                          aria-label="초기화"
-                          className="w-9 h-9 rounded-full inline-flex items-center justify-center text-sm font-bold bg-white/10 hover:bg-white/20 text-[#FF453A] transition-all shrink-0"
-                        >
-                          ↺
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
           </article>
         )}
       </main>
