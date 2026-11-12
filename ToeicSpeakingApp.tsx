@@ -739,7 +739,7 @@ export const ToeicSpeakingApp: React.FC = () => {
   return (
     <div className={`min-h-screen transition-colors duration-200 ${isDarkMode ? 'dark bg-[#0E0E11] text-[#F5F5F7]' : 'bg-[#EEF2F6] text-[#1D1D1F]'} font-sans antialiased flex flex-col items-center`}>
       {/* 5. 컴퓨터 & 태블릿에서도 모바일 화면 레이아웃으로 고정하는 앱 셸 */}
-      <div className={`w-full max-w-[480px] min-h-screen ${isDarkMode ? 'bg-[#000000] border-x border-white/10 shadow-2xl' : 'bg-gradient-to-b from-white via-[#F5F5F7] to-[#EBEBF0] shadow-xl'} relative flex flex-col pb-36`}>
+      <div className={`w-full max-w-[480px] min-h-screen ${isDarkMode ? 'bg-[#000000] border-x border-white/10 shadow-2xl' : 'bg-gradient-to-b from-white via-[#F5F5F7] to-[#EBEBF0] shadow-xl'} relative flex flex-col pb-48`}>
         {/* iOS 리퀴드 글래스 헤더 */}
         <header className="sticky top-0 z-40 bg-white/80 dark:bg-[#141416]/85 backdrop-blur-2xl border-b border-black/5 dark:border-white/10 shadow-sm transition-all">
           <div className="w-full px-3.5 py-3 flex items-center justify-between gap-2">
@@ -1471,7 +1471,7 @@ export const ToeicSpeakingApp: React.FC = () => {
       </main>
 
       {/* 하단 중앙 플로팅 바 (양옆: 이전/다음 화살표, 가운데: 문항목록 | 정지 | 1.0x | 0.75x) */}
-      <aside className="fixed bottom-[calc(26px+env(safe-area-inset-bottom,14px))] sm:bottom-12 left-1/2 -translate-x-1/2 z-40 bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-2xl border border-white/90 dark:border-white/15 shadow-2xl rounded-full px-2 sm:px-3.5 py-1.5 sm:py-2 flex items-center justify-between sm:justify-center gap-1 sm:gap-2 w-auto max-w-[calc(100%-8px)]">
+      <aside className="fixed bottom-[calc(68px+env(safe-area-inset-bottom,16px))] sm:bottom-[84px] left-1/2 -translate-x-1/2 z-40 bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-2xl border border-white/90 dark:border-white/15 shadow-2xl rounded-full px-2 sm:px-3.5 py-1.5 sm:py-2 flex items-center justify-between sm:justify-center gap-1 sm:gap-2 w-auto max-w-[calc(100%-8px)]">
         {/* 1. 이전 문항 버튼 (양옆 배치: 맨 왼쪽) */}
         <button
           type="button"

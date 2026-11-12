@@ -1492,7 +1492,7 @@
     /* 3. 화면 하단 고정 플로팅 바 (언제나 손이 닿는 이전/다음/정지) */
     .floating-bottom-bar {
       position: fixed;
-      bottom: 48px;
+      bottom: 84px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 90;
@@ -2753,7 +2753,7 @@
       /* 메인 뷰포트 & 카드 */
       .main-viewport {
         padding: 0 12px;
-        margin: 14px auto 120px;
+        margin: 14px auto 160px;
       }
       .sub-segmented-bar {
         margin-bottom: 16px;
@@ -3030,7 +3030,7 @@
 
       /* 하단 고정 플로팅 바 (모바일 삐져나옴 완벽 방지: 여유로운 너비 및 컴팩트 정렬) */
       .floating-bottom-bar {
-        bottom: max(26px, env(safe-area-inset-bottom, 16px));
+        bottom: max(68px, env(safe-area-inset-bottom, 20px));
         width: auto;
         max-width: calc(100% - 10px);
         padding: 5px 8px;
