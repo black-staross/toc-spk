@@ -140,7 +140,6 @@ const vocabData = vocabDataRaw as {
 };
 
 type ActivePart = 'part1' | 'part2' | 'part3' | 'part4' | 'part5';
-type TimerStatus = 'idle' | 'prep' | 'resp' | 'done';
 type ModalMainMode = 'magic' | 'vocab';
 
 const playBeepAudio = (freq = 1000, durationMs = 300) => {
@@ -163,135 +162,170 @@ const playBeepAudio = (freq = 1000, durationMs = 300) => {
   }
 };
 
-const CbtSubTimer: React.FC<{
+interface CbtTimerCardProps {
   prepTime: number;
   responseTime: number;
   label?: string;
-}> = ({ prepTime, responseTime, label }) => {
-  const [status, setStatus] = useState<'idle' | 'prep' | 'resp' | 'done'>('idle');
-  const [timeLeft, setTimeLeft] = useState<number>(prepTime > 0 ? prepTime : responseTime);
-  const timerRef = useRef<any>(null);
+  defaultBadge?: string;
+  timerId?: string;
+  className?: string;
+}
 
+const CbtTimerCard: React.FC<CbtTimerCardProps> = ({
+  prepTime,
+  responseTime,
+  label,
+  defaultBadge,
+  timerId = 'main',
+  className,
+}) => {
+  const [stage, setStage] = useState<'standby' | 'prep' | 'response' | 'ended'>('standby');
+  const [remaining, setRemaining] = useState<number>(prepTime > 0 ? prepTime : responseTime);
+  const [isRunning, setIsRunning] = useState<boolean>(false);
+  const intervalRef = useRef<any>(null);
+
+  // 시간 설정이 바뀌면 초기화
   useEffect(() => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    setStatus('idle');
-    setTimeLeft(prepTime > 0 ? prepTime : responseTime);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = null;
+    setIsRunning(false);
+    setStage('standby');
+    setRemaining(prepTime > 0 ? prepTime : responseTime);
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [prepTime, responseTime]);
 
-  const handleStart = () => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    const initialMode: 'prep' | 'resp' = prepTime > 0 ? 'prep' : 'resp';
-    const initialSec = prepTime > 0 ? prepTime : responseTime;
-    setStatus(initialMode);
-    setTimeLeft(initialSec);
+  const toggleTimer = () => {
+    if (isRunning && intervalRef.current) {
+      // 일시정지
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+      setIsRunning(false);
+      return;
+    }
 
-    let sec = initialSec;
-    let mode = initialMode;
+    // 시작 또는 재개
+    let currentStage = stage;
+    let currentRemaining = remaining;
 
-    timerRef.current = setInterval(() => {
-      sec -= 1;
-      if (sec <= 0) {
-        if (mode === 'prep' && responseTime > 0) {
-          playBeepAudio(1000, 350);
-          mode = 'resp';
-          sec = responseTime;
-          setStatus('resp');
-          setTimeLeft(sec);
-        } else {
-          playBeepAudio(1200, 450);
-          if (timerRef.current) clearInterval(timerRef.current);
-          setStatus('done');
-          setTimeLeft(0);
+    if (currentStage === 'standby' || currentStage === 'ended') {
+      if (prepTime > 0) {
+        currentStage = 'prep';
+        currentRemaining = prepTime;
+      } else {
+        currentStage = 'response';
+        currentRemaining = responseTime;
+      }
+      setStage(currentStage);
+      setRemaining(currentRemaining);
+    }
+
+    setIsRunning(true);
+
+    intervalRef.current = setInterval(() => {
+      currentRemaining -= 1;
+      if (currentRemaining <= 0) {
+        if (currentStage === 'prep') {
+          playBeepAudio(1000, 400); // 삐- 신호음
+          if (responseTime > 0) {
+            currentStage = 'response';
+            currentRemaining = responseTime;
+            setStage('response');
+            setRemaining(currentRemaining);
+          } else {
+            // 준비 시간 전용 (예: 표 읽기 45초)
+            playBeepAudio(587, 600); // 종료음
+            if (intervalRef.current) clearInterval(intervalRef.current);
+            intervalRef.current = null;
+            setIsRunning(false);
+            setStage('ended');
+            setRemaining(0);
+          }
+        } else if (currentStage === 'response') {
+          playBeepAudio(587, 600); // 종료음
+          if (intervalRef.current) clearInterval(intervalRef.current);
+          intervalRef.current = null;
+          setIsRunning(false);
+          setStage('ended');
+          setRemaining(0);
         }
       } else {
-        setTimeLeft(sec);
+        setRemaining(currentRemaining);
       }
     }, 1000);
   };
 
-  const handlePause = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
+  const resetTimer = () => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = null;
+    setIsRunning(false);
+    setStage('standby');
+    setRemaining(prepTime > 0 ? prepTime : responseTime);
   };
 
-  const handleReset = () => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    setStatus('idle');
-    setTimeLeft(prepTime > 0 ? prepTime : responseTime);
-  };
+  const initialBadge = defaultBadge || label || (responseTime === 0 ? '표 읽기 대기 중' : '타이머 대기 중');
 
   return (
-    <div className="p-3 sm:p-3.5 rounded-xl bg-[#1D1D1F] dark:bg-[#242426] text-white shadow-md flex items-center justify-between gap-3">
-      <div className="flex items-center gap-2">
-        <span
-          className={`text-[11px] sm:text-xs font-bold px-2.5 py-1 rounded-full ${
-            status === 'prep'
-              ? 'bg-[#FF9500] text-black'
-              : status === 'resp'
-              ? 'bg-[#34C759] text-black'
-              : status === 'done'
-              ? 'bg-[#FF3B30] text-white'
-              : 'bg-white/15 text-white/90'
-          }`}
-        >
-          {status === 'prep'
-            ? '준비 시간'
-            : status === 'resp'
-            ? '답변 시간'
-            : status === 'done'
-            ? '종료'
-            : label || '실전 타이머'}
-        </span>
-      </div>
+    <div className={`cbt-timer-card ${className || ''}`} data-timer-id={timerId}>
+      <div className="timer-top-line">
+        {/* 1. 상태 뱃지 (좌측) */}
+        {stage === 'prep' && (
+          <div className="timer-stage-badge prep">
+            <span className="voice-dot" />
+            준비 시간
+          </div>
+        )}
+        {stage === 'response' && (
+          <div className="timer-stage-badge response">
+            <span className="voice-dot" />
+            답변 시간
+          </div>
+        )}
+        {stage === 'ended' && (
+          <div className="timer-stage-badge standby">
+            {responseTime === 0 ? '표 읽기 종료' : '답변 종료'}
+          </div>
+        )}
+        {stage === 'standby' && (
+          <div className="timer-stage-badge standby">
+            {initialBadge}
+          </div>
+        )}
 
-      <div className="flex items-center gap-2 sm:gap-2.5">
-        <span className="font-mono text-lg sm:text-xl font-extrabold tracking-tight text-[#0071E3] dark:text-[#0A84FF] bg-white/5 px-2.5 py-0.5 rounded-lg border border-white/10">
-          {String(Math.floor(timeLeft / 60)).padStart(2, '0')}:
-          {String(timeLeft % 60).padStart(2, '0')}
-        </span>
-        <div className="flex items-center gap-1">
-          {status === 'idle' ? (
-            <button
-              type="button"
-              onClick={handleStart}
-              title="시작"
-              aria-label="시작"
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full inline-flex items-center justify-center text-xs font-bold bg-[#0071E3] dark:bg-[#0A84FF] hover:bg-[#0077ED] text-white shadow-sm transition-all"
-            >
-              ▶
-            </button>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={handlePause}
-                title="일시정지"
-                aria-label="일시정지"
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full inline-flex items-center justify-center text-xs font-bold bg-white/10 hover:bg-white/20 text-white transition-all"
-              >
-                ⏸
-              </button>
-              <button
-                type="button"
-                onClick={handleReset}
-                title="초기화"
-                aria-label="초기화"
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full inline-flex items-center justify-center text-xs font-bold bg-white/10 hover:bg-white/20 text-[#FF453A] transition-all"
-              >
-                ↺
-              </button>
-            </>
-          )}
+        {/* 2. 디지털 시계 (중앙) */}
+        <div className="timer-digital-display">
+          {String(Math.floor(remaining / 60)).padStart(2, '0')}:
+          {String(remaining % 60).padStart(2, '0')}
+        </div>
+
+        {/* 3. 컨트롤 버튼 (우측: 시작/일시정지 토글 + 상시 노출 초기화 버튼) */}
+        <div className="timer-btn-actions">
+          <button
+            type="button"
+            className="btn-timer-ctrl"
+            onClick={toggleTimer}
+            title={isRunning ? '일시정지' : stage === 'ended' ? '다시 시작' : '시작'}
+            aria-label="타이머 시작/일시정지"
+          >
+            {isRunning ? '⏸' : stage === 'ended' ? '↺' : '▶'}
+          </button>
+          <button
+            type="button"
+            className="btn-timer-ctrl"
+            onClick={resetTimer}
+            title="초기화"
+            aria-label="타이머 초기화"
+          >
+            ↺
+          </button>
         </div>
       </div>
     </div>
   );
 };
+
+const CbtSubTimer = CbtTimerCard;
 
 export const ToeicSpeakingApp: React.FC = () => {
   const [activePart, setActivePart] = useState<ActivePart>('part1');
@@ -365,11 +399,6 @@ export const ToeicSpeakingApp: React.FC = () => {
   // 음성 재생 키
   const [playingKey, setPlayingKey] = useState<string | null>(null);
 
-  // CBT 타이머 상태
-  const [timerStatus, setTimerStatus] = useState<TimerStatus>('idle');
-  const [timeLeft, setTimeLeft] = useState<number>(45);
-  const timerIntervalRef = useRef<any>(null);
-
   // 1. Daniel 음성 고정 탐색
   const getDanielVoice = (): SpeechSynthesisVoice | null => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null;
@@ -399,7 +428,6 @@ export const ToeicSpeakingApp: React.FC = () => {
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
-      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     };
   }, []);
 
@@ -510,27 +538,6 @@ export const ToeicSpeakingApp: React.FC = () => {
     }`;
   };
 
-  // 5. Web Audio API를 이용한 단단한 Beep 신호음
-  const playBeep = (freq = 1000, durationMs = 300) => {
-    try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, ctx.currentTime);
-      gain.gain.setValueAtTime(0.25, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + durationMs / 1000);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + durationMs / 1000);
-    } catch {
-      // AudioContext unavailable
-    }
-  };
-
   // 파트별 문항 필터링
   const activeQuestions = useMemo<StandardQuestion[]>(() => {
     if (activePart === 'part1') return masterData.part1;
@@ -556,12 +563,8 @@ export const ToeicSpeakingApp: React.FC = () => {
   const targetPrepTime = activePart === 'part4' ? (currentP4Set ? currentP4Set.prepTime : 45) : (currentStandardQ ? currentStandardQ.prepTime : 45);
   const targetRespTime = activePart === 'part4' ? 15 : (currentStandardQ ? currentStandardQ.responseTime : 45);
 
-  // 문제나 파트 전환 시 타이머 리셋 & 기본 발음 항목 자동 선택
+  // 문제나 파트 전환 시 기본 발음 항목 자동 선택
   useEffect(() => {
-    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-    setTimerStatus('idle');
-    setTimeLeft(targetPrepTime);
-
     // 기본 발음 항목 선택
     if (activePart === 'part1' && currentStandardQ) {
       const full = currentStandardQ.sentences.map(s => s.en).join(' ');
@@ -582,106 +585,15 @@ export const ToeicSpeakingApp: React.FC = () => {
     }
   }, [activePart, selectedIndex, targetPrepTime, currentStandardQ, currentP4Set]);
 
-  const startCbtTimer = () => {
-    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-    setTimerStatus('prep');
-    setTimeLeft(targetPrepTime);
-
-    let currentSec = targetPrepTime;
-    let mode: 'prep' | 'resp' = 'prep';
-
-    timerIntervalRef.current = setInterval(() => {
-      currentSec -= 1;
-      if (currentSec <= 0) {
-        if (mode === 'prep') {
-          playBeep(1000, 350); // 준비 시간 종료 비프음
-          mode = 'resp';
-          currentSec = targetRespTime;
-          setTimerStatus('resp');
-          setTimeLeft(currentSec);
-        } else {
-          // 답변 시간 종료
-          playBeep(1200, 450);
-          if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-          setTimerStatus('done');
-          setTimeLeft(0);
-        }
-      } else {
-        setTimeLeft(currentSec);
-      }
-    }, 1000);
-  };
-
-  const pauseCbtTimer = () => {
-    if (timerIntervalRef.current) {
-      clearInterval(timerIntervalRef.current);
-      timerIntervalRef.current = null;
-    }
-  };
-
-  const resetCbtTimer = () => {
-    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-    setTimerStatus('idle');
-    setTimeLeft(targetPrepTime);
-  };
-
   const renderCbtTimerBlock = (label?: string) => (
-    <div className="p-4 sm:p-5 rounded-2xl bg-[#1D1D1F] dark:bg-[#242426] text-white shadow-lg flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 text-center sm:text-left">
-      <div className="flex items-center gap-3 justify-center sm:justify-start">
-        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/10 flex items-center justify-center font-mono font-bold text-base sm:text-lg text-[#0071E3] dark:text-[#0A84FF] shrink-0">
-          ⏱
-        </div>
-        <div>
-          <div className="text-xs sm:text-sm font-bold text-white tracking-tight">
-            {timerStatus === 'prep' && '준비 시간'}
-            {timerStatus === 'resp' && '답변 시간'}
-            {timerStatus === 'done' && '종료'}
-            {timerStatus === 'idle' && (label || '실전 타이머')}
-          </div>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-center sm:justify-end gap-2.5 sm:gap-3">
-        <span className="font-mono text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0071E3] dark:text-[#0A84FF] bg-white/5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-xl border border-white/10">
-          {String(Math.floor(timeLeft / 60)).padStart(2, '0')}:
-          {String(timeLeft % 60).padStart(2, '0')}
-        </span>
-        <div className="flex items-center gap-1.5">
-          {timerStatus === 'idle' ? (
-            <button
-              type="button"
-              onClick={startCbtTimer}
-              title="시작"
-              aria-label="시작"
-              className="w-9 h-9 rounded-full inline-flex items-center justify-center text-sm font-bold bg-[#0071E3] dark:bg-[#0A84FF] hover:bg-[#0077ED] text-white shadow-md transition-all shrink-0"
-            >
-              ▶
-            </button>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={pauseCbtTimer}
-                title="일시정지"
-                aria-label="일시정지"
-                className="w-9 h-9 rounded-full inline-flex items-center justify-center text-sm font-bold bg-white/10 hover:bg-white/20 text-white transition-all shrink-0"
-              >
-                ⏸
-              </button>
-              <button
-                type="button"
-                onClick={resetCbtTimer}
-                title="초기화"
-                aria-label="초기화"
-                className="w-9 h-9 rounded-full inline-flex items-center justify-center text-sm font-bold bg-white/10 hover:bg-white/20 text-[#FF453A] transition-all shrink-0"
-              >
-                ↺
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
+    <CbtTimerCard
+      key={`main-${activePart}-${selectedIndex}`}
+      prepTime={targetPrepTime}
+      responseTime={targetRespTime}
+      label={label}
+      defaultBadge={label || '타이머 대기 중'}
+      timerId={`main-${activePart}-${selectedIndex}`}
+    />
   );
 
   const handleTabChange = (part: ActivePart) => {
@@ -1147,7 +1059,14 @@ export const ToeicSpeakingApp: React.FC = () => {
 
             {/* 일정표 밑: 준비 시간 45초 타이머 세팅 */}
             <div className="mb-5">
-              <CbtSubTimer prepTime={45} responseTime={0} label="표 읽기 45초" />
+              <CbtSubTimer
+                key={`p4-table-${selectedIndex}`}
+                prepTime={45}
+                responseTime={0}
+                label="표 읽기 45초"
+                defaultBadge="표 읽기 45초"
+                timerId={`p4-table-${selectedIndex}`}
+              />
             </div>
 
             {/* 3. 표 읽는 타이머 밑 구분선 */}
@@ -1235,9 +1154,12 @@ export const ToeicSpeakingApp: React.FC = () => {
                       {/* 1. 파트 4 문제 타이머 (모범답안 위에 배치) */}
                       <div className="pt-1">
                         <CbtSubTimer
+                          key={`p4-q-${q.qId}`}
                           prepTime={3}
                           responseTime={qIdx >= 2 ? 30 : 15}
                           label={qIdx >= 2 ? '답변 30초' : '답변 15초'}
+                          defaultBadge={qIdx >= 2 ? '답변 30초' : '답변 15초'}
+                          timerId={`p4-q-${q.qId}`}
                         />
                       </div>
 
