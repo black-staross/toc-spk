@@ -3282,9 +3282,17 @@ def main():
   <!-- 메인 뷰포트 -->
   <main class="main-viewport" id="appMainViewport"></main>
 
-  <!-- 1 & 3. 화면 하단 고정 플로팅 바 (문항목록 | 이전 | 번호 | 다음 | 정지 | 1.0x | 0.75x 순서) -->
+  <!-- 하단 중앙 플로팅 바 (양옆: 이전/다음 화살표, 가운데: 문항목록 | 번호 | 정지 | 1.0x | 0.75x) -->
   <aside class="floating-bottom-bar" id="floatingBottomBar" aria-label="빠른 조작 바">
-    <!-- 1. 문항 목록 햄버거 버튼 (문구 없이 아이콘만 크게) -->
+    <!-- 1. 이전 문항 버튼 (양옆 배치: 맨 왼쪽) -->
+    <button type="button" class="btn-floating-nav" id="btnFloatingPrev" onclick="navPrev()" aria-label="이전 문항" title="이전 문항">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+    <div class="floating-divider" style="width: 1px; height: 18px; background: rgba(127,127,127,0.22); margin: 0 1px;"></div>
+
+    <!-- 2. 가운데 영역: 문항 목록 햄버거 버튼 -->
     <button type="button" class="btn-floating-drawer" onclick="openDrawer()" aria-label="문항 목록 열기" title="문항 목록">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
         <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -3292,23 +3300,7 @@ def main():
         <line x1="3" y1="18" x2="21" y2="18"></line>
       </svg>
     </button>
-    <div class="floating-divider" style="width: 1px; height: 18px; background: rgba(127,127,127,0.22); margin: 0 1px;"></div>
-
-    <!-- 2. 이전 문항 버튼 (문구 없이 화살표만 크게) -->
-    <button type="button" class="btn-floating-nav" id="btnFloatingPrev" onclick="navPrev()" aria-label="이전 문항" title="이전 문항">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="15 18 9 12 15 6"></polyline>
-      </svg>
-    </button>
     <span class="floating-nav-info" id="floatingNavText">1 / 10</span>
-
-    <!-- 2. 다음 문항 버튼 (문구 없이 화살표만 크게) -->
-    <button type="button" class="btn-floating-nav" id="btnFloatingNext" onclick="navNext()" aria-label="다음 문항" title="다음 문항">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="9 18 15 12 9 6"></polyline>
-      </svg>
-    </button>
-    <div class="floating-divider" style="width: 1px; height: 18px; background: rgba(127,127,127,0.22); margin: 0 1px;"></div>
 
     <!-- 3. 발음 정지 버튼 (퍼지 멈춤 아이콘) -->
     <button type="button" class="btn-floating-stop" id="btnFloatingStop" onclick="stopSpeech()" aria-label="발음 재생 정지" title="발음 정지">
@@ -3317,8 +3309,19 @@ def main():
         <rect x="14" y="5" width="4" height="14" rx="1.5"></rect>
       </svg>
     </button>
+
+    <!-- 4. 배속 버튼들 (1.0x, 0.75x) -->
     <button type="button" class="btn-floating-rate" id="btnFloatingRate10" onclick="playSelectedRate(1.0)">1.0x</button>
     <button type="button" class="btn-floating-rate" id="btnFloatingRate075" onclick="playSelectedRate(0.75)">0.75x</button>
+
+    <div class="floating-divider" style="width: 1px; height: 18px; background: rgba(127,127,127,0.22); margin: 0 1px;"></div>
+
+    <!-- 5. 다음 문항 버튼 (양옆 배치: 맨 오른쪽) -->
+    <button type="button" class="btn-floating-nav" id="btnFloatingNext" onclick="navNext()" aria-label="다음 문항" title="다음 문항">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </button>
   </aside>
   </div><!-- /.mobile-app-shell -->
 

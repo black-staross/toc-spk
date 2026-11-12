@@ -1470,64 +1470,49 @@ export const ToeicSpeakingApp: React.FC = () => {
         )}
       </main>
 
-      {/* 1 & 3. 하단 중앙 플로팅 바 (문항목록 | 이전 | 번호 | 다음 | 정지 | 1.0x | 0.75x 순서) - 모바일 삐져나옴 완벽 방지 */}
-      <aside className="fixed bottom-[calc(14px+env(safe-area-inset-bottom,10px))] sm:bottom-9 left-1/2 -translate-x-1/2 z-40 bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-2xl border border-white/90 dark:border-white/15 shadow-2xl rounded-full px-2 sm:px-3.5 py-1.5 sm:py-2 flex items-center justify-between sm:justify-center gap-1 sm:gap-2.5 w-auto max-w-[calc(100%-8px)]">
-        {/* 1. 문항 목록 햄버거 버튼 (문구 제거, 아이콘 크게) */}
+      {/* 하단 중앙 플로팅 바 (양옆: 이전/다음 화살표, 가운데: 문항목록 | 번호 | 정지 | 1.0x | 0.75x) */}
+      <aside className="fixed bottom-[calc(14px+env(safe-area-inset-bottom,10px))] sm:bottom-9 left-1/2 -translate-x-1/2 z-40 bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-2xl border border-white/90 dark:border-white/15 shadow-2xl rounded-full px-2 sm:px-3.5 py-1.5 sm:py-2 flex items-center justify-between sm:justify-center gap-1 sm:gap-2 w-auto max-w-[calc(100%-8px)]">
+        {/* 1. 이전 문항 버튼 (양옆 배치: 맨 왼쪽) */}
+        <button
+          type="button"
+          disabled={isFirstOfAll}
+          onClick={handlePrev}
+          className="w-[34px] h-[34px] sm:w-10 sm:h-10 rounded-full text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-25 transition-all flex items-center justify-center shrink-0 cursor-pointer"
+          title="이전 문항"
+          aria-label="이전 문항"
+        >
+          <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+
+        <div className="h-4 w-px bg-black/10 dark:bg-white/15 shrink-0"></div>
+
+        {/* 2. 가운데 영역: 문항 목록 햄버거 버튼 */}
         <button
           type="button"
           onClick={() => setIsDrawerOpen(true)}
-          className="w-8.5 h-8.5 sm:w-10 sm:h-10 rounded-full text-[#1D1D1F] dark:text-[#F5F5F7] bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 transition-all flex items-center justify-center shrink-0"
+          className="w-[34px] h-[34px] sm:w-10 sm:h-10 rounded-full text-[#1D1D1F] dark:text-[#F5F5F7] bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 transition-all flex items-center justify-center shrink-0 cursor-pointer"
           title="문항 목록"
           aria-label="문항 목록 열기"
         >
-          <svg className="w-4.5 h-4.5 sm:w-5.5 sm:h-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="3" y1="6" x2="21" y2="6"></line>
             <line x1="3" y1="12" x2="21" y2="12"></line>
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
         </button>
 
-        <div className="h-4 w-px bg-black/10 dark:bg-white/15 shrink-0"></div>
-
-        {/* 2. 이전 문항 버튼 (문구 제거, 화살표 크게, 전체 시험 연속 이전) */}
-        <button
-          type="button"
-          disabled={isFirstOfAll}
-          onClick={handlePrev}
-          className="w-8.5 h-8.5 sm:w-10 sm:h-10 rounded-full text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-25 transition-all flex items-center justify-center shrink-0"
-          title="이전 문항"
-          aria-label="이전 문항"
-        >
-          <svg className="w-4.5 h-4.5 sm:w-5.5 sm:h-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6"></polyline>
-          </svg>
-        </button>
-
-        <span className="text-xs sm:text-sm font-bold text-[#1D1D1F] dark:text-[#F5F5F7] px-0.5 sm:px-1 font-mono shrink-0 select-none">
+        {/* 문항 번호 */}
+        <span className="text-xs sm:text-sm font-bold text-[#1D1D1F] dark:text-[#F5F5F7] px-0.5 sm:px-1 font-mono shrink-0 select-none whitespace-nowrap">
           <strong>{selectedIndex + 1}</strong> / {totalItemsCount}
         </span>
 
-        {/* 2. 다음 문항 버튼 (문구 제거, 화살표 크게, 전체 시험 연속 다음) */}
-        <button
-          type="button"
-          disabled={isLastOfAll}
-          onClick={handleNext}
-          className="w-8.5 h-8.5 sm:w-10 sm:h-10 rounded-full text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-25 transition-all flex items-center justify-center shrink-0"
-          title="다음 문항"
-          aria-label="다음 문항"
-        >
-          <svg className="w-4.5 h-4.5 sm:w-5.5 sm:h-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </button>
-
-        <div className="h-4 w-px bg-black/10 dark:bg-white/15 shrink-0"></div>
-
-        {/* 3. 정지 버튼 (문구 제거, 아이콘 크게) */}
+        {/* 3. 정지 버튼 */}
         <button
           type="button"
           onClick={stopSpeech}
-          className={`w-8.5 h-8.5 sm:w-10 sm:h-10 rounded-full border transition-all flex items-center justify-center shrink-0 ${
+          className={`w-[34px] h-[34px] sm:w-10 sm:h-10 rounded-full border transition-all flex items-center justify-center shrink-0 cursor-pointer ${
             playingKey
               ? 'bg-[#FF3B30] text-white border-[#FF3B30] shadow-md animate-pulse'
               : 'bg-[#FF3B30]/10 text-[#FF3B30] border-[#FF3B30]/25 hover:bg-[#FF3B30]/20'
@@ -1535,17 +1520,17 @@ export const ToeicSpeakingApp: React.FC = () => {
           title="발음 재생 정지"
           aria-label="발음 정지"
         >
-          <svg className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" viewBox="0 0 24 24" fill="currentColor">
+          <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="currentColor">
             <rect x="6" y="5" width="4" height="14" rx="1.5"></rect>
             <rect x="14" y="5" width="4" height="14" rx="1.5"></rect>
           </svg>
         </button>
 
-        {/* 1. 배속 토글 버튼 (1.0x, 0.75x) - 둥근 모서리 안쪽에 완벽 안착 */}
+        {/* 4. 배속 토글 버튼 (1.0x, 0.75x) */}
         <button
           type="button"
           onClick={() => playSelectedRate(1.0)}
-          className={`h-8.5 sm:h-10 min-w-[38px] sm:min-w-[48px] px-2.5 sm:px-3.5 inline-flex items-center justify-center rounded-full text-xs sm:text-sm font-bold border transition-all shrink-0 ${
+          className={`h-[34px] sm:h-10 min-w-[36px] sm:min-w-[48px] px-2 sm:px-3.5 inline-flex items-center justify-center rounded-full text-xs sm:text-sm font-bold border transition-all shrink-0 cursor-pointer ${
             playingKey === 'selected-1'
               ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] shadow-md shadow-blue-500/30'
               : 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/20 hover:bg-[#0071E3]/20'
@@ -1557,7 +1542,7 @@ export const ToeicSpeakingApp: React.FC = () => {
         <button
           type="button"
           onClick={() => playSelectedRate(0.75)}
-          className={`h-8.5 sm:h-10 min-w-[42px] sm:min-w-[48px] px-2.5 sm:px-3.5 inline-flex items-center justify-center rounded-full text-xs sm:text-sm font-bold border transition-all shrink-0 ${
+          className={`h-[34px] sm:h-10 min-w-[40px] sm:min-w-[48px] px-2 sm:px-3.5 inline-flex items-center justify-center rounded-full text-xs sm:text-sm font-bold border transition-all shrink-0 cursor-pointer ${
             playingKey === 'selected-0.75'
               ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] shadow-md shadow-blue-500/30'
               : 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/20 hover:bg-[#0071E3]/20'
@@ -1565,6 +1550,22 @@ export const ToeicSpeakingApp: React.FC = () => {
           title="원어민 Daniel 0.75x 느린 발음"
         >
           0.75x
+        </button>
+
+        <div className="h-4 w-px bg-black/10 dark:bg-white/15 shrink-0"></div>
+
+        {/* 5. 다음 문항 버튼 (양옆 배치: 맨 오른쪽) */}
+        <button
+          type="button"
+          disabled={isLastOfAll}
+          onClick={handleNext}
+          className="w-[34px] h-[34px] sm:w-10 sm:h-10 rounded-full text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-25 transition-all flex items-center justify-center shrink-0 cursor-pointer"
+          title="다음 문항"
+          aria-label="다음 문항"
+        >
+          <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
         </button>
       </aside>
       </div>{/* /.mobile-app-shell */}
