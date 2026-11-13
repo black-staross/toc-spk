@@ -804,9 +804,9 @@ export const ToeicSpeakingApp: React.FC = () => {
           </div>
         </div>
 
-        {/* 세그먼트 컨트롤 탭 (Part 1~5) */}
-        <div className="max-w-6xl mx-auto px-2 sm:px-4 pb-2.5 sm:pb-3">
-          <div className="flex p-1 bg-black/5 dark:bg-white/10 rounded-full border border-black/5 dark:border-white/10 gap-1 overflow-x-auto no-scrollbar">
+        {/* 세그먼트 컨트롤 탭 (Part 1~5 20%씩 균등 5분할 고정, 좌우 흔들림/스크롤 0) */}
+        <div className="w-full max-w-[480px] mx-auto px-2 sm:px-4 pb-2.5 sm:pb-3">
+          <div className="grid grid-cols-5 p-1 bg-black/5 dark:bg-white/10 rounded-full border border-black/5 dark:border-white/10 gap-1 w-full">
             {[
               { id: 'part1' as ActivePart, label: 'Part 1', count: String(masterData.part1.length) },
               { id: 'part2' as ActivePart, label: 'Part 2', count: String(masterData.part2.length) },
@@ -820,7 +820,7 @@ export const ToeicSpeakingApp: React.FC = () => {
                   key={tab.id}
                   type="button"
                   onClick={() => handleTabChange(tab.id)}
-                  className={`flex-1 min-w-[58px] sm:min-w-[80px] py-1.5 sm:py-2 px-2 sm:px-3 rounded-full text-xs sm:text-sm font-semibold flex items-center justify-center transition-all whitespace-nowrap ${
+                  className={`w-full min-w-0 py-1.5 sm:py-2 px-1 sm:px-2 rounded-full text-xs sm:text-sm font-semibold flex items-center justify-center transition-all whitespace-nowrap ${
                     isActive
                       ? 'bg-white dark:bg-white/20 text-[#1D1D1F] dark:text-white shadow-sm font-bold'
                       : 'text-[#6E6E73] dark:text-[#8E8E93] hover:text-[#1D1D1F] dark:hover:text-white'

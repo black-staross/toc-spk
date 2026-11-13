@@ -76,6 +76,11 @@ def main():
       padding: 0;
     }
 
+    html {
+      overflow-y: scroll;
+      scrollbar-gutter: stable;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Noto Sans KR", sans-serif;
       background: #EEF2F6;
@@ -784,27 +789,24 @@ def main():
     }
 
     .segmented-control {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
       background: rgba(0, 0, 0, 0.05);
       padding: 4px;
       border-radius: var(--radius-pill);
       border: 1px solid rgba(0, 0, 0, 0.04);
-      overflow-x: auto;
       gap: 4px;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
-    .segmented-control::-webkit-scrollbar {
-      display: none;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .segment-btn {
-      flex: 1;
-      min-width: 82px;
+      width: 100%;
+      min-width: 0;
       background: transparent;
       border: none;
       border-radius: var(--radius-pill);
-      padding: 8px 12px;
+      padding: 8px 4px;
       font-size: 13.5px;
       font-weight: 700;
       color: var(--apple-text-secondary);
@@ -812,7 +814,7 @@ def main():
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 4px;
       transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
       white-space: nowrap;
       min-height: 38px;
@@ -2752,27 +2754,27 @@ def main():
         flex-shrink: 0;
       }
 
-      /* 세그먼트 컨트롤 탭 (모바일 시인성 & 터치감 강화) */
+      /* 세그먼트 컨트롤 탭 (모바일 5분할 고정, 좌우 잘림/흔들림 완벽 차단) */
       .apple-segmented-bar {
         padding: 0 10px;
         margin-top: 10px;
       }
       .segmented-control {
-        padding: 4px;
-        gap: 4px;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-      }
-      .segmented-control::-webkit-scrollbar {
-        display: none;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        padding: 3px;
+        gap: 3px;
+        width: 100%;
+        box-sizing: border-box;
       }
       .segment-btn {
-        min-width: 100px;
-        padding: 9px 12px;
-        font-size: 14px;
+        width: 100%;
+        min-width: 0;
+        padding: 7px 2px;
+        font-size: 12.5px;
         font-weight: 700;
-        gap: 6px;
-        min-height: 40px;
+        gap: 0;
+        min-height: 36px;
       }
       .segment-count {
         font-size: 11px;
