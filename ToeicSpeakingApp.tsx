@@ -1819,26 +1819,45 @@ export const ToeicSpeakingApp: React.FC = () => {
                           {/* 본문 문장과 북마크 버튼을 같은 줄(같은 선상)에 배치 */}
                           <div className="flex items-start justify-between gap-2.5 w-full">
                             <div className="flex items-start gap-2.5 flex-1 min-w-0">
-                              <button
-                                type="button"
-                                onClick={() => speakMagicItem(item.id, 1.0)}
-                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full shrink-0 flex items-center justify-center bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20 hover:bg-[#0071E3]/25 active:scale-95 transition-all mt-0.5"
-                                title="발음 듣기"
-                                aria-label="발음 듣기"
-                              >
-                                <svg
-                                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
+                              <div className="flex flex-col items-center gap-1.5 shrink-0 mt-0.5">
+                                <button
+                                  type="button"
+                                  onClick={() => speakMagicItem(item.id, 1.0)}
+                                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border active:scale-95 transition-all ${
+                                    playingKey === `magic-${item.id}-1`
+                                      ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] shadow-sm'
+                                      : 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/20 hover:bg-[#0071E3]/25'
+                                  }`}
+                                  title="1.0x 발음 듣기"
+                                  aria-label="1.0배속 발음 듣기"
                                 >
-                                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-                                </svg>
-                              </button>
+                                  <svg
+                                    className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  >
+                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                                  </svg>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => speakMagicItem(item.id, 0.75)}
+                                  className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold leading-tight border active:scale-95 transition-all whitespace-nowrap ${
+                                    playingKey === `magic-${item.id}-0.75`
+                                      ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] shadow-sm'
+                                      : 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/20 hover:bg-[#0071E3]/25'
+                                  }`}
+                                  title="0.75x 느린 발음 듣기"
+                                  aria-label="0.75배속 발음 듣기"
+                                >
+                                  0.75x
+                                </button>
+                              </div>
                               <div className="flex-1 min-w-0">
                                 <p className="text-base sm:text-[16.5px] font-bold text-[#1D1D1F] dark:text-white leading-snug">
                                   {item.en}
@@ -1905,26 +1924,45 @@ export const ToeicSpeakingApp: React.FC = () => {
                           {/* 표제어/스피커와 북마크 버튼을 같은 줄(같은 선상)에 배치 */}
                           <div className="flex items-center justify-between gap-2.5 w-full">
                             <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap flex-1 min-w-0">
-                              <button
-                                type="button"
-                                onClick={() => speakVocabItem(item.id, 1.0)}
-                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full shrink-0 flex items-center justify-center bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border border-[#0071E3]/20 hover:bg-[#0071E3]/25 active:scale-95 transition-all"
-                                title="발음 듣기"
-                                aria-label="발음 듣기"
-                              >
-                                <svg
-                                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
+                              <div className="inline-flex items-center gap-1.5 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => speakVocabItem(item.id, 1.0)}
+                                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full shrink-0 flex items-center justify-center border active:scale-95 transition-all ${
+                                    playingKey === `vocab-${item.id}-1`
+                                      ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] shadow-sm'
+                                      : 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/20 hover:bg-[#0071E3]/25'
+                                  }`}
+                                  title="1.0x 발음 듣기"
+                                  aria-label="1.0배속 발음 듣기"
                                 >
-                                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-                                </svg>
-                              </button>
+                                  <svg
+                                    className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  >
+                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                                  </svg>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => speakVocabItem(item.id, 0.75)}
+                                  className={`h-7 sm:h-8 px-2 rounded-full text-[11px] font-bold shrink-0 inline-flex items-center justify-center border active:scale-95 transition-all whitespace-nowrap ${
+                                    playingKey === `vocab-${item.id}-0.75`
+                                      ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] shadow-sm'
+                                      : 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/20 hover:bg-[#0071E3]/25'
+                                  }`}
+                                  title="0.75x 느린 발음 듣기"
+                                  aria-label="0.75배속 발음 듣기"
+                                >
+                                  0.75x
+                                </button>
+                              </div>
                               <h3 className="text-xl font-extrabold text-[#1D1D1F] dark:text-white tracking-tight">
                                 {item.word}
                               </h3>

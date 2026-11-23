@@ -4722,13 +4722,19 @@ def main():
               <!-- 본문 문장과 북마크 버튼을 같은 줄(같은 선상)에 배치 -->
               <div class="magic-sentence-main-group" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
                 <div style="display: flex; align-items: flex-start; gap: 10px; flex: 1; min-width: 0;">
-                  <button type="button" class="btn-audio-front" onclick="speakMagicItem('${item.id}', 1.0)" title="발음 듣기" aria-label="발음 듣기"
-                          style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--apple-blue-border); background: var(--apple-blue-bg); color: var(--apple-blue); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; margin-top: 2px;">
-                    <svg style="width: 15px; height: 15px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                      <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                    </svg>
-                  </button>
+                  <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; margin-top: 2px;">
+                    <button type="button" class="btn-audio-front" onclick="speakMagicItem('${item.id}', 1.0)" title="1.0x 발음 듣기" aria-label="1.0배속 발음 듣기"
+                            style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--apple-blue-border); background: var(--apple-blue-bg); color: var(--apple-blue); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer;">
+                      <svg style="width: 15px; height: 15px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                      </svg>
+                    </button>
+                    <button type="button" class="btn-audio-slow" onclick="speakMagicItem('${item.id}', 0.75)" title="0.75x 느린 발음 듣기" aria-label="0.75배속 발음 듣기"
+                            style="padding: 2px 6px; border-radius: 9999px; border: 1px solid var(--apple-blue-border); background: var(--apple-blue-bg); color: var(--apple-blue); font-size: 10px; font-weight: 700; line-height: 1.2; cursor: pointer; white-space: nowrap;">
+                      0.75x
+                    </button>
+                  </div>
                   <div style="flex: 1; min-width: 0;">
                     <div class="magic-en-sentence">${escapeHtml(item.en)}</div>
                     <div class="magic-ko-translation">${escapeHtml(item.ko)}</div>
@@ -4794,13 +4800,19 @@ def main():
               <!-- 표제어/스피커와 북마크 버튼을 같은 줄(같은 선상)에 배치 -->
               <div class="vocab-headword-section" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%;">
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1; min-width: 0;">
-                  <button type="button" class="btn-audio-front" onclick="speakVocabItem('${item.id}', 1.0)" title="발음 듣기" aria-label="발음 듣기"
-                          style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--apple-blue-border); background: var(--apple-blue-bg); color: var(--apple-blue); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer;">
-                    <svg style="width: 15px; height: 15px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                      <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                    </svg>
-                  </button>
+                  <div style="display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                    <button type="button" class="btn-audio-front" onclick="speakVocabItem('${item.id}', 1.0)" title="1.0x 발음 듣기" aria-label="1.0배속 발음 듣기"
+                            style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--apple-blue-border); background: var(--apple-blue-bg); color: var(--apple-blue); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer;">
+                      <svg style="width: 15px; height: 15px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                      </svg>
+                    </button>
+                    <button type="button" class="btn-audio-slow" onclick="speakVocabItem('${item.id}', 0.75)" title="0.75x 느린 발음 듣기" aria-label="0.75배속 발음 듣기"
+                            style="height: 30px; padding: 0 8px; border-radius: 9999px; border: 1px solid var(--apple-blue-border); background: var(--apple-blue-bg); color: var(--apple-blue); font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; white-space: nowrap;">
+                      0.75x
+                    </button>
+                  </div>
                   <span class="vocab-word-text">${escapeHtml(item.word)}</span>
                   <span class="vocab-word-ipa">${escapeHtml(item.ipa)}</span>
                   <span class="vocab-word-pos-tag">${escapeHtml(item.pos)}</span>
