@@ -1846,16 +1846,16 @@ export const ToeicSpeakingApp: React.FC = () => {
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => speakMagicItem(item.id, 0.75)}
+                                  onClick={() => speakMagicItem(item.id, 0.5)}
                                   className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold leading-tight border active:scale-95 transition-all whitespace-nowrap ${
-                                    playingKey === `magic-${item.id}-0.75`
+                                    playingKey === `magic-${item.id}-0.5`
                                       ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] shadow-sm'
                                       : 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/20 hover:bg-[#0071E3]/25'
                                   }`}
-                                  title="0.75x 느린 발음 듣기"
-                                  aria-label="0.75배속 발음 듣기"
+                                  title="0.5x 느린 발음 듣기"
+                                  aria-label="0.5배속 발음 듣기"
                                 >
-                                  0.75x
+                                  0.5x
                                 </button>
                               </div>
                               <div className="flex-1 min-w-0">
@@ -1951,16 +1951,16 @@ export const ToeicSpeakingApp: React.FC = () => {
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => speakVocabItem(item.id, 0.75)}
+                                  onClick={() => speakVocabItem(item.id, 0.5)}
                                   className={`h-7 sm:h-8 px-2 rounded-full text-[11px] font-bold shrink-0 inline-flex items-center justify-center border active:scale-95 transition-all whitespace-nowrap ${
-                                    playingKey === `vocab-${item.id}-0.75`
+                                    playingKey === `vocab-${item.id}-0.5`
                                       ? 'bg-[#0071E3] dark:bg-[#0A84FF] text-white border-[#0071E3] shadow-sm'
                                       : 'bg-[#0071E3]/10 dark:bg-[#0A84FF]/20 text-[#0071E3] dark:text-[#0A84FF] border-[#0071E3]/20 hover:bg-[#0071E3]/25'
                                   }`}
-                                  title="0.75x 느린 발음 듣기"
-                                  aria-label="0.75배속 발음 듣기"
+                                  title="0.5x 느린 발음 듣기"
+                                  aria-label="0.5배속 발음 듣기"
                                 >
-                                  0.75x
+                                  0.5x
                                 </button>
                               </div>
                               <h3 className="text-xl font-extrabold text-[#1D1D1F] dark:text-white tracking-tight">
